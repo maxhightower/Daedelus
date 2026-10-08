@@ -1,0 +1,92 @@
+[
+ {
+  "scenario": "setup",
+  "name": "a real worker process registered with the control plane",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "1 target",
+  "name": "the event stream is connected (live updates)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "1 target",
+  "name": "choosing Cloud CPU in the UI sets the project's execution target",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "1 target",
+  "name": "the connected worker is listed with its capabilities and adapters",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "1 target",
+  "name": "an artifact created under Cloud CPU",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "1 target",
+  "name": "remote jobs appear live in the job list (pushed over SSE)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "2 workflow",
+  "name": "node run records the resolved target and the worker",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "2 workflow",
+  "name": "the run view shows where the node executed (target, reason, worker jobs)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "3 no fallback",
+  "name": "Cloud GPU without a GPU worker is flagged before running",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "3 no fallback",
+  "name": "work under Cloud GPU fails explicitly instead of running locally",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "4 cancel",
+  "name": "cancel in the UI stops the running job (state cancelled)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "4 cancel",
+  "name": "the cancelled request created nothing",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "5 events not polling",
+  "name": "no API polling while idle for 10 s (updates arrive over the event stream)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "5 events not polling",
+  "name": "one event-stream connection per project view",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "5 events not polling",
+  "name": "no uncaught page errors",
+  "ok": true,
+  "detail": ""
+ }
+]

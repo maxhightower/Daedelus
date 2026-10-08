@@ -1,0 +1,8 @@
+worker-blender-1  | {"worker": "wkr_9aabf911e912", "name": "69e7c7fd65e7-1", "capabilities": ["cpu"], "adapters": ["blender", "layered2d"]}
+worker-office-1   | {"worker": "wkr_55e08101ec2d", "name": "c1c2a7481ba1-1", "capabilities": ["cpu"], "adapters": ["spreadsheet", "document", "presentation"]}
+worker-office-1   | {"worker": "wkr_89d0810e1ce8", "name": "c1c2a7481ba1-1", "capabilities": ["cpu"], "adapters": ["spreadsheet", "document", "presentation"]}
+worker-office-1   | {"worker": "wkr_36b6407c1cb2", "name": "c1c2a7481ba1-1", "capabilities": ["cpu"], "adapters": ["spreadsheet", "document", "presentation"]}
+worker-office-1   | {"worker": "wkr_4a3edfdd97d4", "name": "c1c2a7481ba1-1", "capabilities": ["cpu"], "adapters": ["spreadsheet", "document", "presentation"]}
+worker-code-1     | {"worker": "wkr_ee82ed0f1c27", "name": "3204ffcd7b72-1", "capabilities": ["cpu"], "adapters": ["code"]}
+control-1         | DAEDELUS_LISTENING http://0.0.0.0:8765
+control-1         | DAEDELUS_LISTENING http://0.0.0.0:8765

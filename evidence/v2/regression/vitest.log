@@ -1,0 +1,12 @@
+
+ RUN  v2.1.9 /home/user/Daedelus/studio
+
+ ✓ src/__tests__/util.test.ts (3 tests) 4ms
+ ✓ src/__tests__/office.test.ts (3 tests) 4ms
+ ✓ src/__tests__/canvas.test.ts (8 tests) 6ms
+
+ Test Files  3 passed (3)
+      Tests  14 passed (14)
+   Start at  22:04:42
+   Duration  1.58s (transform 631ms, setup 0ms, collect 1.39s, tests 14ms, environment 1.62s, prepare 231ms)
+

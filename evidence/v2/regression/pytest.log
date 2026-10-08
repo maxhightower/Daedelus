@@ -1,0 +1,7 @@
+........................................................................ [ 48%]
+.............................ssss....................................... [ 97%]
+....                                                                     [100%]
+=========================== short test summary info ============================
+SKIPPED [1] tests/test_live_claude.py:28: live Claude smoke test is opt-in: set DAEDELUS_LIVE_CLAUDE=1
+SKIPPED [3] tests/test_live_semantic.py:27: live semantic tests are opt-in: set DAEDELUS_LIVE_SEMANTIC=1
+144 passed, 4 skipped in 363.08s (0:06:03)

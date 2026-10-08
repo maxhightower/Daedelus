@@ -1,0 +1,266 @@
+{
+ "seconds": 645.3,
+ "passed": true,
+ "checks": [
+  {
+   "scenario": "setup",
+   "name": "compose stack healthy",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S1 topology",
+   "name": "control plane container has no Blender and no LibreOffice",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S1 topology",
+   "name": "control plane reports Blender unavailable locally",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S1 topology",
+   "name": "worker network is internal (no route out of the host)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S1 topology",
+   "name": "workers cannot reach the internet",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S1 topology",
+   "name": "published port binds to 127.0.0.1 only",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S1 topology",
+   "name": "Blender, Office and code workers registered",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S2 Blender worker",
+   "name": "Blender artifact created on a worker",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S2 Blender worker",
+   "name": "remote edit produced a checked revision",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S2 Blender worker",
+   "name": "render preview produced by the worker and served by the control plane",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S2 Blender worker",
+   "name": "every Blender job ran on the Blender worker",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S2 Blender worker",
+   "name": "components exist after publication",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S3 Office workers",
+   "name": "research pipeline succeeded with all adapter work on workers",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S3 Office workers",
+   "name": "node wb resolved to cloud_cpu",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S3 Office workers",
+   "name": "node doc resolved to cloud_cpu",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S3 Office workers",
+   "name": "node deck resolved to cloud_cpu",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S3 Office workers",
+   "name": "formulas recalculated by LibreOffice inside the office worker",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S3 Office workers",
+   "name": "cross-artifact dependencies synced remotely",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S4 code worker",
+   "name": "code artifact created on the code worker",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S4 code worker",
+   "name": "allowlisted tests ran on the code worker and passed",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S4 code worker",
+   "name": "a command the project allows but the WORKER's allowlist does not is not executed",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S5 worker killed mid-job",
+   "name": "the slow worker leased the job",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S5 worker killed mid-job",
+   "name": "request completed after the worker was killed",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S5 worker killed mid-job",
+   "name": "job retried (attempt 2) and succeeded on another worker",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S5 worker killed mid-job",
+   "name": "lease expiry recorded in the job's event history",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S6 network partition",
+   "name": "the partitioned-to-be worker leased the job",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S6 network partition",
+   "name": "request completed despite the partition",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S6 network partition",
+   "name": "the partitioned worker's late result was rejected and audited",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S6 network partition",
+   "name": "exactly one result published for the job",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S7 control-plane restart",
+   "name": "an apply job is running on a worker when the control plane restarts",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S7 control-plane restart",
+   "name": "control plane back after restart",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S7 control-plane restart",
+   "name": "interrupted execution resumed and succeeded",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S7 control-plane restart",
+   "name": "the in-flight apply job finished on its worker and was reused (not recomputed)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S7 control-plane restart",
+   "name": "node log records the resumption",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S7 control-plane restart",
+   "name": "resumption audited",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S8 security",
+   "name": "API rejects requests without a token",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S8 security",
+   "name": "worker endpoint rejects a bad worker token",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S8 security",
+   "name": "Host header outside the allowlist is rejected (DNS rebinding)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S8 security",
+   "name": "SSRF guard refuses http://169.254.169.254/latest/meta-data/",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S8 security",
+   "name": "SSRF guard refuses http://control:8765/api/health",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S8 security",
+   "name": "SSRF guard refuses http://127.0.0.1:8765/api/projects",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S8 security",
+   "name": "authentication failures are audited",
+   "ok": true,
+   "detail": ""
+  }
+ ],
+ "metrics": {
+  "blender_create_edit_seconds": 16.1,
+  "office_pipeline_seconds": 42.4,
+  "office_pipeline_jobs": 45,
+  "recovery_after_worker_kill_seconds": 27.0,
+  "execution_after_restart_seconds": 79.1
+ },
+ "scope": "single Docker host: control plane and workers as containers on separate networks; not a hosted multi-machine deployment; no GPU"
+}

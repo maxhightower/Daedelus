@@ -22,7 +22,7 @@ or in Focus through their native adapters.
 |---|---|
 | `backend/` | Python package `daedelus`: domain model, SQLite/filesystem store, ingestion, binding resolver, workflow engine, adapters (Blender, OpenRaster, git/code), planners (deterministic heuristic, Claude), FastAPI, CLI, demonstration scenarios, tests |
 | `studio/` | React + TypeScript studio (React Flow, Three.js, Monaco); `studio/src-tauri` Tauri 2 desktop shell; `studio/e2e` Playwright walkthrough |
-| `docs/` | [Architecture](docs/ARCHITECTURE.md), [V1 spatial canvas architecture](docs/V1_ARCHITECTURE.md), [V0 report](docs/V0_REPORT.md), [V1 report](docs/V1_REPORT.md), [V1.1 architecture](docs/V1_1_ARCHITECTURE.md), [V1.1 report](docs/V1_1_REPORT.md), [V1.2 architecture](docs/V1_2_ARCHITECTURE.md), [V1.2 report](docs/V1_2_REPORT.md), [dependency audit](docs/DEPENDENCY_AUDIT.md), [native-validation register](docs/NATIVE_VALIDATION_REGISTER.md), UI screenshots |
+| `docs/` | [Architecture](docs/ARCHITECTURE.md), [V1 spatial canvas architecture](docs/V1_ARCHITECTURE.md), [V0 report](docs/V0_REPORT.md), [V1 report](docs/V1_REPORT.md), [V1.1 architecture](docs/V1_1_ARCHITECTURE.md), [V1.1 report](docs/V1_1_REPORT.md), [V1.2 architecture](docs/V1_2_ARCHITECTURE.md), [V1.2 report](docs/V1_2_REPORT.md), [V2 architecture](docs/V2_ARCHITECTURE.md), [V2 report](docs/V2_REPORT.md), [security model](docs/SECURITY_MODEL.md), [cloud deployment](docs/CLOUD_DEPLOYMENT.md), [cumulative V1.1→V2 report](docs/CUMULATIVE_REPORT_V1_1_TO_V2.md), [dependency audit](docs/DEPENDENCY_AUDIT.md), [native-validation register](docs/NATIVE_VALIDATION_REGISTER.md), UI screenshots |
 | `evidence/` | Demonstration report, before/after renders, manifest diff; `evidence/v1` walkthrough and performance results |
 | `.github/workflows/` | Linux CI (backend + Blender, studio, browser e2e) and Windows desktop build |
 
@@ -42,6 +42,10 @@ pytest -q                                  # Blender tests are skipped when Blen
 daedelus demo --out ../evidence/demo
 daedelus demo-v11 --out ../evidence/v1_1          # V1.1 semantic demonstrations (add --live anthropic|gemini)
 daedelus demo-v12 --out ../evidence/v1_2          # V1.2 research analysis & presentation pipeline (needs LibreOffice)
+# V2: remote workers (see docs/CLOUD_DEPLOYMENT.md)
+DAEDELUS_WORKER_TOKENS=<secret> daedelus serve        # control plane with a worker pool
+DAEDELUS_WORKER_TOKEN=<secret> daedelus worker --control http://127.0.0.1:8765
+docker compose -f ../deploy/compose.yml --env-file ../deploy/.env up -d --build --wait
 
 # studio
 cd ../studio && npm ci && npm run build

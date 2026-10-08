@@ -1,0 +1,86 @@
+ Network daedelus_edge Creating 
+ Network daedelus_edge Creating 
+ Network daedelus_jobs Creating 
+ Network daedelus_jobs Creating 
+ Volume daedelus_control-data Creating 
+ Volume daedelus_control-data Creating 
+ Volume daedelus_control-data Created 
+ Volume daedelus_control-data Created 
+ Network daedelus_edge Created 
+ Network daedelus_edge Created 
+ Network daedelus_jobs Created 
+ Network daedelus_jobs Created 
+ Container daedelus-control-1 Creating 
+ Container daedelus-control-1 Created 
+ Container daedelus-worker-office-1 Creating 
+ Container daedelus-worker-blender-1 Creating 
+ Container daedelus-worker-code-1 Creating 
+ Container daedelus-worker-blender-1 Created 
+ Container daedelus-worker-code-1 Created 
+ Container daedelus-worker-office-1 Created 
+ Container daedelus-control-1 Starting 
+ Container daedelus-control-1 Started 
+ Container daedelus-control-1 Waiting 
+ Container daedelus-control-1 Waiting 
+ Container daedelus-control-1 Waiting 
+ Container daedelus-control-1 Healthy 
+ Container daedelus-worker-code-1 Starting 
+ Container daedelus-control-1 Healthy 
+ Container daedelus-worker-blender-1 Starting 
+ Container daedelus-control-1 Healthy 
+ Container daedelus-worker-office-1 Starting 
+ Container daedelus-worker-code-1 Started 
+ Container daedelus-worker-blender-1 Started 
+ Container daedelus-worker-office-1 Started 
+ Container daedelus-control-1 Waiting 
+ Container daedelus-worker-office-1 Waiting 
+ Container daedelus-worker-blender-1 Waiting 
+ Container daedelus-worker-code-1 Waiting 
+ Container daedelus-worker-office-1 Healthy 
+ Container daedelus-worker-code-1 Healthy 
+ Container daedelus-worker-blender-1 Healthy 
+ Container daedelus-control-1 Healthy 
+PASS [setup] compose stack healthy
+PASS [S1 topology] control plane container has no Blender and no LibreOffice
+PASS [S1 topology] control plane reports Blender unavailable locally
+PASS [S1 topology] worker network is internal (no route out of the host)
+PASS [S1 topology] workers cannot reach the internet
+PASS [S1 topology] published port binds to 127.0.0.1 only
+PASS [S1 topology] Blender, Office and code workers registered
+PASS [S2 Blender worker] Blender artifact created on a worker
+PASS [S2 Blender worker] remote edit produced a checked revision
+PASS [S2 Blender worker] render preview produced by the worker and served by the control plane
+PASS [S2 Blender worker] every Blender job ran on the Blender worker
+PASS [S2 Blender worker] components exist after publication
+PASS [S3 Office workers] research pipeline succeeded with all adapter work on workers
+PASS [S3 Office workers] node wb resolved to cloud_cpu
+PASS [S3 Office workers] node doc resolved to cloud_cpu
+PASS [S3 Office workers] node deck resolved to cloud_cpu
+PASS [S3 Office workers] formulas recalculated by LibreOffice inside the office worker
+PASS [S3 Office workers] cross-artifact dependencies synced remotely
+PASS [S4 code worker] code artifact created on the code worker
+PASS [S4 code worker] allowlisted tests ran on the code worker and passed
+PASS [S4 code worker] a command the project allows but the WORKER's allowlist does not is not executed
+PASS [S5 worker killed mid-job] the slow worker leased the job
+PASS [S5 worker killed mid-job] request completed after the worker was killed
+PASS [S5 worker killed mid-job] job retried (attempt 2) and succeeded on another worker
+PASS [S5 worker killed mid-job] lease expiry recorded in the job's event history
+PASS [S6 network partition] the partitioned-to-be worker leased the job
+PASS [S6 network partition] request completed despite the partition
+PASS [S6 network partition] the partitioned worker's late result was rejected and audited
+PASS [S6 network partition] exactly one result published for the job
+PASS [S7 control-plane restart] an apply job is running on a worker when the control plane restarts
+PASS [S7 control-plane restart] control plane back after restart
+PASS [S7 control-plane restart] interrupted execution resumed and succeeded
+PASS [S7 control-plane restart] the in-flight apply job finished on its worker and was reused (not recomputed)
+PASS [S7 control-plane restart] node log records the resumption
+PASS [S7 control-plane restart] resumption audited
+PASS [S8 security] API rejects requests without a token
+PASS [S8 security] worker endpoint rejects a bad worker token
+PASS [S8 security] Host header outside the allowlist is rejected (DNS rebinding)
+PASS [S8 security] SSRF guard refuses http://169.254.169.254/latest/meta-data/
+PASS [S8 security] SSRF guard refuses http://control:8765/api/health
+PASS [S8 security] SSRF guard refuses http://127.0.0.1:8765/api/projects
+PASS [S8 security] authentication failures are audited
+
+PASS: 42/42

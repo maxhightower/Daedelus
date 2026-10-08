@@ -1,0 +1,25 @@
+PASS [setup] pipeline execution succeeded
+PASS [setup] 5 dependencies, all synced
+PASS [1 board] the three office artifacts are views on the canvas
+PASS [1 board] component dependencies are drawn as dependency connections
+PASS [2 spreadsheet] formula bar shows the native AVERAGEIFS formula
+PASS [2 spreadsheet] the grid shows the LibreOffice-calculated value (not the formula)
+PASS [2 spreadsheet] selecting a named range highlights its cells
+PASS [2 spreadsheet] charts are listed on their sheet
+PASS [2 spreadsheet] the cell edit became a new workbook revision
+PASS [2 spreadsheet] exactly the four dependents of the summary went stale; slide text from the report did not
+PASS [2 spreadsheet] stale dependency connections are marked on the canvas
+PASS [3 update dependents] Update dependents synced every dependency
+PASS [3 update dependents] report: only the table, figure and results sentence changed
+PASS [3 update dependents] deck: only the data chart changed
+PASS [3 update dependents] no stale connections remain on the canvas
+PASS [4 document focus] the updated results sentence is visible in the document view
+PASS [4 document focus] paragraph edit changed only that paragraph and its section
+PASS [4 document focus] print preview shows LibreOffice-rendered pages
+PASS [4 document focus] editing the report section made the slide text dependency stale
+PASS [5 slides] selecting the slide chart shows its native data
+PASS [5 slides] slide text edit changed only that text frame
+PASS [5 slides] native .pptx remains the artifact entry
+PASS [5 slides] no uncaught page errors
+
+PASS: 23/23

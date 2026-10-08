@@ -1,0 +1,1774 @@
+{
+ "id": "exe_c59d804306c7",
+ "workflow_id": "wf_cac3d52066d0",
+ "workflow_version": 1,
+ "mode": "incremental",
+ "status": "succeeded",
+ "created_at": "2026-10-08T22:02:03.441+00:00",
+ "started_at": "2026-10-08T22:02:03.443+00:00",
+ "finished_at": "2026-10-08T22:03:55.366+00:00",
+ "node_runs": [
+  {
+   "node_id": "src",
+   "node_type": "sources",
+   "status": "succeeded",
+   "attempts": 0,
+   "started_at": "2026-10-08T22:02:03.447+00:00",
+   "finished_at": "2026-10-08T22:02:03.450+00:00",
+   "units": [],
+   "outputs": {
+    "sources": [
+     "src_82096c380f99",
+     "src_798bcf0d819a",
+     "src_902defb4b026"
+    ]
+   },
+   "error": null,
+   "logs": [
+    "note: source 'co2_annmean_mlo.csv' partially processed: view-only source: cells extracted; to edit, create a spreadsheet artifact from it (a copy; the source stays unchanged)"
+   ],
+   "approval": null
+  },
+  {
+   "node_id": "a_wb",
+   "node_type": "artifact",
+   "status": "succeeded",
+   "attempts": 0,
+   "started_at": "2026-10-08T22:02:03.451+00:00",
+   "finished_at": "2026-10-08T22:02:03.452+00:00",
+   "units": [],
+   "outputs": {
+    "artifact": {
+     "artifact_id": "art_0822c5f30f46",
+     "revision_id": "rev_bcd2054bafef"
+    }
+   },
+   "error": null,
+   "logs": [],
+   "approval": null
+  },
+  {
+   "node_id": "wb",
+   "node_type": "agent",
+   "status": "succeeded",
+   "attempts": 1,
+   "started_at": "2026-10-08T22:02:03.456+00:00",
+   "finished_at": "2026-10-08T22:03:21.427+00:00",
+   "units": [
+    {
+     "unit": "artifact:art_0822c5f30f46#workbook",
+     "status": "succeeded",
+     "fingerprint": "d405f65061efeeef55b25b1dbcac1b98137a29fb014b1337d7229e1b35ba15fd",
+     "previous_fingerprint": null,
+     "reason": "never executed",
+     "context_id": "ctx_2185312b1dfd",
+     "plan": {
+      "provider": "heuristic",
+      "model": "heuristic-v1",
+      "deterministic": true,
+      "operations": [
+       {
+        "op": "rename_sheet",
+        "component_id": "sheet1",
+        "params": {
+         "title": "Data"
+        },
+        "derived_from": [
+         "bind_cf1ff619de45"
+        ],
+        "rationale": ""
+       },
+       {
+        "op": "add_sheet",
+        "component_id": null,
+        "params": {
+         "id": "summary",
+         "title": "Summary"
+        },
+        "derived_from": [
+         "bind_cf1ff619de45"
+        ],
+        "rationale": ""
+       },
+       {
+        "op": "write_range",
+        "component_id": "sheet1",
+        "params": {
+         "start": "A1",
+         "values": [
+          [
+           "year",
+           "CO2 (ppm)",
+           "Change"
+          ],
+          [
+           1959,
+           315.98,
+           null
+          ],
+          [
+           1960,
+           316.91,
+           "=B3-B2"
+          ],
+          [
+           1961,
+           317.64,
+           "=B4-B3"
+          ],
+          [
+           1962,
+           318.45,
+           "=B5-B4"
+          ],
+          [
+           1963,
+           318.99,
+           "=B6-B5"
+          ],
+          [
+           1964,
+           319.62,
+           "=B7-B6"
+          ],
+          [
+           1965,
+           320.04,
+           "=B8-B7"
+          ],
+          [
+           1966,
+           321.37,
+           "=B9-B8"
+          ],
+          [
+           1967,
+           322.18,
+           "=B10-B9"
+          ],
+          [
+           1968,
+           323.05,
+           "=B11-B10"
+          ],
+          [
+           1969,
+           324.62,
+           "=B12-B11"
+          ],
+          [
+           1970,
+           325.68,
+           "=B13-B12"
+          ],
+          [
+           1971,
+           326.32,
+           "=B14-B13"
+          ],
+          [
+           1972,
+           327.46,
+           "=B15-B14"
+          ],
+          [
+           1973,
+           329.68,
+           "=B16-B15"
+          ],
+          [
+           1974,
+           330.19,
+           "=B17-B16"
+          ],
+          [
+           1975,
+           331.13,
+           "=B18-B17"
+          ],
+          [
+           1976,
+           332.03,
+           "=B19-B18"
+          ],
+          [
+           1977,
+           333.84,
+           "=B20-B19"
+          ],
+          [
+           1978,
+           335.41,
+           "=B21-B20"
+          ],
+          [
+           1979,
+           336.84,
+           "=B22-B21"
+          ],
+          [
+           1980,
+           338.76,
+           "=B23-B22"
+          ],
+          [
+           1981,
+           340.12,
+           "=B24-B23"
+          ],
+          [
+           1982,
+           341.48,
+           "=B25-B24"
+          ],
+          [
+           1983,
+           343.15,
+           "=B26-B25"
+          ],
+          [
+           1984,
+           344.87,
+           "=B27-B26"
+          ],
+          [
+           1985,
+           346.35,
+           "=B28-B27"
+          ],
+          [
+           1986,
+           347.61,
+           "=B29-B28"
+          ],
+          [
+           1987,
+           349.31,
+           "=B30-B29"
+          ],
+          [
+           1988,
+           351.69,
+           "=B31-B30"
+          ],
+          [
+           1989,
+           353.2,
+           "=B32-B31"
+          ],
+          [
+           1990,
+           354.45,
+           "=B33-B32"
+          ],
+          [
+           1991,
+           355.7,
+           "=B34-B33"
+          ],
+          [
+           1992,
+           356.54,
+           "=B35-B34"
+          ],
+          [
+           1993,
+           357.21,
+           "=B36-B35"
+          ],
+          [
+           1994,
+           358.96,
+           "=B37-B36"
+          ],
+          [
+           1995,
+           360.97,
+           "=B38-B37"
+          ],
+          [
+           1996,
+           362.74,
+           "=B39-B38"
+          ],
+          [
+           1997,
+           363.88,
+           "=B40-B39"
+          ],
+          [
+           1998,
+           366.84,
+           "=B41-B40"
+          ],
+          [
+           1999,
+           368.54,
+           "=B42-B41"
+          ],
+          [
+           2000,
+           369.71,
+           "=B43-B42"
+          ],
+          [
+           2001,
+           371.32,
+           "=B44-B43"
+          ],
+          [
+           2002,
+           373.45,
+           "=B45-B44"
+          ],
+          [
+           2003,
+           375.98,
+           "=B46-B45"
+          ],
+          [
+           2004,
+           377.7,
+           "=B47-B46"
+          ],
+          [
+           2005,
+           379.98,
+           "=B48-B47"
+          ],
+          [
+           2006,
+           382.09,
+           "=B49-B48"
+          ],
+          [
+           2007,
+           384.02,
+           "=B50-B49"
+          ],
+          [
+           2008,
+           385.83,
+           "=B51-B50"
+          ],
+          [
+           2009,
+           387.64,
+           "=B52-B51"
+          ],
+          [
+           2010,
+           390.1,
+           "=B53-B52"
+          ],
+          [
+           2011,
+           391.85,
+           "=B54-B53"
+          ],
+          [
+           2012,
+           394.06,
+           "=B55-B54"
+          ],
+          [
+           2013,
+           396.74,
+           "=B56-B55"
+          ],
+          [
+           2014,
+           398.81,
+           "=B57-B56"
+          ],
+          [
+           2015,
+           401.01,
+           "=B58-B57"
+          ],
+          [
+           2016,
+           404.41,
+           "=B59-B58"
+          ],
+          [
+           2017,
+           406.76,
+           "=B60-B59"
+          ],
+          [
+           2018,
+           408.72,
+           "=B61-B60"
+          ],
+          [
+           2019,
+           411.65,
+           "=B62-B61"
+          ],
+          [
+           2020,
+           414.21,
+           "=B63-B62"
+          ],
+          [
+           2021,
+           416.41,
+           "=B64-B63"
+          ],
+          [
+           2022,
+           418.53,
+           "=B65-B64"
+          ],
+          [
+           2023,
+           421.08,
+           "=B66-B65"
+          ],
+          [
+           2024,
+           424.61,
+           "=B67-B66"
+          ],
+          [
+           2025,
+           427.35,
+           "=B68-B67"
+          ]
+         ]
+        },
+        "derived_from": [
+         "bind_cf1ff619de45"
+        ],
+        "rationale": "cleaned data from 'co2_annmean_mlo.csv': 67 rows, 0 dropped (missing/non-numeric/negative)"
+       },
+       {
+        "op": "format_range",
+        "component_id": "sheet1",
+        "params": {
+         "range": "A1:C1",
+         "bold": true,
+         "fill": "#dbe5f1",
+         "column_widths": {
+          "A": 10,
+          "B": 14,
+          "C": 12
+         }
+        },
+        "derived_from": [
+         "bind_cf1ff619de45"
+        ],
+        "rationale": ""
+       },
+       {
+        "op": "format_range",
+        "component_id": "sheet1",
+        "params": {
+         "range": "B2:C68",
+         "number_format": "0.00"
+        },
+        "derived_from": [
+         "bind_cf1ff619de45"
+        ],
+        "rationale": ""
+       },
+       {
+        "op": "define_name",
+        "component_id": null,
+        "params": {
+         "id": "dataset",
+         "name": "Dataset",
+         "sheet": "sheet1",
+         "ref": "A1:C68"
+        },
+        "derived_from": [
+         "bind_cf1ff619de45"
+        ],
+        "rationale": ""
+       },
+       {
+        "op": "add_table",
+        "component_id": null,
+        "params": {
+         "id": "data_table",
+         "name": "DataTable",
+         "sheet": "sheet1",
+         "ref": "A1:C68"
+        },
+        "derived_from": [
+         "bind_cf1ff619de45"
+        ],
+        "rationale": ""
+       },
+       {
+        "op": "add_chart",
+        "component_id": null,
+        "params": {
+         "id": "trend_chart",
+         "sheet": "sheet1",
+         "type": "line",
+         "data": "B1:B68",
+         "categories": "A2:A68",
+         "anchor": "E2",
+         "title": "CO2 (ppm) by year",
+         "x_title": "year",
+         "y_title": "CO2 (ppm)"
+        },
+        "derived_from": [
+         "bind_cf1ff619de45"
+        ],
+        "rationale": ""
+       },
+       {
+        "op": "write_range",
+        "component_id": "summary",
+        "params": {
+         "start": "A1",
+         "values": [
+          [
+           "Decade",
+           "Mean CO2 (ppm)",
+           "Change vs previous decade"
+          ],
+          [
+           "1950s",
+           "=AVERAGEIFS(Data!$B$2:$B$68,Data!$A$2:$A$68,\">=1950\",Data!$A$2:$A$68,\"<1960\")",
+           null
+          ],
+          [
+           "1960s",
+           "=AVERAGEIFS(Data!$B$2:$B$68,Data!$A$2:$A$68,\">=1960\",Data!$A$2:$A$68,\"<1970\")",
+           "=B3-B2"
+          ],
+          [
+           "1970s",
+           "=AVERAGEIFS(Data!$B$2:$B$68,Data!$A$2:$A$68,\">=1970\",Data!$A$2:$A$68,\"<1980\")",
+           "=B4-B3"
+          ],
+          [
+           "1980s",
+           "=AVERAGEIFS(Data!$B$2:$B$68,Data!$A$2:$A$68,\">=1980\",Data!$A$2:$A$68,\"<1990\")",
+           "=B5-B4"
+          ],
+          [
+           "1990s",
+           "=AVERAGEIFS(Data!$B$2:$B$68,Data!$A$2:$A$68,\">=1990\",Data!$A$2:$A$68,\"<2000\")",
+           "=B6-B5"
+          ],
+          [
+           "2000s",
+           "=AVERAGEIFS(Data!$B$2:$B$68,Data!$A$2:$A$68,\">=2000\",Data!$A$2:$A$68,\"<2010\")",
+           "=B7-B6"
+          ],
+          [
+           "2010s",
+           "=AVERAGEIFS(Data!$B$2:$B$68,Data!$A$2:$A$68,\">=2010\",Data!$A$2:$A$68,\"<2020\")",
+           "=B8-B7"
+          ],
+          [
+           "2020s",
+           "=AVERAGEIFS(Data!$B$2:$B$68,Data!$A$2:$A$68,\">=2020\",Data!$A$2:$A$68,\"<2030\")",
+           "=B9-B8"
+          ]
+         ]
+        },
+        "derived_from": [
+         "bind_cf1ff619de45"
+        ],
+        "rationale": "decade means computed by formulas"
+       },
+       {
+        "op": "format_range",
+        "component_id": "summary",
+        "params": {
+         "range": "A1:C1",
+         "bold": true,
+         "fill": "#dbe5f1",
+         "column_widths": {
+          "A": 10,
+          "B": 16,
+          "C": 24
+         }
+        },
+        "derived_from": [
+         "bind_cf1ff619de45"
+        ],
+        "rationale": ""
+       },
+       {
+        "op": "format_range",
+        "component_id": "summary",
+        "params": {
+         "range": "B2:C9",
+         "number_format": "0.00"
+        },
+        "derived_from": [
+         "bind_cf1ff619de45"
+        ],
+        "rationale": ""
+       },
+       {
+        "op": "define_name",
+        "component_id": null,
+        "params": {
+         "id": "summary_values",
+         "name": "SummaryValues",
+         "sheet": "summary",
+         "ref": "A1:C9"
+        },
+        "derived_from": [
+         "bind_cf1ff619de45"
+        ],
+        "rationale": ""
+       },
+       {
+        "op": "define_name",
+        "component_id": null,
+        "params": {
+         "id": "decade_means",
+         "name": "DecadeMeans",
+         "sheet": "summary",
+         "ref": "A1:B9"
+        },
+        "derived_from": [
+         "bind_cf1ff619de45"
+        ],
+        "rationale": ""
+       },
+       {
+        "op": "add_chart",
+        "component_id": null,
+        "params": {
+         "id": "decade_chart",
+         "sheet": "summary",
+         "type": "column",
+         "data": "B1:B9",
+         "categories": "A2:A9",
+         "anchor": "E2",
+         "title": "Mean CO2 (ppm) by decade",
+         "y_title": "CO2 (ppm)"
+        },
+        "derived_from": [
+         "bind_cf1ff619de45"
+        ],
+        "rationale": ""
+       }
+      ],
+      "interpretations": {
+       "bind_cf1ff619de45": "reference: contents used by recipe 'analysis workbook'"
+      },
+      "notes": [
+       "deterministic recipe 'analysis workbook' (heuristic provider): cleaning, formulas and charts follow a fixed template parameterised by the bound data",
+       "value column: 'CO2 (ppm)', 67 clean rows, 8 decades"
+      ],
+      "warnings": [],
+      "usage": {},
+      "recorded": false
+     },
+     "error": null
+    }
+   ],
+   "outputs": {
+    "revision": {
+     "artifact_id": "art_0822c5f30f46",
+     "revision_id": "rev_bf2dc0da26b4",
+     "changed": true,
+     "revision_number": 2
+    },
+    "execution": {
+     "target": "cloud_cpu",
+     "decisions": {
+      "spreadsheet": {
+       "requested": "cloud_cpu",
+       "resolved": "cloud_cpu",
+       "reason": "worker 'steady' offers it"
+      }
+     },
+     "jobs": [
+      {
+       "job_id": "job_e7585ade7d0f",
+       "method": "inspect",
+       "adapter": "spreadsheet",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_058b403dfa40",
+       "attempts": 1,
+       "seconds": 25.076
+      },
+      {
+       "job_id": "job_e7585ade7d0f",
+       "method": "inspect",
+       "adapter": "spreadsheet",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_058b403dfa40",
+       "attempts": 1,
+       "seconds": 25.076
+      },
+      {
+       "job_id": "job_9f6e7fdd77e9",
+       "method": "apply",
+       "adapter": "spreadsheet",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_058b403dfa40",
+       "attempts": 1,
+       "seconds": 25.081
+      },
+      {
+       "job_id": "job_de87fec8c5ea",
+       "method": "inspect",
+       "adapter": "spreadsheet",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 0.517
+      },
+      {
+       "job_id": "job_bbcec72cec2a",
+       "method": "validate",
+       "adapter": "spreadsheet",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 2,
+       "seconds": 2.008
+      },
+      {
+       "job_id": "job_a4ed057e4055",
+       "method": "preview",
+       "adapter": "spreadsheet",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 2.635
+      },
+      {
+       "job_id": "job_0107a1971b97",
+       "method": "diff",
+       "adapter": "spreadsheet",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 0.515
+      }
+     ]
+    }
+   },
+   "error": null,
+   "logs": [
+    "2026-10-08T22:02:03.660+00:00 job job_e7585ade7d0f leased on wkr_058b403dfa40",
+    "2026-10-08T22:02:28.780+00:00 job job_e7585ade7d0f succeeded on wkr_058b403dfa40",
+    "2026-10-08T22:02:28.808+00:00 planned 14 op(s) for artifact:art_0822c5f30f46#workbook via heuristic",
+    "2026-10-08T22:02:28.823+00:00 job job_e7585ade7d0f leased on wkr_058b403dfa40",
+    "2026-10-08T22:02:28.830+00:00 job job_e7585ade7d0f succeeded on wkr_058b403dfa40",
+    "2026-10-08T22:02:28.839+00:00 checkpoint saved (artifacts/art_0822c5f30f46/checkpoints/exe_c59d804306c7_wb)",
+    "2026-10-08T22:02:29.055+00:00 job job_9f6e7fdd77e9 leased on wkr_058b403dfa40",
+    "2026-10-08T22:02:37.491+00:00 restored checkpoint after interruption",
+    "2026-10-08T22:02:37.491+00:00 control plane restarted while this node ran; resuming (remote jobs are reused by idempotency key)",
+    "2026-10-08T22:02:37.730+00:00 job job_e7585ade7d0f leased on wkr_058b403dfa40",
+    "2026-10-08T22:02:37.732+00:00 job job_e7585ade7d0f succeeded on wkr_058b403dfa40",
+    "2026-10-08T22:02:37.773+00:00 planned 14 op(s) for artifact:art_0822c5f30f46#workbook via heuristic",
+    "2026-10-08T22:02:37.795+00:00 job job_e7585ade7d0f leased on wkr_058b403dfa40",
+    "2026-10-08T22:02:37.803+00:00 job job_e7585ade7d0f succeeded on wkr_058b403dfa40",
+    "2026-10-08T22:02:37.821+00:00 checkpoint saved (artifacts/art_0822c5f30f46/checkpoints/exe_c59d804306c7_wb)",
+    "2026-10-08T22:02:37.836+00:00 job job_9f6e7fdd77e9 leased on wkr_058b403dfa40",
+    "2026-10-08T22:02:54.130+00:00 job job_9f6e7fdd77e9 succeeded on wkr_058b403dfa40",
+    "2026-10-08T22:02:54.240+00:00 job job_de87fec8c5ea leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:02:54.747+00:00 job job_de87fec8c5ea succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:02:54.854+00:00 job job_bbcec72cec2a leased on wkr_058b403dfa40",
+    "2026-10-08T22:03:15.443+00:00 job job_bbcec72cec2a retry: lease expired: worker wkr_058b403dfa40 stopped heartbeating (attempt 1)",
+    "2026-10-08T22:03:15.645+00:00 job job_bbcec72cec2a leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:17.654+00:00 job job_bbcec72cec2a succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:17.971+00:00 job job_a4ed057e4055 leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:20.602+00:00 job job_a4ed057e4055 succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:20.812+00:00 job job_0107a1971b97 leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:21.420+00:00 job job_0107a1971b97 succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:21.426+00:00 revision 2 of 'CO2 analysis' recorded; changed ['data_table', 'dataset', 'decade_chart', 'decade_means', 'sheet1', 'summary', 'summary_values', 'trend_chart', 'workbook']"
+   ],
+   "approval": null
+  },
+  {
+   "node_id": "a_doc",
+   "node_type": "artifact",
+   "status": "succeeded",
+   "attempts": 0,
+   "started_at": "2026-10-08T22:02:03.453+00:00",
+   "finished_at": "2026-10-08T22:02:03.454+00:00",
+   "units": [],
+   "outputs": {
+    "artifact": {
+     "artifact_id": "art_fdd4694f592c",
+     "revision_id": "rev_f260c4ba8018"
+    }
+   },
+   "error": null,
+   "logs": [],
+   "approval": null
+  },
+  {
+   "node_id": "doc",
+   "node_type": "agent",
+   "status": "succeeded",
+   "attempts": 1,
+   "started_at": "2026-10-08T22:03:21.428+00:00",
+   "finished_at": "2026-10-08T22:03:28.955+00:00",
+   "units": [
+    {
+     "unit": "artifact:art_fdd4694f592c#document",
+     "status": "succeeded",
+     "fingerprint": "f7fd630f38afdbe3bdc9d3849e781986ee40d99249d1b90c6e5085c85008b1e5",
+     "previous_fingerprint": null,
+     "reason": "never executed",
+     "context_id": "ctx_681012229ae1",
+     "plan": {
+      "provider": "heuristic",
+      "model": "heuristic-v1",
+      "deterministic": true,
+      "operations": [
+       {
+        "op": "add_heading",
+        "component_id": null,
+        "params": {
+         "id": "summary",
+         "text": "Summary",
+         "level": 1,
+         "parent": "document"
+        },
+        "derived_from": [
+         "bind_a3ce4c2b5342"
+        ],
+        "rationale": ""
+       },
+       {
+        "op": "add_paragraph",
+        "component_id": null,
+        "params": {
+         "id": "summary_text",
+         "parent": "summary",
+         "text": "These notes accompany the annual mean carbon dioxide record from Mauna Loa Observatory, Hawaii. The record is the longest continuous series of direct atmospheric CO2 measurements and is widely used as a reference for the background concentration of the Northern Hemisphere."
+        },
+        "derived_from": [
+         "bind_a3ce4c2b5342"
+        ],
+        "rationale": "quoted from 'research_notes.md'"
+       },
+       {
+        "op": "add_heading",
+        "component_id": null,
+        "params": {
+         "id": "data_method",
+         "text": "Data and method",
+         "level": 1
+        },
+        "derived_from": [
+         "bind_a3ce4c2b5342"
+        ],
+        "rationale": ""
+       },
+       {
+        "op": "add_paragraph",
+        "component_id": null,
+        "params": {
+         "id": "data_method_text",
+         "parent": "data_method",
+         "text": "The annual means are published by the NOAA Global Monitoring Laboratory. Values are expressed as a mole fraction in dry air in parts per million (ppm). Data from March 1958 through April 1974 were obtained by C. David Keeling of the Scripps Institution of Oceanography. The values for the most recent year are provisional and can change after recalibration of the reference gases. All figures in this report are computed in the linked analysis workbook; tables and charts update when the workbook changes."
+        },
+        "derived_from": [
+         "bind_a3ce4c2b5342"
+        ],
+        "rationale": ""
+       },
+       {
+        "op": "add_heading",
+        "component_id": null,
+        "params": {
+         "id": "results",
+         "text": "Results",
+         "level": 1
+        },
+        "derived_from": [
+         "bind_a3ce4c2b5342"
+        ],
+        "rationale": ""
+       },
+       {
+        "op": "add_paragraph",
+        "component_id": null,
+        "params": {
+         "id": "results_text",
+         "parent": "results",
+         "text": "(filled from the workbook by a dependency)"
+        },
+        "derived_from": [
+         "bind_a3ce4c2b5342"
+        ],
+        "rationale": ""
+       },
+       {
+        "op": "add_heading",
+        "component_id": null,
+        "params": {
+         "id": "discussion",
+         "text": "Discussion",
+         "level": 1
+        },
+        "derived_from": [
+         "bind_a3ce4c2b5342"
+        ],
+        "rationale": ""
+       },
+       {
+        "op": "add_paragraph",
+        "component_id": null,
+        "params": {
+         "id": "discussion_p1",
+         "parent": "discussion",
+         "text": "The analysis in this report is limited to describing the published annual means and their decade averages; it does not attempt attribution or projection."
+        },
+        "derived_from": [
+         "bind_a3ce4c2b5342"
+        ],
+        "rationale": "quoted from 'research_notes.md'"
+       },
+       {
+        "op": "add_paragraph",
+        "component_id": null,
+        "params": {
+         "id": "discussion_p2",
+         "parent": "discussion",
+         "text": "Readers should note the gap in on-site measurements after the eruption of Mauna Loa in late November 2022: observations from December 2022 to July 2023 come from the Maunakea Observatories, about 21 miles to the north."
+        },
+        "derived_from": [
+         "bind_a3ce4c2b5342"
+        ],
+        "rationale": "quoted from 'research_notes.md'"
+       },
+       {
+        "op": "add_heading",
+        "component_id": null,
+        "params": {
+         "id": "references",
+         "text": "References",
+         "level": 1
+        },
+        "derived_from": [
+         "bind_a3ce4c2b5342"
+        ],
+        "rationale": ""
+       },
+       {
+        "op": "add_paragraph",
+        "component_id": null,
+        "params": {
+         "id": "ref_1",
+         "parent": "references",
+         "style": "List Number",
+         "text": "research_notes.md (text; used as reference)"
+        },
+        "derived_from": [
+         "bind_a3ce4c2b5342"
+        ],
+        "rationale": ""
+       }
+      ],
+      "interpretations": {
+       "bind_a3ce4c2b5342": "reference: contents used by recipe 'report'"
+      },
+      "notes": [
+       "deterministic recipe 'report' (heuristic provider): sections are arranged from quoted source paragraphs; no prose is generated"
+      ],
+      "warnings": [],
+      "usage": {},
+      "recorded": false
+     },
+     "error": null
+    }
+   ],
+   "outputs": {
+    "revision": {
+     "artifact_id": "art_fdd4694f592c",
+     "revision_id": "rev_6a94a1ff5001",
+     "changed": true,
+     "revision_number": 2
+    },
+    "execution": {
+     "target": "cloud_cpu",
+     "decisions": {
+      "document": {
+       "requested": "cloud_cpu",
+       "resolved": "cloud_cpu",
+       "reason": "worker 'steady' offers it"
+      }
+     },
+     "jobs": [
+      {
+       "job_id": "job_ff53bd0a0b37",
+       "method": "inspect",
+       "adapter": "document",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 0.507
+      },
+      {
+       "job_id": "job_ff53bd0a0b37",
+       "method": "inspect",
+       "adapter": "document",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 0.507
+      },
+      {
+       "job_id": "job_4841c8c21ace",
+       "method": "apply",
+       "adapter": "document",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 0.507
+      },
+      {
+       "job_id": "job_c7e2f7abc791",
+       "method": "inspect",
+       "adapter": "document",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 0.503
+      },
+      {
+       "job_id": "job_877eb3941d8d",
+       "method": "validate",
+       "adapter": "document",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 1.912
+      },
+      {
+       "job_id": "job_68e8ed839c9d",
+       "method": "preview",
+       "adapter": "document",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 1.912
+      },
+      {
+       "job_id": "job_622be37625ef",
+       "method": "diff",
+       "adapter": "document",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 0.606
+      }
+     ]
+    }
+   },
+   "error": null,
+   "logs": [
+    "2026-10-08T22:03:21.632+00:00 job job_ff53bd0a0b37 leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:22.139+00:00 job job_ff53bd0a0b37 succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:22.148+00:00 planned 11 op(s) for artifact:art_fdd4694f592c#document via heuristic",
+    "2026-10-08T22:03:22.151+00:00 job job_ff53bd0a0b37 leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:22.152+00:00 job job_ff53bd0a0b37 succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:22.154+00:00 checkpoint saved (artifacts/art_fdd4694f592c/checkpoints/exe_c59d804306c7_doc)",
+    "2026-10-08T22:03:22.358+00:00 job job_4841c8c21ace leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:22.964+00:00 job job_4841c8c21ace succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:23.172+00:00 job job_c7e2f7abc791 leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:23.691+00:00 job job_c7e2f7abc791 succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:23.997+00:00 job job_877eb3941d8d leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:25.909+00:00 job job_877eb3941d8d succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:26.116+00:00 job job_68e8ed839c9d leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:28.027+00:00 job job_68e8ed839c9d succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:28.336+00:00 job job_622be37625ef leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:28.948+00:00 job job_622be37625ef succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:28.954+00:00 revision 2 of 'CO2 report' recorded; changed ['data_method', 'data_method_text', 'discussion', 'discussion_p1', 'discussion_p2', 'ref_1', 'references', 'results', 'results_text', 'summary', 'summary_text']"
+   ],
+   "approval": null
+  },
+  {
+   "node_id": "a_deck",
+   "node_type": "artifact",
+   "status": "succeeded",
+   "attempts": 0,
+   "started_at": "2026-10-08T22:02:03.455+00:00",
+   "finished_at": "2026-10-08T22:02:03.455+00:00",
+   "units": [],
+   "outputs": {
+    "artifact": {
+     "artifact_id": "art_58cde5d7240b",
+     "revision_id": "rev_59036184fc96"
+    }
+   },
+   "error": null,
+   "logs": [],
+   "approval": null
+  },
+  {
+   "node_id": "deck",
+   "node_type": "agent",
+   "status": "succeeded",
+   "attempts": 1,
+   "started_at": "2026-10-08T22:03:28.956+00:00",
+   "finished_at": "2026-10-08T22:03:37.135+00:00",
+   "units": [
+    {
+     "unit": "artifact:art_58cde5d7240b#presentation",
+     "status": "succeeded",
+     "fingerprint": "9f768fdf5cbeb814d5ccfc3418758ac364c93a001c40ab44397ffb51502a5b1a",
+     "previous_fingerprint": null,
+     "reason": "never executed",
+     "context_id": "ctx_26550d41084d",
+     "plan": {
+      "provider": "heuristic",
+      "model": "heuristic-v1",
+      "deterministic": true,
+      "operations": [
+       {
+        "op": "apply_theme",
+        "component_id": "presentation",
+        "params": {
+         "background": "#ffffff",
+         "title_color": "#0b3d5c",
+         "body_color": "#333333",
+         "accent": "#e07a1f",
+         "title_font": "Georgia",
+         "body_font": "Calibri"
+        },
+        "derived_from": [
+         "bind_9bfdc5db9137",
+         "bind_bbaca43d4f6d"
+        ],
+        "rationale": "theme from the bound design guide"
+       },
+       {
+        "op": "add_slide",
+        "component_id": null,
+        "params": {
+         "id": "title_slide",
+         "layout": "title",
+         "title": "CO2",
+         "subtitle": "Research analysis"
+        },
+        "derived_from": [
+         "bind_9bfdc5db9137",
+         "bind_bbaca43d4f6d"
+        ],
+        "rationale": ""
+       },
+       {
+        "op": "add_slide",
+        "component_id": null,
+        "params": {
+         "id": "data_slide",
+         "layout": "title_only",
+         "title": "What the data shows"
+        },
+        "derived_from": [
+         "bind_9bfdc5db9137",
+         "bind_bbaca43d4f6d"
+        ],
+        "rationale": ""
+       },
+       {
+        "op": "add_slide",
+        "component_id": null,
+        "params": {
+         "id": "findings",
+         "layout": "title_content",
+         "title": "Key findings"
+        },
+        "derived_from": [
+         "bind_9bfdc5db9137",
+         "bind_bbaca43d4f6d"
+        ],
+        "rationale": ""
+       },
+       {
+        "op": "add_slide",
+        "component_id": null,
+        "params": {
+         "id": "sources_slide",
+         "layout": "title_only",
+         "title": "Sources"
+        },
+        "derived_from": [
+         "bind_9bfdc5db9137",
+         "bind_bbaca43d4f6d"
+        ],
+        "rationale": ""
+       },
+       {
+        "op": "add_textbox",
+        "component_id": null,
+        "params": {
+         "id": "sources_list",
+         "slide": "sources_slide",
+         "box": [
+          0.08,
+          0.25,
+          0.84,
+          0.6
+         ],
+         "paragraphs": [
+          "visual_guide.md \u2014 guideline",
+          "research_notes.md \u2014 context"
+         ],
+         "size_pt": 16
+        },
+        "derived_from": [
+         "bind_9bfdc5db9137",
+         "bind_bbaca43d4f6d"
+        ],
+        "rationale": ""
+       },
+       {
+        "op": "add_shape",
+        "component_id": null,
+        "params": {
+         "id": "accent_bar",
+         "slide": "title_slide",
+         "box": [
+          0.0,
+          0.92,
+          1.0,
+          0.04
+         ],
+         "shape": "rectangle",
+         "fill": "#e07a1f"
+        },
+        "derived_from": [
+         "bind_9bfdc5db9137",
+         "bind_bbaca43d4f6d"
+        ],
+        "rationale": ""
+       }
+      ],
+      "interpretations": {
+       "bind_9bfdc5db9137": "guideline: contents used by recipe 'deck'",
+       "bind_bbaca43d4f6d": "context: contents used by recipe 'deck'"
+      },
+      "notes": [
+       "deterministic recipe 'deck' (heuristic provider): fixed slide structure; theme from the design guide: {'background': '#ffffff', 'title_color': '#0b3d5c', 'body_color': '#333333', 'accent': '#e07a1f', 'title_font': 'Georgia', 'body_font': 'Calibri'}"
+      ],
+      "warnings": [],
+      "usage": {},
+      "recorded": false
+     },
+     "error": null
+    }
+   ],
+   "outputs": {
+    "revision": {
+     "artifact_id": "art_58cde5d7240b",
+     "revision_id": "rev_15099eea0a14",
+     "changed": true,
+     "revision_number": 2
+    },
+    "execution": {
+     "target": "cloud_cpu",
+     "decisions": {
+      "presentation": {
+       "requested": "cloud_cpu",
+       "resolved": "cloud_cpu",
+       "reason": "worker 'steady' offers it"
+      }
+     },
+     "jobs": [
+      {
+       "job_id": "job_ee4e1548230e",
+       "method": "inspect",
+       "adapter": "presentation",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 0.511
+      },
+      {
+       "job_id": "job_ee4e1548230e",
+       "method": "inspect",
+       "adapter": "presentation",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 0.511
+      },
+      {
+       "job_id": "job_b2769d66bf67",
+       "method": "apply",
+       "adapter": "presentation",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 0.603
+      },
+      {
+       "job_id": "job_d4fe4d061217",
+       "method": "inspect",
+       "adapter": "presentation",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 0.503
+      },
+      {
+       "job_id": "job_44c0c277988f",
+       "method": "validate",
+       "adapter": "presentation",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 2.011
+      },
+      {
+       "job_id": "job_73b6faf6b520",
+       "method": "preview",
+       "adapter": "presentation",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 2.309
+      },
+      {
+       "job_id": "job_7589eccb39fa",
+       "method": "diff",
+       "adapter": "presentation",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 0.615
+      }
+     ]
+    }
+   },
+   "error": null,
+   "logs": [
+    "2026-10-08T22:03:29.160+00:00 job job_ee4e1548230e leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:29.665+00:00 job job_ee4e1548230e succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:29.674+00:00 planned 7 op(s) for artifact:art_58cde5d7240b#presentation via heuristic",
+    "2026-10-08T22:03:29.677+00:00 job job_ee4e1548230e leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:29.679+00:00 job job_ee4e1548230e succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:29.686+00:00 checkpoint saved (artifacts/art_58cde5d7240b/checkpoints/exe_c59d804306c7_deck)",
+    "2026-10-08T22:03:29.991+00:00 job job_b2769d66bf67 leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:30.596+00:00 job job_b2769d66bf67 succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:30.803+00:00 job job_d4fe4d061217 leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:31.307+00:00 job job_d4fe4d061217 succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:31.613+00:00 job job_44c0c277988f leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:33.626+00:00 job job_44c0c277988f succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:33.832+00:00 job job_73b6faf6b520 leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:36.243+00:00 job job_73b6faf6b520 succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:36.478+00:00 job job_7589eccb39fa leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:37.091+00:00 job job_7589eccb39fa succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:37.126+00:00 revision 2 of 'CO2 briefing' recorded; changed ['accent_bar', 'data_slide', 'data_slide.title', 'findings', 'findings.body', 'findings.title', 'presentation', 'sources_list', 'sources_slide', 'sources_slide.title', 'title_slide', 'title_slide.body', 'title_slide.title']"
+   ],
+   "approval": null
+  },
+  {
+   "node_id": "deps",
+   "node_type": "dependencies",
+   "status": "succeeded",
+   "attempts": 0,
+   "started_at": "2026-10-08T22:03:37.142+00:00",
+   "finished_at": "2026-10-08T22:03:55.365+00:00",
+   "units": [],
+   "outputs": {
+    "revision": [
+     {
+      "artifact_id": "art_fdd4694f592c",
+      "revision_id": "rev_f4721d614c7a"
+     },
+     {
+      "artifact_id": "art_58cde5d7240b",
+      "revision_id": "rev_b51c30ebfa19"
+     }
+    ],
+    "report": {
+     "links": [
+      "dep_754fbe8a6d5e",
+      "dep_b23b2364210f"
+     ],
+     "status_before": {
+      "dep_754fbe8a6d5e": "never_synced",
+      "dep_b23b2364210f": "never_synced"
+     },
+     "sync": {
+      "checked": 2,
+      "updated": [
+       {
+        "id": "dep_754fbe8a6d5e",
+        "target": {
+         "artifact_id": "art_fdd4694f592c",
+         "component_id": "results_table"
+        },
+        "route": "values -> table rows"
+       },
+       {
+        "id": "dep_b23b2364210f",
+        "target": {
+         "artifact_id": "art_58cde5d7240b",
+         "component_id": "deck_chart"
+        },
+        "route": "values -> chart categories/series"
+       }
+      ],
+      "skipped": [],
+      "failed": [],
+      "revisions": [
+       {
+        "artifact_id": "art_fdd4694f592c",
+        "revision_id": "rev_f4721d614c7a",
+        "revision_number": 3,
+        "changed": [
+         "results_table"
+        ]
+       },
+       {
+        "artifact_id": "art_58cde5d7240b",
+        "revision_id": "rev_b51c30ebfa19",
+        "revision_number": 3,
+        "changed": [
+         "deck_chart"
+        ]
+       }
+      ]
+     },
+     "status_after": {
+      "dep_754fbe8a6d5e": "synced",
+      "dep_b23b2364210f": "synced"
+     }
+    },
+    "execution": {
+     "target": "cloud_cpu",
+     "decisions": {
+      "spreadsheet": {
+       "requested": "cloud_cpu",
+       "resolved": "cloud_cpu",
+       "reason": "worker 'steady' offers it"
+      },
+      "document": {
+       "requested": "cloud_cpu",
+       "resolved": "cloud_cpu",
+       "reason": "worker 'steady' offers it"
+      },
+      "presentation": {
+       "requested": "cloud_cpu",
+       "resolved": "cloud_cpu",
+       "reason": "worker 'steady' offers it"
+      }
+     },
+     "jobs": [
+      {
+       "job_id": "job_ec599f209ae4",
+       "method": "inspect",
+       "adapter": "spreadsheet",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 0.508
+      },
+      {
+       "job_id": "job_72e85823fc9e",
+       "method": "inspect",
+       "adapter": "document",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 0.507
+      },
+      {
+       "job_id": "job_9949d4243411",
+       "method": "inspect",
+       "adapter": "presentation",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 0.504
+      },
+      {
+       "job_id": "job_ec599f209ae4",
+       "method": "inspect",
+       "adapter": "spreadsheet",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 0.508
+      },
+      {
+       "job_id": "job_72e85823fc9e",
+       "method": "inspect",
+       "adapter": "document",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 0.507
+      },
+      {
+       "job_id": "job_9949d4243411",
+       "method": "inspect",
+       "adapter": "presentation",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 0.504
+      },
+      {
+       "job_id": "job_fd37ef77a0f7",
+       "method": "side_effect_scope",
+       "adapter": "document",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 0.403
+      },
+      {
+       "job_id": "job_72e85823fc9e",
+       "method": "inspect",
+       "adapter": "document",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 0.507
+      },
+      {
+       "job_id": "job_0fc5c5b75486",
+       "method": "apply",
+       "adapter": "document",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 0.506
+      },
+      {
+       "job_id": "job_cd01b5158f5d",
+       "method": "inspect",
+       "adapter": "document",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 0.508
+      },
+      {
+       "job_id": "job_fd8623c89bb0",
+       "method": "validate",
+       "adapter": "document",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 2.211
+      },
+      {
+       "job_id": "job_f3ef207bd845",
+       "method": "preview",
+       "adapter": "document",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 2.11
+      },
+      {
+       "job_id": "job_dc6f1161d8d9",
+       "method": "diff",
+       "adapter": "document",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 0.506
+      },
+      {
+       "job_id": "job_54393bae4c1a",
+       "method": "side_effect_scope",
+       "adapter": "presentation",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 0.403
+      },
+      {
+       "job_id": "job_9949d4243411",
+       "method": "inspect",
+       "adapter": "presentation",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 0.504
+      },
+      {
+       "job_id": "job_18dca662dd47",
+       "method": "apply",
+       "adapter": "presentation",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 0.506
+      },
+      {
+       "job_id": "job_b992e05784b0",
+       "method": "inspect",
+       "adapter": "presentation",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 0.61
+      },
+      {
+       "job_id": "job_c98710197e0e",
+       "method": "validate",
+       "adapter": "presentation",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 2.123
+      },
+      {
+       "job_id": "job_a79044b97f77",
+       "method": "preview",
+       "adapter": "presentation",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 2.205
+      },
+      {
+       "job_id": "job_f7c6ead19e4e",
+       "method": "diff",
+       "adapter": "presentation",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 0.507
+      },
+      {
+       "job_id": "job_ec599f209ae4",
+       "method": "inspect",
+       "adapter": "spreadsheet",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 0.508
+      },
+      {
+       "job_id": "job_cd01b5158f5d",
+       "method": "inspect",
+       "adapter": "document",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 0.508
+      },
+      {
+       "job_id": "job_b992e05784b0",
+       "method": "inspect",
+       "adapter": "presentation",
+       "requires": "cpu",
+       "state": "succeeded",
+       "worker_id": "wkr_4a3edfdd97d4",
+       "attempts": 1,
+       "seconds": 0.61
+      }
+     ]
+    }
+   },
+   "error": null,
+   "logs": [
+    "2026-10-08T22:03:37.154+00:00 link dep_754fbe8a6d5e: summary_values -> results_table",
+    "2026-10-08T22:03:37.166+00:00 link dep_b23b2364210f: decade_means -> deck_chart",
+    "2026-10-08T22:03:37.383+00:00 job job_ec599f209ae4 leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:37.892+00:00 job job_ec599f209ae4 succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:38.198+00:00 job job_72e85823fc9e leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:38.702+00:00 job job_72e85823fc9e succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:38.909+00:00 job job_9949d4243411 leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:39.412+00:00 job job_9949d4243411 succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:39.417+00:00 job job_ec599f209ae4 leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:39.418+00:00 job job_ec599f209ae4 succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:39.422+00:00 job job_72e85823fc9e leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:39.424+00:00 job job_72e85823fc9e succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:39.427+00:00 job job_9949d4243411 leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:39.428+00:00 job job_9949d4243411 succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:39.734+00:00 job job_fd37ef77a0f7 leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:40.138+00:00 job job_fd37ef77a0f7 succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:40.143+00:00 job job_72e85823fc9e leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:40.144+00:00 job job_72e85823fc9e succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:40.349+00:00 job job_0fc5c5b75486 leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:40.859+00:00 job job_0fc5c5b75486 succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:41.167+00:00 job job_cd01b5158f5d leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:41.671+00:00 job job_cd01b5158f5d succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:41.979+00:00 job job_fd8623c89bb0 leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:44.192+00:00 job job_fd8623c89bb0 succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:44.415+00:00 job job_f3ef207bd845 leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:46.533+00:00 job job_f3ef207bd845 succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:46.842+00:00 job job_dc6f1161d8d9 leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:47.346+00:00 job job_dc6f1161d8d9 succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:47.554+00:00 job job_54393bae4c1a leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:47.958+00:00 job job_54393bae4c1a succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:47.962+00:00 job job_9949d4243411 leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:47.963+00:00 job job_9949d4243411 succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:48.267+00:00 job job_18dca662dd47 leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:48.771+00:00 job job_18dca662dd47 succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:49.079+00:00 job job_b992e05784b0 leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:49.683+00:00 job job_b992e05784b0 succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:49.899+00:00 job job_c98710197e0e leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:52.113+00:00 job job_c98710197e0e succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:52.319+00:00 job job_a79044b97f77 leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:54.528+00:00 job job_a79044b97f77 succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:54.838+00:00 job job_f7c6ead19e4e leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:55.342+00:00 job job_f7c6ead19e4e succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:55.348+00:00 updated art_fdd4694f592c r3: results_table",
+    "2026-10-08T22:03:55.349+00:00 updated art_58cde5d7240b r3: deck_chart",
+    "2026-10-08T22:03:55.353+00:00 job job_ec599f209ae4 leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:55.354+00:00 job job_ec599f209ae4 succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:55.357+00:00 job job_cd01b5158f5d leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:55.359+00:00 job job_cd01b5158f5d succeeded on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:55.362+00:00 job job_b992e05784b0 leased on wkr_4a3edfdd97d4",
+    "2026-10-08T22:03:55.363+00:00 job job_b992e05784b0 succeeded on wkr_4a3edfdd97d4"
+   ],
+   "approval": null
+  }
+ ],
+ "error": null,
+ "selected_nodes": null,
+ "replay_of": null
+}

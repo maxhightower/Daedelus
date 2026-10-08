@@ -1,0 +1,53 @@
+[
+ {
+  "id": "wkr_ee82ed0f1c27",
+  "name": "3204ffcd7b72-1",
+  "capabilities": [
+   "cpu"
+  ],
+  "adapters": [
+   "code"
+  ],
+  "version": "0.1.0",
+  "last_seen": 1791496416.477562,
+  "registered_at": "2026-10-08T21:53:35.463+00:00",
+  "host": "3204ffcd7b72",
+  "draining": false,
+  "alive": true
+ },
+ {
+  "id": "wkr_9aabf911e912",
+  "name": "69e7c7fd65e7-1",
+  "capabilities": [
+   "cpu"
+  ],
+  "adapters": [
+   "blender",
+   "layered2d"
+  ],
+  "version": "0.1.0",
+  "last_seen": 1791496416.3949814,
+  "registered_at": "2026-10-08T21:53:35.637+00:00",
+  "host": "69e7c7fd65e7",
+  "draining": false,
+  "alive": true
+ },
+ {
+  "id": "wkr_55e08101ec2d",
+  "name": "c1c2a7481ba1-1",
+  "capabilities": [
+   "cpu"
+  ],
+  "adapters": [
+   "spreadsheet",
+   "document",
+   "presentation"
+  ],
+  "version": "0.1.0",
+  "last_seen": 1791496416.3299847,
+  "registered_at": "2026-10-08T21:53:35.823+00:00",
+  "host": "c1c2a7481ba1",
+  "draining": false,
+  "alive": true
+ }
+]
