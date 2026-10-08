@@ -8,6 +8,7 @@ import { ContextView } from "../components/ContextView";
 import { ApprovalBox, ExecutionView } from "../components/ExecutionView";
 import { NodeConfigForm } from "../components/NodeConfigForm";
 import { RevisionView } from "../components/RevisionView";
+import { ContextPackageView, LoopView, SourceUnderstanding, usageText } from "../components/SemanticView";
 import { useStudio } from "../state";
 import type { Artifact, CanvasItem, ResolvedContext, Revision, TargetSelector, Workflow, WorkflowNode } from "../types";
 
@@ -280,6 +281,7 @@ function SourceInspector({ sourceId }: { sourceId: string }) {
           </>
         )}
       </div>
+      <SourceUnderstanding sourceId={src.id} />
       <Section title={`Meanings & targets (${binds.length})`}>
         {binds.map((b) => (
           <Section key={b.id} title={`${b.role} → ${targetLabel(b.target, s.artifacts)}`} collapsed>
@@ -402,17 +404,46 @@ function OperationInspector({ item }: { item: CanvasItem }) {
       </Section>
       {node.type === "agent" && (
         <Section title="Dry run (plan without applying)" collapsed>
-          <button onClick={async () => setPreview(await s.run(api.preview(s.project!.id, wf.id, node.id, true)))}>Preview plan</button>
+          <button data-testid="preview-plan" onClick={async () => setPreview(await s.run(api.preview(s.project!.id, wf.id, node.id, true)))}>
+            Preview plan
+          </button>
+          <span className="muted small"> uses cached analyses only - previewing never triggers a paid analysis</span>
           {preview?.units.map((u: any) => (
-            <div key={u.unit} className="small">
+            <div key={u.unit} className="small preview-unit" data-testid="plan-preview">
               <b>{keyLabel(u.unit, s.artifacts)}</b> {u.stale ? <Badge tone="warn">stale</Badge> : <Badge>up to date</Badge>}
+              {u.plan && (
+                <div className="muted">
+                  planner {u.plan.provider}
+                  {u.plan.model ? ` (${u.plan.model})` : ""}
+                  {u.plan.deterministic ? " · deterministic" : ""}
+                  {u.plan.recorded ? " · fixture replay" : ""} · {usageText(u.plan.usage)}
+                </div>
+              )}
               {u.plan?.operations.map((o: any, i: number) => (
                 <div key={i}>
                   <code>{o.op}</code> {o.component_id} <code>{JSON.stringify(o.params).slice(0, 90)}</code>
+                  {o.rationale && <span className="muted"> — {o.rationale}</span>}
                 </div>
               ))}
+              {u.plan?.notes?.map((n: string, i: number) => (
+                <div key={i} className="muted">
+                  note: {n}
+                </div>
+              ))}
+              {u.errors?.length > 0 && <div className="error-box">rejected by validation: {u.errors.join("; ")}</div>}
+              {u.error && <div className="error-box">{u.error}</div>}
+              {u.semantic_context && Object.keys(u.semantic_context).length > 0 && (
+                <Section title="Context the planner received" collapsed>
+                  <ContextPackageView pkg={u.semantic_context} />
+                </Section>
+              )}
             </div>
           ))}
+        </Section>
+      )}
+      {runInfo?.outputs?.loop && (
+        <Section title="Evaluate → Revise loop (last run)">
+          <LoopView loop={runInfo.outputs.loop} />
         </Section>
       )}
       {runInfo && runInfo.units.length > 0 && (

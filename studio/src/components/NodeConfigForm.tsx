@@ -26,6 +26,18 @@ export function NodeConfigForm({ wf, node, onChange }: { wf: Workflow; node: Wor
       </div>
     );
   };
+  const providerSelect = (v: string | undefined, set: (v: string) => void, contract: string) => (
+    <select value={v ?? ""} onChange={(e) => set(e.target.value)} aria-label={contract === "analyze" ? "analysis provider" : "evaluator"}>
+      <option value="">same as planner</option>
+      {(health?.providers ?? [])
+        .filter((p) => !p.contracts || p.contracts.includes(contract))
+        .map((p) => (
+          <option key={p.name} value={p.name}>
+            {p.name} {p.available ? "" : `(unavailable: ${p.detail})`}
+          </option>
+        ))}
+    </select>
+  );
   const field = (k: string, sch: any) => {
     const v = cfg[k];
     if (k === "artifact_id")
@@ -50,6 +62,8 @@ export function NodeConfigForm({ wf, node, onChange }: { wf: Workflow; node: Wor
           ))}
         </select>
       );
+    if (k === "analysis_provider" || k === "evaluator")
+      return providerSelect(v, (val) => setCfg(k, val), k === "analysis_provider" ? "analyze" : "evaluate");
     if (k === "provider")
       return (
         <select value={v ?? ""} onChange={(e) => setCfg(k, e.target.value)}>
@@ -92,13 +106,24 @@ export function NodeConfigForm({ wf, node, onChange }: { wf: Workflow; node: Wor
       return <input type="number" className="num" value={v ?? ""} onChange={(e) => setCfg(k, e.target.value === "" ? undefined : +e.target.value)} />;
     if (sch.type === "object" && sch.properties)
       return (
-        <div className="row">
-          {Object.entries<any>(sch.properties).map(([sk]) => (
-            <label key={sk} className="inline">
-              {sk}{" "}
-              <input type="number" className="num" value={v?.[sk] ?? ""} onChange={(e) => setCfg(k, { ...(v ?? {}), [sk]: +e.target.value })} />
-            </label>
-          ))}
+        <div className="row wrap" data-testid={`cfg-${k}`}>
+          {Object.entries<any>(sch.properties).map(([sk, ss]) => {
+            const sv = v?.[sk];
+            const put = (val: any) => setCfg(k, { ...(v ?? {}), [sk]: val });
+            let input;
+            if (ss.type === "boolean") input = <input type="checkbox" aria-label={`${k} ${sk}`} checked={!!sv} onChange={(e) => put(e.target.checked)} />;
+            else if (ss.type === "number" || ss.type === "integer")
+              input = <input type="number" className="num" aria-label={`${k} ${sk}`} value={sv ?? ""} onChange={(e) => put(e.target.value === "" ? undefined : +e.target.value)} />;
+            else if (sk === "evaluator") input = providerSelect(sv, put, "evaluate");
+            else if (ss.type === "array")
+              input = <input aria-label={`${k} ${sk}`} value={(sv ?? []).join("; ")} placeholder="; separated" onChange={(e) => put(e.target.value.split(";").map((x) => x.trim()).filter(Boolean))} />;
+            else input = <input aria-label={`${k} ${sk}`} value={sv ?? ""} onChange={(e) => put(e.target.value)} />;
+            return (
+              <label key={sk} className="inline" title={ss.description}>
+                {sk.replace(/_/g, " ")} {input}
+              </label>
+            );
+          })}
         </div>
       );
     if (k === "instructions" || k === "message")

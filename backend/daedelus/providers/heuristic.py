@@ -119,6 +119,27 @@ class HeuristicProvider(Provider):
         return plan
 
     @staticmethod
+    def _region_aware(e: ResolvedEntry, req: PlanRequest) -> ResolvedEntry:
+        """A binding restricted to an image region uses the region's measured colours."""
+        seg = e.binding.segment
+        if seg is None or seg.kind != "region" or e.media_type != "image":
+            return e
+        pe = next((x for x in (req.semantic or {}).get("entries", [])
+                   if x["binding_id"] == e.binding.id), None)
+        if not pe or not pe.get("analysis") or pe["analysis"].get("provider") != "heuristic":
+            return e
+        cols = [o["value"]["hex"] for o in pe["observations"] if o["kind"] == "color"
+                and o["value"].get("hex") and not o["value"].get("foreground")]
+        fg = [o["value"]["hex"] for o in pe["observations"] if o["kind"] == "color"
+              and o["value"].get("foreground")]
+        if not cols:
+            return e
+        summary = {**e.summary, "dominant": cols[0], "palette": cols,
+                   "foreground_palette": fg, "silhouette": {"found": bool(fg)},
+                   "region": seg.region}
+        return e.model_copy(update={"summary": summary})
+
+    @staticmethod
     def _reduce_polys(pr: PlanRequest, cid: str, actual: float, limit: float, emit) -> None:
         """Lower detail on the largest polygon contributors (leaves of the unit) until the
         estimated total fits the budget: curve tessellation, then subdivision, then a bounded
@@ -167,7 +188,7 @@ class HeuristicProvider(Provider):
         kind = req.component.kind if req.component else "artifact"
         path = req.context.target_path
         entries = sorted(
-            [e for e in req.context.entries if e.applies],
+            [self._region_aware(e, req) for e in req.context.entries if e.applies],
             key=lambda e: (path.index(e.anchor) if e.anchor in path else 99, e.binding.priority))
         interp = _Interp()
         used: set[str] = set()
@@ -268,9 +289,10 @@ class HeuristicProvider(Provider):
         mt = e.media_type
         if mt == "image":
             sil = s.get("silhouette") or {}
+            where = f" of region {s['region']}" if s.get("region") else ""
             if sil.get("found") and s.get("foreground_palette"):
-                return s["foreground_palette"][0], "dominant foreground colour (measured)"
-            return s.get("dominant"), "dominant image colour (measured)"
+                return s["foreground_palette"][0], f"dominant foreground colour{where} (measured)"
+            return s.get("dominant"), f"dominant image colour{where} (measured)"
         if mt == "video":
             return s.get("dominant"), "dominant colour of sampled frames (measured)"
         if mt == "video_url":

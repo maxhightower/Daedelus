@@ -62,6 +62,10 @@ def main(argv: list[str] | None = None) -> int:
     d = sub.add_parser("demo", help="build the multimodal demo and run all isolation scenarios")
     d.add_argument("--out", default="evidence/demo")
     d.add_argument("--no-video", action="store_true", help="skip the YouTube URL source")
+    d11 = sub.add_parser("demo-v11", help="V1.1 semantic demonstrations A-E (evidence output)")
+    d11.add_argument("--out", default="evidence/v1_1")
+    d11.add_argument("--live", default=None, choices=["anthropic", "gemini"],
+                     help="also run live gates with this provider (needs credentials)")
     r = sub.add_parser("run", help="execute a workflow")
     r.add_argument("project")
     r.add_argument("workflow")
@@ -93,6 +97,16 @@ def main(argv: list[str] | None = None) -> int:
               f"{sum(c['passed'] for c in rep['checks'])}/{len(rep['checks'])} checks; "
               f"report: {out / 'demo_report.md'}")
         return 0 if rep["passed"] else 1
+    if args.cmd == "demo-v11":
+        from .scenarios_v11 import run as run_v11
+
+        out = Path(args.out).resolve()
+        rep = run_v11(out, live=args.live)
+        bad = [d for d in rep["demos"] if d["status"] == "failed"]
+        for d in rep["demos"]:
+            print(f"{d['id']}: {d['status'].upper()} ({d['verification']})"
+                  + (f" - blocked by: {d['blocked_by']}" if d["blocked_by"] else ""))
+        return 1 if bad else 0
     if args.cmd in ("run", "replay"):
         from .engine import Engine
         from .store import Workspace

@@ -300,7 +300,107 @@ export interface Health {
   version: string;
   workspace: string;
   adapters: AdapterInfo[];
-  providers: { name: string; description: string; available: boolean; detail: string }[];
+  providers: ProviderInfo[];
+}
+
+export interface ProviderInfo {
+  name: string;
+  description: string;
+  available: boolean;
+  detail: string;
+  contracts?: string[];
+  pathways?: string[];
+  live?: boolean;
+}
+
+// ---------------------------------------------------------------- semantic understanding (V1.1)
+export interface SourceLocation {
+  page?: number | null;
+  section?: string | null;
+  paragraph?: number | null;
+  line?: number | null;
+  start_seconds?: number | null;
+  end_seconds?: number | null;
+  region?: number[] | null;
+  frame?: string | null;
+}
+export interface Observation {
+  id: string;
+  kind: string;
+  text: string;
+  value: Record<string, any>;
+  basis: "measured" | "observed" | "inferred" | "quoted";
+  confidence?: number | null;
+  aspects: string[];
+  location?: SourceLocation | null;
+}
+export interface DerivedConstraint {
+  property: string;
+  op: string;
+  value: any;
+  text: string;
+  location?: SourceLocation | null;
+  enforced?: boolean;
+  status?: string;
+  binding_id?: string;
+  source?: string;
+}
+export interface Usage {
+  calls: number;
+  input_tokens?: number | null;
+  output_tokens?: number | null;
+  latency_ms?: number | null;
+  cost_usd?: number | null;
+}
+export interface SourceAnalysis {
+  id: string;
+  source_id: string;
+  media_type: string;
+  provider: string;
+  model?: string | null;
+  pathway: string;
+  status: "complete" | "partial" | "unavailable";
+  summary: string;
+  observations: Observation[];
+  derived_constraints: DerivedConstraint[];
+  limitations: string[];
+  segment?: any;
+  usage: Usage;
+  recorded: boolean;
+  fixture_origin?: string | null;
+  created_at: string;
+}
+export interface ContextEntry {
+  binding_id: string;
+  source_id: string;
+  source: string;
+  media_type: string;
+  role: string;
+  category: string;
+  aspects: string[];
+  weight: number;
+  strength: number;
+  hard: boolean;
+  applies: boolean;
+  relation: string;
+  anchor: string;
+  anchor_component?: string | null;
+  segment?: any;
+  instructions: string;
+  notes: string[];
+  analysis: null | { id: string; provider: string; model?: string | null; status: string; pathway: string; summary: string; limitations: string[]; recorded: boolean; fixture_origin?: string | null };
+  observations: Observation[];
+  derived_constraints: DerivedConstraint[];
+}
+export interface ContextPackage {
+  unit: string;
+  target: { artifact_id?: string | null; artifact_name?: string | null; component_id?: string | null; component_name?: string | null; scope: string[] };
+  entries: ContextEntry[];
+  constraints: { explicit: any[]; derived: DerivedConstraint[] };
+  conflicts: any[];
+  operations: string[];
+  missing_analyses: string[];
+  authority: string;
 }
 
 export const targetKey = (t: TargetSelector): string =>

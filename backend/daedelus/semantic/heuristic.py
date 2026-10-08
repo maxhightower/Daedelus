@@ -46,6 +46,12 @@ LIMITS = [
 ]
 DIM_RE = re.compile(r"\b(height|width|depth)\b[^.\n]{0,24}?\b(max(?:imum)?|at most|no more than|"
                     r"min(?:imum)?|at least|exactly|of)?\s*(\d+(?:\.\d+)?)\s*(m|cm|mm)\b", re.I)
+DIM_PRE_RE = re.compile(r"\b(max(?:imum)?|min(?:imum)?|at most|at least|no more than)\s+"
+                        r"(height|width|depth)\b[^.\n0-9]{0,12}(\d+(?:\.\d+)?)\s*(m|cm|mm)\b",
+                        re.I)
+INJECTION_RE = re.compile(r"\b(ignore (?:all |any )?(?:previous|prior|above|the) |disregard |"
+                          r"you are (?:now |an? )|system prompt|as an ai\b|new instructions?:)",
+                          re.I)
 PRESERVE_RE = re.compile(r"\b(?:preserve|keep|do not (?:change|modify|alter))\s+(?:the\s+)?"
                          r"(?:existing\s+)?([a-z][a-z \-]{2,40}?)(?:\s+(?:on|of|for)\s+(?:the\s+)?"
                          r"([a-z][a-z \-]{1,30}))?(?:[.,;]|$)", re.I)
@@ -190,14 +196,23 @@ def _text(base, text: str, extracted: dict[str, Any]) -> SourceAnalysis:
                     raw, k = (g[0], g[1]) if mode == "suffix" else (g[1], g[2])
                     derived.append(DerivedConstraint(property=prop, op="lte",
                                                      value=_num(raw, k), text=s, location=loc))
-            for m in DIM_RE.finditer(s):
-                dim, qual, val, unit = m.groups()
+            dims = [m.groups() for m in DIM_RE.finditer(s)]
+            dims += [(d, q, v, u) for q, d, v, u in (m.groups() for m in DIM_PRE_RE.finditer(s))]
+            for dim, qual, val, unit in dims:
                 v = float(val) * {"m": 1, "cm": 0.01, "mm": 0.001}[unit.lower()]
                 q = (qual or "").lower()
+                if q == "of" and any(x[0] == dim and x[1] and x[1].lower() != "of" for x in dims):
+                    continue
                 op = "lte" if q.startswith(("max", "at most", "no more")) else \
                     "gte" if q.startswith(("min", "at least")) else "eq"
                 derived.append(DerivedConstraint(property=dim.lower(), op=op, value=round(v, 5),
                                                  text=s, location=loc))
+            if INJECTION_RE.search(s):
+                obs.append(Observation(
+                    kind="quote", basis="quoted", text=s[:400], location=loc,
+                    value={"possible_instruction_to_ai": True},
+                    aspects=[]))
+                continue
             kind = None
             if MODAL_RE.search(s):
                 kind = "requirement"
@@ -223,7 +238,10 @@ def _text(base, text: str, extracted: dict[str, Any]) -> SourceAnalysis:
                 f"{sum(1 for o in obs if o.kind == 'instruction')} instruction(s), "
                 f"{len(derived)} measurable limit(s)",
         limitations=["rule-based extraction: only explicit sentences and numeric limits are "
-                     "recognised; implied meaning is not understood"])
+                     "recognised; implied meaning is not understood"] + (
+            ["the source contains text addressed to an AI; it is reported as quoted data and "
+             "has no authority over the workflow"]
+            if any(o.value.get("possible_instruction_to_ai") for o in obs) else []))
 
 
 def _video(base, frames, segment) -> SourceAnalysis:

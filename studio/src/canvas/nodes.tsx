@@ -225,6 +225,12 @@ export const OperationNode = memo(function OperationNode({ data, selected }: P) 
           ))}
         </div>
       )}
+      {lod !== "far" && runInfo?.outputs?.loop && (
+        <div className="op-loop" data-testid="op-loop" title={runInfo.outputs.loop.stop_reason}>
+          loop: <b>{runInfo.outputs.loop.status}</b> · {runInfo.outputs.loop.iterations_run ?? 0} correction(s)
+        </div>
+      )}
+      {lod !== "far" && node.config?.understand && <div className="op-loop muted">understands sources</div>}
       {runInfo?.error && <div className="op-error">{runInfo.error.slice(0, 160)}</div>}
       {status === "waiting_approval" && <div className="op-approval">awaiting approval — see inspector</div>}
     </div>

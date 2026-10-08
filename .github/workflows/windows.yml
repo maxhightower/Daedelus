@@ -33,7 +33,7 @@ jobs:
 
       - name: Install backend
         working-directory: backend
-        run: pip install -e ".[dev,anthropic]" pyinstaller
+        run: pip install -e ".[dev,anthropic,gemini]" pyinstaller
 
       - name: Core tests on Windows (Blender tests are skipped - no Blender on the runner)
         working-directory: backend

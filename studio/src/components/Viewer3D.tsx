@@ -111,6 +111,8 @@ export function Viewer3D({
       render();
       clearTimeout(camTimer);
       camTimer = setTimeout(() => {
+        const finite = [...cam.position.toArray(), ...controls.target.toArray()].every(Number.isFinite);
+        if (!finite) return; // never persist a degenerate camera (e.g. framing an empty scene)
         cb.current.onCameraChange?.({
           position: cam.position.toArray().map((v) => +v.toFixed(4)) as any,
           target: controls.target.toArray().map((v) => +v.toFixed(4)) as any,
@@ -197,7 +199,9 @@ export function Viewer3D({
         });
         cb.current.onIdsLoaded?.(ids);
         const saved = camRef.current;
-        if (saved) {
+        const validSaved =
+          !!saved && [...(saved.position ?? []), ...(saved.target ?? [])].length === 6 && [...saved.position, ...saved.target].every((v) => typeof v === "number" && Number.isFinite(v));
+        if (saved && validSaved) {
           c.cam.position.fromArray(saved.position);
           c.controls.target.fromArray(saved.target);
           c.controls.update();
@@ -244,6 +248,7 @@ export function Viewer3D({
     const c = ctx.current;
     if (!c?.model) return;
     const box = new THREE.Box3().setFromObject(c.model);
+    if (box.isEmpty()) return; // nothing to frame yet (e.g. an empty artifact)
     const size = box.getSize(new THREE.Vector3()).length() || 1;
     const center = box.getCenter(new THREE.Vector3());
     const dir = new THREE.Vector3(...(PRESETS[p] ?? PRESETS.perspective)).normalize();
@@ -293,6 +298,7 @@ export function Viewer3D({
   useEffect(() => {
     const c = ctx.current;
     if (!c || !camera) return;
+    if (![...(camera.position ?? []), ...(camera.target ?? [])].every((v) => typeof v === "number" && Number.isFinite(v))) return;
     const same = c.cam.position.toArray().every((v, i) => Math.abs(v - camera.position[i]) < 1e-3);
     if (!same) {
       c.cam.position.fromArray(camera.position);

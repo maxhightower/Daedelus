@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import { api } from "../api";
 import { ASPECTS } from "../components/BindingEditor";
 import { Badge, keyLabel, targetLabel } from "../components/common";
+import { ContextPackageView } from "../components/SemanticView";
 import { TargetPicker } from "../components/TargetPicker";
 import { useStudio } from "../state";
-import type { TargetSelector } from "../types";
+import type { ContextPackage, TargetSelector } from "../types";
 
 /**
  * Directions are recorded as instruction sources bound to an explicit target (default: the
@@ -19,7 +20,17 @@ export function AgentDock() {
   const [wid, setWid] = useState("");
   const [msgs, setMsgs] = useState<any[]>([]);
   const [impact, setImpact] = useState<any>(null);
+  const [ctxOpen, setCtxOpen] = useState(false);
+  const [pkg, setPkg] = useState<ContextPackage | null>(null);
   const target = override ?? s.agentTarget;
+  const loadPkg = async () => {
+    if (!s.project) return;
+    setPkg((await s.run(api.agentContext(s.project.id, { artifact_id: target.artifact_id ?? null, component_id: target.component_id ?? null }))) ?? null);
+  };
+  useEffect(() => {
+    if (ctxOpen) loadPkg();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ctxOpen, target.scope, target.artifact_id, target.component_id]);
   useEffect(() => {
     if (s.project && s.agentOpen) api.messages(s.project.id).then(setMsgs);
   }, [s.project, s.agentOpen]);
@@ -28,7 +39,7 @@ export function AgentDock() {
     if (!wid && s.workflows[0]) setWid(s.workflows[0].id);
   }, [s.workflows, wid]);
   if (!s.project) return null;
-  const ai = s.health?.providers.find((p) => p.name === "anthropic");
+  const live = (s.health?.providers ?? []).filter((p) => p.live);
   const send = async () => {
     if (!text.trim()) return;
     const r = await s.run(api.sendMessage(s.project!.id, { text, target, aspects, workflow_id: wid || undefined }));
@@ -109,11 +120,30 @@ export function AgentDock() {
               >
                 ▶ Run workflow
               </button>
+              <button className={ctxOpen ? "on" : ""} onClick={() => setCtxOpen(!ctxOpen)} data-testid="agent-context-toggle">
+                What the agent will use
+              </button>
               <span className="spacer" />
-              <span className="muted small" title={ai?.detail}>
-                planner: heuristic (deterministic, measurement-based — not a semantic vision model) · Claude {ai?.available ? "available" : "not configured"}
+              <span className="muted small" data-testid="provider-status">
+                {live.map((p) => (
+                  <span key={p.name} title={p.detail} className={p.available ? "ok" : "bad"}>
+                    {p.available ? "●" : "○"} {p.name}{" "}
+                  </span>
+                ))}
+                · local heuristic: measurement-based, not semantic
               </span>
             </div>
+            {ctxOpen && pkg && (
+              <div className="agent-context">
+                <ContextPackageView
+                  pkg={pkg}
+                  onAnalyse={async () => {
+                    for (const sid of pkg.missing_analyses) await s.run(api.analyze(s.project!.id, sid, { provider: "heuristic" }));
+                    await loadPkg();
+                  }}
+                />
+              </div>
+            )}
             {impact && (
               <div className="impact small" data-testid="agent-impact">
                 <b>Will re-run:</b>{" "}

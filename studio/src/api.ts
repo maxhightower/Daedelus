@@ -12,6 +12,8 @@ import type {
   Project,
   ResolvedContext,
   Revision,
+  ContextPackage,
+  SourceAnalysis,
   TargetSelector,
   Workflow,
 } from "./types";
@@ -122,6 +124,12 @@ export const api = {
   exportWorkflow: (pid: string, wid: string) => req<any>("GET", `${P(pid)}/workflows/${wid}/export`),
   importWorkflow: (pid: string, doc: any) => req<{ workflow: Workflow; issues: any[] }>("POST", `${P(pid)}/workflows/import`, doc),
   impact: (pid: string, wid: string) => req<any>("GET", `${P(pid)}/workflows/${wid}/impact`),
+  // semantic understanding (V1.1)
+  analyze: (pid: string, sid: string, body: { provider: string; model?: string | null; segment?: any; force?: boolean }) =>
+    req<SourceAnalysis>("POST", `${P(pid)}/sources/${sid}/analyze`, body),
+  analyses: (pid: string, sid: string) => req<SourceAnalysis[]>("GET", `${P(pid)}/sources/${sid}/analyses`),
+  agentContext: (pid: string, body: { artifact_id?: string | null; component_id?: string | null }) =>
+    req<ContextPackage>("POST", `${P(pid)}/agent/context`, body),
   preview: (pid: string, wid: string, node_id: string, all_units = false) =>
     req<any>("POST", `${P(pid)}/workflows/${wid}/preview`, { node_id, all_units }),
   execute: (pid: string, wid: string, mode = "incremental", nodes?: string[]) =>
