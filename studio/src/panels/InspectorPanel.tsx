@@ -6,6 +6,7 @@ import { BindingEditor } from "../components/BindingEditor";
 import { Badge, ComponentTree, Json, Section, Status, keyLabel, short, targetLabel } from "../components/common";
 import { ContextView } from "../components/ContextView";
 import { DependencyPanel } from "../components/DependencyPanel";
+import { ExecutionSettingsPanel } from "../components/ExecutionSettings";
 import { ApprovalBox, ExecutionView } from "../components/ExecutionView";
 import { NodeConfigForm } from "../components/NodeConfigForm";
 import { RevisionView } from "../components/RevisionView";
@@ -581,6 +582,9 @@ function BoardInspector() {
       <div className="small muted">
         Layout autosaves (revision {b.revision}). Undo/redo (Ctrl+Z / Ctrl+Shift+Z) affects board layout only; artifact changes are reverted through revisions.
       </div>
+      <Section title="Execution (where adapter work runs)">
+        <ExecutionSettingsPanel />
+      </Section>
       <Section title="Interaction">
         <div className="small">
           Click selects · double-click / Enter edits in place · ⤢ focuses · Esc exits one level · drag a header to move · drag a reference (◉ handle, or from the

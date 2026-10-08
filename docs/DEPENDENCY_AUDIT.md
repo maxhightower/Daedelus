@@ -72,3 +72,20 @@ licence if redistributed and is easy to replace with any other photograph.
 
 The NOAA file states no SPDX licence; it is redistributed here unmodified with its own usage
 note and citation request, which the owner should confirm is acceptable before publication.
+
+## Container images (V2)
+
+No new Python or JavaScript dependencies were added for V2 (it uses the existing FastAPI,
+uvicorn, httpx and pydantic). The `deploy/` images **bundle** third-party software:
+
+| Image | Bundled | Licence | Consideration |
+|---|---|---|---|
+| all | Debian bookworm base (`python:3.12-slim-bookworm`), CPython | Debian package licences (mostly GPL/LGPL/BSD/MIT); PSF-2.0 | standard base image |
+| control (build stage only) | Node.js 22 + npm packages used to build the studio | MIT and others (see the studio table) | only the built static assets ship |
+| worker-office | LibreOffice, poppler-utils, DejaVu fonts | MPL-2.0; GPL-2.0-or-later; Bitstream Vera/DejaVu licence | Debian packages |
+| worker-blender | Blender 4.5.14 (official Linux build) | GPL-2.0-or-later | **publishing this image redistributes Blender**: GPL source-availability obligations apply |
+| worker-code | git, pytest | GPL-2.0; MIT | |
+
+The images are built locally and in CI and are **not published** by this repository. The
+owner must decide on publication, and on the project's own licence, with the obligations
+above in mind.

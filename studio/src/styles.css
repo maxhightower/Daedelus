@@ -393,3 +393,19 @@ table.kv td:first-child { color: var(--muted); white-space: nowrap; }
 .link-form { margin-top: 4px; }
 .edge-label.stale { border-color: #a06a10; color: #ffd58a; }
 .formula-bar code { background: #eef2f6; padding: 1px 4px; border-radius: 3px; }
+
+/* ---------------------------------------------------------------- V2 execution */
+.exec-settings { display: flex; flex-direction: column; gap: 6px; }
+.target-choice { display: flex; gap: 4px; flex-wrap: wrap; }
+.target-opt { border: 1px solid var(--border); border-radius: 4px; padding: 2px 8px; font-size: 12px; cursor: pointer; display: flex; gap: 4px; align-items: center; }
+.target-opt.on { border-color: #4c8bd6; background: #1d3555; }
+.grid.avail td, .grid.avail th { text-align: center; }
+.grid.avail td:first-child { text-align: left; }
+.job-list { display: flex; flex-direction: column; gap: 3px; }
+.job-row { border-bottom: 1px solid var(--border); padding: 2px 0; }
+.job-row progress { width: 60px; height: 8px; margin-left: 6px; }
+.exec-badge { display: inline-flex; gap: 5px; align-items: center; }
+.live-dot { width: 7px; height: 7px; border-radius: 50%; background: #666; display: inline-block; }
+.live-dot.live { background: #4fbf72; }
+.live-dot.reconnecting, .live-dot.connecting { background: #e3b341; }
+.node-exec { border-left: 2px solid #4c8bd6; padding-left: 6px; margin: 4px 0; }

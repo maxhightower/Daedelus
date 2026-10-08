@@ -25,6 +25,7 @@ from typing import Any, Callable
 from urllib.parse import parse_qs, urlparse
 
 from . import features
+from .netsafe import FetchRefused, safe_get
 from .models import (
     Locator,
     MediaSource,
@@ -357,7 +358,8 @@ def http_client(timeout: float = 15.0):
         if os.environ.get(var) and Path(os.environ[var]).exists():
             verify = os.environ[var]
             break
-    return httpx.Client(timeout=timeout, follow_redirects=True, verify=verify,
+    # redirects are followed by netsafe.safe_get, which re-validates every hop
+    return httpx.Client(timeout=timeout, follow_redirects=False, verify=verify,
                         headers={"User-Agent": "Daedelus/0.1 (+source-ingestion)"})
 
 
@@ -386,7 +388,7 @@ def _video_url(store: ProjectStore, src: MediaSource) -> ExtractionResult:
         return r
     try:
         with http_client() as c:
-            resp = c.get(oembed)
+            resp = safe_get(c, oembed)
             if resp.status_code != 200:
                 raise RuntimeError(f"HTTP {resp.status_code}")
             meta = resp.json()
@@ -396,7 +398,7 @@ def _video_url(store: ProjectStore, src: MediaSource) -> ExtractionResult:
             r.extracted["title"] = title
             r.extracted.update({"title_features": features.text_features(title)})
             if meta.get("thumbnail_url"):
-                t = c.get(meta["thumbnail_url"])
+                t = safe_get(c, meta["thumbnail_url"])
                 if t.status_code == 200:
                     tp = store.source_dir(src.id) / "thumbnail.jpg"
                     tp.write_bytes(t.content)
@@ -417,7 +419,7 @@ def _url(store: ProjectStore, src: MediaSource) -> ExtractionResult:
         return r
     try:
         with http_client() as c:
-            resp = c.get(url)
+            resp = safe_get(c, url)
             r.metadata = {"status": resp.status_code,
                           "content_type": resp.headers.get("content-type")}
             ctype = resp.headers.get("content-type", "")
@@ -431,6 +433,9 @@ def _url(store: ProjectStore, src: MediaSource) -> ExtractionResult:
                                **features.text_features(body)}
             else:
                 r.partial(f"unsupported content type or status: {ctype} / {resp.status_code}")
+    except FetchRefused as exc:
+        r.state = ProcessingState.failed
+        r.error = f"fetch refused: {exc}"
     except Exception as exc:
         r.state = ProcessingState.failed
         r.error = f"fetch failed: {type(exc).__name__}: {exc}"

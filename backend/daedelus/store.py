@@ -67,6 +67,10 @@ CREATE TABLE IF NOT EXISTS docs (kind TEXT NOT NULL, id TEXT NOT NULL, updated_a
 SCHEMA_VERSION = "1"
 
 
+# called with (store, execution) after every save (V2 event stream)
+EXECUTION_LISTENERS: list = []
+
+
 class ProjectStore:
     """Thread-safe access to one project's database and files."""
 
@@ -297,6 +301,11 @@ class ProjectStore:
     def save_execution(self, e: Execution) -> Execution:
         self._exec("INSERT OR REPLACE INTO executions(id, workflow_id, created_at, doc) "
                    "VALUES (?, ?, ?, ?)", (e.id, e.workflow_id, e.created_at, e.model_dump_json()))
+        for fn in list(EXECUTION_LISTENERS):
+            try:
+                fn(self, e)
+            except Exception:  # listeners (event streams) must never break execution
+                pass
         return e
 
     def get_execution(self, execution_id: str) -> Execution:

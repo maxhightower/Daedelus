@@ -10,3 +10,4 @@ evidence/**/workspace/
 studio/src-tauri/target/
 studio/src-tauri/binaries/
 .DS_Store
+deploy/.env

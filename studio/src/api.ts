@@ -42,7 +42,21 @@ export async function initApiBase(): Promise<string> {
   return base;
 }
 
-export const fileUrl = (pid: string, rel: string) => `${base}/api/projects/${pid}/files/${rel}`;
+// Optional API token (servers started with DAEDELUS_API_TOKENS): taken once from ?token=...,
+// kept for the browser session only, sent as a bearer header (and as a query parameter where
+// the browser cannot set headers: <img>, EventSource).
+let token: string | null = null;
+try {
+  const q = new URLSearchParams(window.location.search).get("token");
+  if (q) sessionStorage.setItem("daedelus.token", q);
+  token = sessionStorage.getItem("daedelus.token");
+} catch {
+  /* storage unavailable */
+}
+const tq = (sep: string) => (token ? `${sep}token=${encodeURIComponent(token)}` : "");
+
+export const fileUrl = (pid: string, rel: string) => `${base}/api/projects/${pid}/files/${rel}${tq("?")}`;
+export const eventsUrl = (pid: string) => `${base}/api/projects/${pid}/events${tq("?")}`;
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -51,7 +65,7 @@ export class ApiError extends Error {
 }
 
 async function req<T>(method: string, path: string, body?: any): Promise<T> {
-  const init: RequestInit = { method, headers: {} };
+  const init: RequestInit = { method, headers: token ? { Authorization: `Bearer ${token}` } : {} };
   if (body instanceof FormData) init.body = body;
   else if (body !== undefined) {
     init.body = JSON.stringify(body);
@@ -205,4 +219,45 @@ export const officeApi = {
     ),
   connectors: () => req<{ name: string; title: string; configured: boolean; available: boolean; reason?: string; verification: string }[]>("GET", `/api/connectors`),
   fromSource: (pid: string, source_id: string, name?: string) => req<{ artifact: Artifact; revision: Revision }>("POST", `${P(pid)}/artifacts/from_source`, { source_id, name }),
+};
+
+// V2 distributed execution
+export type ExecutionTarget = "automatic" | "local" | "cloud_cpu" | "cloud_gpu";
+export interface JobStatus {
+  id: string;
+  state: string;
+  attempt: number;
+  max_attempts: number;
+  worker_id?: string | null;
+  progress: number;
+  message: string;
+  error?: string | null;
+  created_at: string;
+  updated_at: string;
+  method: string;
+  adapter: string;
+  artifact_id?: string | null;
+  requires: string;
+}
+export interface WorkerStatus {
+  id: string;
+  name: string;
+  capabilities: string[];
+  adapters: string[];
+  alive: boolean;
+  last_seen: number;
+  version: string;
+}
+export interface ExecutionSettings {
+  target: ExecutionTarget;
+  targets: ExecutionTarget[];
+  adapters: Record<string, { local: boolean; local_detail: string; cloud_cpu: boolean; cloud_gpu: boolean }>;
+  cluster: { workers_enabled: boolean; workers: WorkerStatus[]; jobs?: Record<string, number> };
+}
+export const clusterApi = {
+  settings: (pid: string) => req<ExecutionSettings>("GET", `${P(pid)}/execution`),
+  setTarget: (pid: string, target: ExecutionTarget) => req<ExecutionSettings>("PUT", `${P(pid)}/execution`, { target }),
+  jobs: (pid: string) => req<JobStatus[]>("GET", `${P(pid)}/jobs`),
+  job: (pid: string, jid: string) => req<any>("GET", `${P(pid)}/jobs/${jid}`),
+  cancel: (pid: string, jid: string) => req<JobStatus>("POST", `${P(pid)}/jobs/${jid}/cancel`),
 };

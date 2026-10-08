@@ -54,6 +54,10 @@ def _baseline(inspect_res) -> dict[str, dict[str, Any]]:
     return out
 
 
+# called with (store, artifact, revision) after a revision is recorded (V2 event stream)
+REVISION_LISTENERS: list = []
+
+
 def record_revision(store: ProjectStore, a: Artifact, *, message: str,
                     operations: list[PlannedOperation] | None = None, insp: Any = None,
                     **fields: Any) -> ArtifactRevision:
@@ -85,6 +89,11 @@ def record_revision(store: ProjectStore, a: Artifact, *, message: str,
     a.components = insp.components
     a.head_revision_id = rev.id
     store.save_artifact(a)
+    for fn in list(REVISION_LISTENERS):
+        try:
+            fn(store, a, rev)
+        except Exception:  # event streams must never break revision recording
+            pass
     return rev
 
 

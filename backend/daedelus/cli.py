@@ -50,6 +50,11 @@ def _watch_parent(pid: int) -> None:
 
 
 def main(argv: list[str] | None = None) -> int:
+    argv = sys.argv[1:] if argv is None else argv
+    if argv[:1] == ["worker"]:
+        from .distributed.worker import main as worker_main
+
+        return worker_main(argv[1:])
     ap = argparse.ArgumentParser(prog="daedelus")
     ap.add_argument("--workspace", help="workspace directory (default ~/.daedelus/workspace)")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -66,6 +71,8 @@ def main(argv: list[str] | None = None) -> int:
     d11.add_argument("--out", default="evidence/v1_1")
     d11.add_argument("--live", default=None, choices=["anthropic", "gemini"],
                      help="also run live gates with this provider (needs credentials)")
+    sub.add_parser("worker", help="run a V2 execution worker (see --help after 'worker')",
+                   add_help=False)
     d12 = sub.add_parser("demo-v12", help="V1.2 research analysis & presentation pipeline")
     d12.add_argument("--out", default="evidence/v1_2")
     r = sub.add_parser("run", help="execute a workflow")
@@ -85,6 +92,17 @@ def main(argv: list[str] | None = None) -> int:
 
         if args.parent_pid:
             _watch_parent(args.parent_pid)
+        import ipaddress
+        import os
+
+        try:
+            loopback = ipaddress.ip_address(args.host).is_loopback
+        except ValueError:
+            loopback = args.host == "localhost"
+        if not loopback and not os.environ.get("DAEDELUS_API_TOKENS"):
+            print(f"refusing to listen on {args.host} without DAEDELUS_API_TOKENS: a non-loopback "
+                  "bind would expose every project unauthenticated", file=sys.stderr)
+            return 2
         app = create_app(_ws(args), args.studio_dist)
         print(f"DAEDELUS_LISTENING http://{args.host}:{args.port}", flush=True)
         uvicorn.run(app, host=args.host, port=args.port, log_level="warning")

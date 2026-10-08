@@ -13,6 +13,7 @@ from typing import Any
 
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -20,7 +21,7 @@ from pydantic import BaseModel, Field
 from . import __version__, bindings as binding_mod, ingest
 from . import connectors as conn_mod
 from .adapters import registry as adapter_registry
-from .artifacts import create_artifact, restore_revision
+from .artifacts import REVISION_LISTENERS, create_artifact, restore_revision
 from .engine import Engine, validate_workflow
 from .models import (
     Constraint,
@@ -33,11 +34,15 @@ from .models import (
     Workflow,
     now_iso,
 )
+from .distributed import remote
+from .distributed import service as dist_service
+from .distributed.router import build_router as build_cluster_router
+from . import security as sec
 from .nodes import NODE_TYPES
 from .adapters import AdapterError, get_adapter
 from .providers import providers as provider_registry
 from .semantic import service as semsvc
-from .store import ProjectStore, Workspace
+from .store import EXECUTION_LISTENERS, ProjectStore, Workspace
 
 
 # ---------------------------------------------------------------------------
@@ -177,6 +182,10 @@ class EditBody(BaseModel):
     base_revision_id: str | None = None
 
 
+class ExecutionSettingsBody(BaseModel):
+    target: str
+
+
 class FromSourceBody(BaseModel):
     source_id: str
     name: str | None = None
@@ -225,8 +234,45 @@ def create_app(workspace_root: str | Path | None = None,
 
     app = FastAPI(title="Daedelus", version=__version__)
     app.state.workspace = ws
-    app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"],
+    # V2 control plane: durable job queue, blob store and audit log next to the projects
+    cluster = dist_service.configure(root / "cluster")
+    app.state.cluster = cluster
+    app.add_middleware(sec.AuthMiddleware, grants=sec.parse_tokens(
+        os.environ.get("DAEDELUS_API_TOKENS")), audit=dist_service.get_cluster)
+    app.add_middleware(CORSMiddleware, allow_origins=sec.cors_origins(), allow_methods=["*"],
                        allow_headers=["*"])
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=sec.allowed_hosts())
+    app.include_router(build_cluster_router())
+
+    def _publish_execution(st: ProjectStore, e) -> None:
+        cl = dist_service.get_cluster()
+        if cl is None:
+            return
+        key = (e.status.value, tuple((r.node_id, r.status.value, len(r.logs))
+                                     for r in e.node_runs))
+        if last_exec.get(e.id) == key:
+            return
+        last_exec[e.id] = key
+        cl.publish_event(st.root.name, "execution", execution_id=e.id,
+                         workflow_id=e.workflow_id, status=e.status.value,
+                         nodes={r.node_id: r.status.value for r in e.node_runs})
+
+    last_exec: dict[str, Any] = {}
+    EXECUTION_LISTENERS[:] = [_publish_execution]
+
+    def _publish_revision(st: ProjectStore, a, rev) -> None:
+        cl = dist_service.get_cluster()
+        if cl is not None:
+            cl.publish_event(st.root.name, "revision", artifact_id=a.id, revision_id=rev.id,
+                             number=rev.number, origin=getattr(rev, "origin", None))
+
+    REVISION_LISTENERS[:] = [_publish_revision]
+
+    def _targeted(st: ProjectStore, fn, *args, **kw):
+        """Run an artifact-touching call under the project's default execution target."""
+        p = st.get_project()
+        with remote.use_target(p.id, p.settings.execution_target, origin={"via": "api"}):
+            return fn(*args, **kw)
 
     def store_for(pid: str) -> ProjectStore:
         try:
@@ -267,8 +313,37 @@ def create_app(workspace_root: str | Path | None = None,
 
     # -- projects -------------------------------------------------------------
     @app.get("/api/projects")
-    def list_projects():
-        return [p.model_dump() for p in ws.list_projects()]
+    def list_projects(request: Request):
+        scopes = getattr(request.state, "scopes", None)
+        return [p.model_dump() for p in ws.list_projects() if scopes is None or p.id in scopes]
+
+    @app.get("/api/projects/{pid}/execution")
+    def get_execution_settings(pid: str):
+        st = store_for(pid)
+        t = remote.normalise(st.get_project().settings.execution_target)
+        out = {"target": t, "targets": list(remote.TARGETS), "adapters": {}}
+        cl = dist_service.get_cluster()
+        for name, ad in adapter_registry().items():
+            ok, why = ad.check_environment()
+            out["adapters"][name] = {
+                "local": ok, "local_detail": why,
+                "cloud_cpu": bool(cl and cl.can_run(name, "cpu")),
+                "cloud_gpu": bool(cl and cl.can_run(name, "gpu"))}
+        out["cluster"] = cl.summary() if cl else {"workers_enabled": False, "workers": []}
+        return out
+
+    @app.put("/api/projects/{pid}/execution")
+    def set_execution_settings(pid: str, body: ExecutionSettingsBody):
+        st = store_for(pid)
+        t = remote.normalise(body.target)
+        if t not in remote.TARGETS:
+            raise HTTPException(422, f"unknown target '{body.target}'; use {remote.TARGETS}")
+        p = st.get_project()
+        p.settings.execution_target = t
+        st.save_project(p)
+        if cluster is not None:
+            cluster.audit.record("execution_target_changed", target=pid, value=t)
+        return get_execution_settings(pid)
 
     @app.post("/api/projects")
     def create_project(body: ProjectCreate):
@@ -296,6 +371,8 @@ def create_app(workspace_root: str | Path | None = None,
         if body.description is not None:
             p.description = body.description
         if body.settings is not None:
+            if remote.normalise(body.settings.execution_target) not in remote.TARGETS:
+                raise HTTPException(422, "unknown execution target")
             p.settings = body.settings
         return st.save_project(p).model_dump()
 
@@ -458,9 +535,10 @@ def create_app(workspace_root: str | Path | None = None,
             raise HTTPException(400, "use /artifacts/from_source or a connector import")
         meta = {k: v for k, v in body.metadata.items() if k != "remote"}
         try:
-            a, rev = await _in_thread(create_artifact, st, name=body.name, adapter=body.adapter,
-                                      template=body.template, params=body.params,
-                                      artifact_type=body.artifact_type, metadata=meta)
+            a, rev = await _in_thread(_targeted, st, create_artifact, st, name=body.name,
+                                      adapter=body.adapter, template=body.template,
+                                      params=body.params, artifact_type=body.artifact_type,
+                                      metadata=meta)
         except (RuntimeError, AdapterError) as exc:
             raise HTTPException(400, str(exc))
         return {"artifact": a.model_dump(), "revision": rev.model_dump()}
@@ -565,7 +643,8 @@ def create_app(workspace_root: str | Path | None = None,
     @app.post("/api/projects/{pid}/artifacts/{aid}/restore")
     async def restore(pid: str, aid: str, body: RestoreBody):
         st = store_for(pid)
-        return (await _in_thread(restore_revision, st, aid, body.revision_id)).model_dump()
+        return (await _in_thread(_targeted, st, restore_revision, st, aid,
+                                 body.revision_id)).model_dump()
 
     # -- context / impact -----------------------------------------------------
     @app.post("/api/projects/{pid}/resolve")
@@ -736,6 +815,21 @@ def create_app(workspace_root: str | Path | None = None,
         threads[key] = t
         t.start()
 
+    # restart recovery: executions left running by a previous control-plane process resume
+    # (DAEDELUS_RESUME_INTERRUPTED=0 disables; they are then left for manual replay)
+    if os.environ.get("DAEDELUS_RESUME_INTERRUPTED", "1") != "0":
+        for proj in ws.list_projects():
+            try:
+                eng = engine_for(proj.id)
+                for eid in eng.interrupted():
+                    if cluster is not None:
+                        cluster.audit.record("execution_resumed", target=eid, project=proj.id)
+                    _spawn(proj.id, eid, eng.run, eid)
+            except Exception as exc:  # one broken project must not stop the server
+                if cluster is not None:
+                    cluster.audit.record("resume_failed", "error", target=proj.id,
+                                         error=repr(exc))
+
     # -- executions -----------------------------------------------------------
     @app.get("/api/projects/{pid}/executions")
     def list_executions(pid: str, workflow_id: str | None = None):
@@ -886,7 +980,8 @@ def create_app(workspace_root: str | Path | None = None,
         st = store_for(pid)
         ops = [PlannedOperation(**o) for o in body.operations]
         try:
-            rev = await _in_thread(apply_manual_edit, st, aid, ops, message=body.message,
+            rev = await _in_thread(_targeted, st, apply_manual_edit, st, aid, ops,
+                                   message=body.message,
                                    base_revision_id=body.base_revision_id,
                                    lock=engine_for(pid)._run_lock)
         except EditRejected as exc:
@@ -933,7 +1028,7 @@ def create_app(workspace_root: str | Path | None = None,
     @app.post("/api/projects/{pid}/dependencies/sync")
     async def sync_deps(pid: str, body: SyncBody):
         st = store_for(pid)
-        rep = await _in_thread(dep_mod.sync, st, dependency_ids=body.dependency_ids,
+        rep = await _in_thread(_targeted, st, dep_mod.sync, st, dependency_ids=body.dependency_ids,
                                target_artifact_ids=body.target_artifact_ids, force=body.force,
                                lock=engine_for(pid)._run_lock)
         rep["status"] = await _in_thread(dep_mod.all_status, st)

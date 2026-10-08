@@ -1,0 +1,77 @@
+# Daedelus distributed execution (V2): control plane + workers on separate networks.
+#
+#   edge  - the control plane's published port, bound to 127.0.0.1 only (not public);
+#   jobs  - internal network (no route to the internet): workers reach ONLY the control plane.
+#
+# Secrets come from deploy/.env (copy .env.example; use long random values).
+name: daedelus
+
+networks:
+  edge: {}
+  jobs:
+    internal: true
+
+volumes:
+  control-data: {}
+
+services:
+  control:
+    build:
+      context: ..
+      dockerfile: deploy/control.Dockerfile
+      args: &base_images
+        PYTHON_IMAGE: ${PYTHON_IMAGE:-python:3.12-slim-bookworm}
+        NODE_IMAGE: ${NODE_IMAGE:-node:22-bookworm-slim}
+    image: daedelus-control:local
+    environment:
+      DAEDELUS_API_TOKENS: ${DAEDELUS_API_TOKENS:?set DAEDELUS_API_TOKENS in deploy/.env}
+      DAEDELUS_WORKER_TOKENS: ${DAEDELUS_WORKER_TOKENS:?set DAEDELUS_WORKER_TOKENS in deploy/.env}
+      DAEDELUS_ALLOWED_HOSTS: control,127.0.0.1,localhost
+      DAEDELUS_LEASE_S: ${DAEDELUS_LEASE_S:-20}
+    volumes: ["control-data:/data"]
+    networks: [edge, jobs]
+    ports: ["127.0.0.1:${DAEDELUS_PORT:-8765}:8765"]
+    restart: unless-stopped
+
+  worker-office:
+    build:
+      context: ..
+      dockerfile: deploy/worker.Dockerfile
+      args: { WITH_OFFICE: "1", PYTHON_IMAGE: "${PYTHON_IMAGE:-python:3.12-slim-bookworm}" }
+    image: daedelus-worker-office:local
+    environment:
+      DAEDELUS_WORKER_TOKEN: ${DAEDELUS_WORKER_TOKEN:?set DAEDELUS_WORKER_TOKEN in deploy/.env}
+      DAEDELUS_WORKER_CAPABILITIES: cpu
+      DAEDELUS_WORKER_ADAPTERS: spreadsheet,document,presentation
+    networks: [jobs]
+    depends_on: { control: { condition: service_healthy } }
+    restart: unless-stopped
+
+  worker-blender:
+    build:
+      context: ..
+      dockerfile: deploy/worker.Dockerfile
+      args: { WITH_BLENDER: "1", PYTHON_IMAGE: "${PYTHON_IMAGE:-python:3.12-slim-bookworm}" }
+    image: daedelus-worker-blender:local
+    environment:
+      DAEDELUS_WORKER_TOKEN: ${DAEDELUS_WORKER_TOKEN:?set DAEDELUS_WORKER_TOKEN in deploy/.env}
+      DAEDELUS_WORKER_CAPABILITIES: cpu   # "gpu" only with a verified GPU device (see docs)
+      DAEDELUS_WORKER_ADAPTERS: blender,layered2d
+    networks: [jobs]
+    depends_on: { control: { condition: service_healthy } }
+    restart: unless-stopped
+
+  worker-code:
+    build:
+      context: ..
+      dockerfile: deploy/worker.Dockerfile
+      args: { WITH_GIT: "1", PYTHON_IMAGE: "${PYTHON_IMAGE:-python:3.12-slim-bookworm}" }
+    image: daedelus-worker-code:local
+    environment:
+      DAEDELUS_WORKER_TOKEN: ${DAEDELUS_WORKER_TOKEN:?set DAEDELUS_WORKER_TOKEN in deploy/.env}
+      DAEDELUS_WORKER_CAPABILITIES: cpu
+      DAEDELUS_WORKER_ADAPTERS: code
+      DAEDELUS_WORKER_ALLOWED_COMMANDS: python -m pytest
+    networks: [jobs]
+    depends_on: { control: { condition: service_healthy } }
+    restart: unless-stopped

@@ -51,6 +51,8 @@ from .models import (
 from .nodes import NODE_TYPES, compatible
 from .providers import PlanRequest, ProviderError, get_provider, providers
 from .providers.base import EvaluateRequest, ReviseRequest
+from .distributed import remote
+from .distributed.service import get_cluster
 from .semantic import service as semsvc
 from .semantic.evaluation import constraint_findings
 from .semantic.models import Evaluation, Usage
@@ -170,9 +172,22 @@ def validate_workflow(wf: Workflow, store: ProjectStore | None = None) -> list[d
                     ok, why = known_providers[prov].available()
                     if not ok:
                         err(n.id, f"provider '{prov}' unavailable: {why}", "warning")
-                if cfg.get("execution") == "cloud":
-                    err(n.id, "cloud execution selected but no cloud workers are configured "
-                              "in this installation")
+                tgt = remote.normalise(cfg.get("execution") or
+                                       store.get_project().settings.execution_target)
+                if tgt not in remote.TARGETS:
+                    err(n.id, f"unknown execution target '{tgt}'")
+                elif tgt in ("cloud_cpu", "cloud_gpu"):
+                    cl = get_cluster()
+                    if cl is None or not cl.workers_enabled:
+                        err(n.id, f"{tgt} selected but this control plane has no worker pool "
+                                  "(DAEDELUS_WORKER_TOKENS unset)")
+                    else:
+                        art0 = _agent_artifact(wf, n, store)
+                        cap = "gpu" if tgt == "cloud_gpu" else "cpu"
+                        if art0 is not None and not cl.can_run(art0.adapter, cap):
+                            err(n.id, f"no connected {cap.upper()} worker offers adapter "
+                                      f"'{art0.adapter}' right now (the run will fail unless "
+                                      "one connects)", "warning")
                 art = _agent_artifact(wf, n, store)
                 if art is not None:
                     ad = get_adapter(art.adapter)
@@ -227,6 +242,39 @@ class Engine:
             ex.finished_at = now_iso()
         self.store.save_execution(ex)
         return ex
+
+    def interrupted(self) -> list[str]:
+        """Prepare executions left 'running' by a stopped control plane for resumption.
+
+        Running nodes go back to pending; a local checkpoint taken by an interrupted node is
+        restored first (remote work only ever changes files through atomic publication, and
+        resubmitted jobs are deduplicated by their idempotency keys)."""
+        out = []
+        for ex in self.store.list_executions():
+            if ex.status != RunStatus.running:
+                continue
+            wf = self.store.get_workflow(ex.workflow_id, ex.workflow_version)
+            for nr in ex.node_runs:
+                if nr.status != RunStatus.running:
+                    continue
+                node = next((n for n in wf.nodes if n.id == nr.node_id), None)
+                art_in = self._inputs(ex, wf, nr.node_id, "artifact") if node else []
+                for a in art_in:
+                    try:
+                        art = self.store.get_artifact(a["artifact_id"])
+                    except LookupError:
+                        continue
+                    ckpt = self.store.artifact_dir(art.id) / "checkpoints" / f"{ex.id}_{node.id}"
+                    if ckpt.exists():
+                        restore_tree(ckpt, native_path(self.store, art))
+                        nr.logs.append(f"{now_iso()} restored checkpoint after interruption")
+                nr.status = RunStatus.pending
+                nr.units = []
+                nr.logs.append(f"{now_iso()} control plane restarted while this node ran; "
+                               "resuming (remote jobs are reused by idempotency key)")
+            self.store.save_execution(ex)
+            out.append(ex.id)
+        return out
 
     def run(self, execution_id: str) -> Execution:
         """Run (or resume) an execution synchronously until done or paused.
@@ -366,7 +414,17 @@ class Engine:
         self.store.save_execution(ex)
         try:
             handler = getattr(self, f"_node_{node.type}")
-            handler(ex, wf, node, nr, cfg)
+            target = cfg.get("execution") or self.store.get_project().settings.execution_target
+            with remote.use_target(self.store.get_project().id, target, origin={
+                    "execution_id": ex.id, "node_id": node.id, "workflow_id": wf.id},
+                    on_event=lambda ev: self._job_event(ex, nr, ev),
+                    cancelled=lambda: ex.id in self._cancel) as tc:
+                try:
+                    handler(ex, wf, node, nr, cfg)
+                finally:
+                    if tc.decisions or tc.jobs:
+                        nr.outputs = {**(nr.outputs or {}), "execution": {
+                            "target": tc.target, "decisions": tc.decisions, "jobs": tc.jobs}}
             if nr.status == RunStatus.running:
                 nr.status = RunStatus.succeeded
         except ExecutionPaused:
@@ -378,12 +436,24 @@ class Engine:
                 raise
             nr.status = RunStatus.failed
             nr.error = str(exc)
+        except remote.ExecutionUnavailable as exc:
+            nr.status = RunStatus.failed
+            nr.error = f"execution target unavailable: {exc}"
         except Exception as exc:  # unexpected errors are reported verbatim, never hidden
             nr.status = RunStatus.failed
             nr.error = f"{type(exc).__name__}: {exc}"
             nr.logs.append(traceback.format_exc()[-3000:])
         nr.finished_at = now_iso()
         self.store.save_execution(ex)
+
+    def _job_event(self, ex: Execution, nr: NodeRun, ev: dict[str, Any]) -> None:
+        d = ev.get("data") or {}
+        if ev["kind"] in ("leased", "retry", "succeeded", "failed", "timed_out", "cancelled",
+                          "conflict", "cancel_requested"):
+            nr.logs.append(f"{now_iso()} job {ev['job_id']} {ev['kind']}"
+                           + (f" on {d['worker_id']}" if d.get("worker_id") else "")
+                           + (f": {d['error']}" if d.get("error") else ""))
+            self.store.save_execution(ex)
 
     # -- node handlers ------------------------------------------------------
     def _node_sources(self, ex, wf, node, nr, cfg):
@@ -657,8 +727,6 @@ class Engine:
         return out
 
     def _node_agent(self, ex, wf, node, nr, cfg):
-        if cfg.get("execution") == "cloud":
-            raise NodeFailure("cloud execution requested but no cloud workers are configured")
         art_in = self._inputs(ex, wf, node.id, "artifact")
         if not art_in:
             raise NodeFailure("no artifact input")

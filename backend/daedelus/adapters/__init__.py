@@ -26,10 +26,15 @@ def registry() -> dict[str, Adapter]:
 
 
 def get_adapter(name: str) -> Adapter:
+    """The adapter for ``name`` under the current execution target (see distributed.remote):
+    the local adapter, or a proxy that runs its methods as jobs on workers."""
     try:
-        return _registry()[name]
+        local = _registry()[name]
     except KeyError:
         raise AdapterError(f"unknown adapter: {name}") from None
+    from ..distributed.remote import wrap
+
+    return wrap(local)
 
 
 __all__ = ["Adapter", "AdapterError", "AdapterInfo", "ApplyResult", "InspectResult",

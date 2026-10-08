@@ -4,6 +4,7 @@ import { useStudio } from "../state";
 import type { Execution, NodeRun } from "../types";
 import { Badge, Json, Section, Status, keyLabel, short } from "./common";
 import { ContextView } from "./ContextView";
+import { NodeExecutionInfo } from "./ExecutionSettings";
 
 export function ApprovalBox({ ex, r }: { ex: Execution; r: NodeRun }) {
   const { project, artifacts, run, watchExecution } = useStudio();
@@ -101,6 +102,7 @@ export function ExecutionView({ executionId }: { executionId: string }) {
       {ex.node_runs.map((r) => (
         <Section key={r.node_id} title={<>{r.node_id} <Status s={r.status} /></>} collapsed={!r.units.length && !r.error}>
           {r.error && <div className="error-box">{r.error}</div>}
+          <NodeExecutionInfo info={(r.outputs as any)?.execution} />
           {r.units.map((u) => (
             <div key={u.unit} className="unit-detail small">
               <Status s={u.status} /> {keyLabel(u.unit, artifacts)} <span className="muted">— {u.reason}</span>

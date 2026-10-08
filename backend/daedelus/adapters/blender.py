@@ -267,7 +267,8 @@ class BlenderAdapter(Adapter):
         with tempfile.TemporaryDirectory(prefix="dd_blender_") as tmp:
             jp, rp = Path(tmp) / "job.json", Path(tmp) / "result.json"
             jp.write_text(json.dumps(job))
-            cmd = [exe, "--background", "--factory-startup"]
+            # never run Python embedded in (untrusted) .blend files
+            cmd = [exe, "--background", "--factory-startup", "--disable-autoexec"]
             if blend is not None:
                 cmd.append(str(blend))
             cmd += ["--python-exit-code", "3", "--python", str(WORKER), "--", str(jp), str(rp)]

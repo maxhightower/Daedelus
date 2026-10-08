@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { api, boardApi } from "./api";
+import { api, boardApi, clusterApi, eventsUrl, type JobStatus } from "./api";
 import type {
   Artifact,
   Binding,
@@ -72,6 +72,9 @@ interface StudioState {
   notify: (m: string) => void;
   run: <T>(p: Promise<T>, ok?: string) => Promise<T | undefined>;
   watchExecution: (workflowId: string) => void;
+  jobs: JobStatus[]; // V2 remote jobs of this project (newest first)
+  live: "off" | "connecting" | "live" | "reconnecting"; // event-stream connection state
+  reloadJobs: () => Promise<void>;
 }
 
 const Ctx = createContext<StudioState | null>(null);
@@ -125,6 +128,8 @@ export function StudioProvider({ children }: { children: ReactNode }) {
   const serverRev = useRef<number | null>(null);
   const locator = useRef<(id: string) => void>(() => {});
   const watched = useRef<Set<string>>(new Set());
+  const [jobs, setJobs] = useState<JobStatus[]>([]);
+  const [live, setLive] = useState<"off" | "connecting" | "live" | "reconnecting">("off");
 
   boardRef.current = board;
 
@@ -354,8 +359,9 @@ export function StudioProvider({ children }: { children: ReactNode }) {
     if (projectId) boardApi.list(projectId).then(setBoards).catch(() => {});
   }, [projectId, board?.name, board?.id]);
 
-  // latest execution per workflow; poll while anything runs, then refresh artifacts + board
-  const pollExecutions = useCallback(async () => {
+  // latest execution per workflow: loaded once, then kept current by the project's event
+  // stream (server-sent events; V2 replaced the V1 polling loops)
+  const loadExecutions = useCallback(async () => {
     if (!projectId) return false;
     const list = await api.executions(projectId).catch(() => []);
     const latest: Record<string, string> = {};
@@ -371,41 +377,74 @@ export function StudioProvider({ children }: { children: ReactNode }) {
     return Object.values(out).some((e) => ["pending", "running"].includes(e.status));
   }, [projectId]);
 
-  const pollTimer = useRef<any>(null);
   const watchExecution = useCallback(
     (wid: string) => {
       watched.current.add(wid);
-      clearTimeout(pollTimer.current);
-      const tick = async () => {
-        const running = await pollExecutions();
-        if (running) pollTimer.current = setTimeout(tick, 1000);
-        else {
-          watched.current.clear();
-          await refresh();
-          await reloadBoard();
-        }
-      };
-      tick();
+      loadExecutions();
     },
-    [pollExecutions, refresh, reloadBoard],
+    [loadExecutions],
   );
-  useEffect(() => {
-    if (projectId) pollExecutions();
-  }, [projectId, pollExecutions]);
-
-  // keep artifact heads in sync with changes made elsewhere (other windows, CLI, workflow runs)
-  useEffect(() => {
+  const loadJobs = useCallback(async () => {
     if (!projectId) return;
-    const t = setInterval(async () => {
-      if (document.hidden) return;
-      const fresh = await api.artifacts(projectId).catch(() => null);
-      if (!fresh) return;
-      setArtifacts((cur) => {
-        const same = cur.length === fresh.length && cur.every((a, i) => a.id === fresh[i].id && a.head_revision_id === fresh[i].head_revision_id);
-        return same ? cur : fresh;
-      });
-    }, 3000);
-    return () => clearInterval(t);
+    const list = await clusterApi.jobs(projectId).catch(() => null);
+    if (list) setJobs(list);
+  }, [projectId]);
+  useEffect(() => {
+    if (projectId) {
+      loadExecutions();
+      loadJobs();
+    }
+  }, [projectId, loadExecutions, loadJobs]);
+
+  useEffect(() => {
+    if (!projectId || typeof EventSource === "undefined") return;
+    const es = new EventSource(eventsUrl(projectId));
+    setLive("connecting");
+    let jobTimer: any = null;
+    let artTimer: any = null;
+    const later = (fn: () => void, which: "job" | "art") => {
+      if (which === "job") {
+        clearTimeout(jobTimer);
+        jobTimer = setTimeout(fn, 150);
+      } else {
+        clearTimeout(artTimer);
+        artTimer = setTimeout(fn, 150);
+      }
+    };
+    es.addEventListener("hello", () => setLive("live"));
+    es.onopen = () => setLive("live");
+    es.onerror = () => setLive("reconnecting"); // EventSource reconnects and resumes by id
+    es.addEventListener("execution", async (m: MessageEvent) => {
+      const ev = JSON.parse(m.data);
+      const d = ev.data ?? {};
+      const e = await api.execution(projectId, d.execution_id).catch(() => null);
+      if (!e) return;
+      setExecutions((cur) => ({ ...cur, [e.workflow_id]: e }));
+      if (!["pending", "running"].includes(e.status)) {
+        watched.current.delete(e.workflow_id);
+        await refresh();
+        await reloadBoard();
+      }
+    });
+    es.addEventListener("revision", () =>
+      later(async () => {
+        const fresh = await api.artifacts(projectId).catch(() => null);
+        if (!fresh) return;
+        setArtifacts((cur) => {
+          const same = cur.length === fresh.length && cur.every((a, i) => a.id === fresh[i].id && a.head_revision_id === fresh[i].head_revision_id);
+          return same ? cur : fresh;
+        });
+      }, "art"),
+    );
+    for (const k of ["queued", "leased", "progress", "retry", "succeeded", "failed", "timed_out", "cancelled", "cancel_requested", "conflict", "published"])
+      es.addEventListener(k, () => later(loadJobs, "job"));
+    return () => {
+      clearTimeout(jobTimer);
+      clearTimeout(artTimer);
+      es.close();
+      setLive("off");
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
 
   const project = useMemo(() => projects.find((p) => p.id === projectId) ?? null, [projects, projectId]);
@@ -472,6 +511,9 @@ export function StudioProvider({ children }: { children: ReactNode }) {
     notify,
     run,
     watchExecution,
+    jobs,
+    live,
+    reloadJobs: loadJobs,
   };
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

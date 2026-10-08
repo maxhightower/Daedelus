@@ -92,7 +92,10 @@ NODE_TYPES: dict[str, NodeType] = {n.type: n for n in [
                          "evaluator": {"type": "string"},
                          "evaluator_model": {"type": "string"},
                          "criteria": {"type": "array", "items": {"type": "string"}}}},
-            "execution": {"type": "string", "enum": ["local", "cloud"]},
+            "execution": {"type": "string", "enum": ["", "automatic", "local", "cloud_cpu",
+                                                     "cloud_gpu", "cloud"],
+                          "description": "where adapter work runs ('' = project default); "
+                                         "remote targets never fall back to local"},
             "validation": {"type": "array", "items": {"type": "string"}},
             "retry": RETRY_SCHEMA}},
         defaults={"target_component": "", "fan_out": True, "instructions": "", "provider": "",
@@ -101,7 +104,7 @@ NODE_TYPES: dict[str, NodeType] = {n.type: n for n in [
                   "loop": {"enabled": False, "max_iterations": 3, "max_seconds": 900,
                            "max_calls": 24, "max_cost_usd": 5.0, "max_operations": 12,
                            "evaluator": "", "evaluator_model": "", "criteria": []},
-                  "execution": "local", "validation": ["file_reopens"],
+                  "execution": "", "validation": ["file_reopens"],
                   "retry": {"max_attempts": 1, "backoff_seconds": 0}}),
     NodeType(
         type="validate", title="Validate", category="validation",

@@ -531,6 +531,9 @@ class ProjectSettings(_Model):
     default_provider: str = "heuristic"
     default_model: str | None = None
     allow_network_fetch: bool = True
+    # V2: where adapter work runs by default (automatic | local | cloud_cpu | cloud_gpu);
+    # nodes may override. Remote targets never fall back to local silently.
+    execution_target: str = "local"
 
 
 class Project(_Model):

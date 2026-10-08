@@ -1,3 +1,4 @@
+import { ExecutionBadge } from "./components/ExecutionSettings";
 import { ReactFlowProvider } from "@xyflow/react";
 import { useEffect, useRef, useState } from "react";
 import { api } from "./api";
@@ -130,6 +131,12 @@ export default function App() {
             <button className={`mini-btn ${s.agentOpen ? "on" : ""}`} onClick={() => s.setAgentOpen(!s.agentOpen)}>
               Agent
             </button>
+            <ExecutionBadge
+              onOpen={() => {
+                setShowRight(true);
+                s.select({ kind: "none" });
+              }}
+            />
           </>
         )}
         <div className="spacer" />
