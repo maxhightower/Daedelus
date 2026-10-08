@@ -21,6 +21,7 @@ RUN --mount=type=secret,id=ca,required=false \
     if [ -f /run/secrets/ca ]; then export PIP_CERT=/run/secrets/ca; fi; \
     pip install --no-cache-dir "/src/backend[anthropic,gemini]" && rm -rf /src/backend
 COPY --from=studio /src/studio/dist /opt/daedelus/studio
+RUN mkdir -p /data && chown daedelus:daedelus /data
 USER daedelus
 ENV DAEDELUS_WORKSPACE=/data/workspace \
     DAEDELUS_STUDIO_DIST=/opt/daedelus/studio

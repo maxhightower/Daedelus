@@ -65,7 +65,7 @@ class Run:
                str(self.env_file), *args]
         r = subprocess.run(cmd, capture_output=capture, text=True)
         if check and r.returncode != 0:
-            raise RuntimeError(f"{' '.join(args)} failed: {r.stderr[-2000:]}")
+            raise RuntimeError(f"{' '.join(args)} failed: {(r.stderr or '')[-2000:]}")
         return r.stdout if capture else ""
 
     def docker(self, *args: str, check: bool = True) -> str:
@@ -469,11 +469,16 @@ def main() -> int:
     t0 = time.time()
     try:
         r.dc("down", "-v", "--remove-orphans", check=False)
-        r.dc("up", "-d", *([] if a.no_build else ["--build"]), "--wait", capture=False)
-        r.check("compose stack healthy", r.wait_health())
+        try:
+            r.dc("up", "-d", *([] if a.no_build else ["--build"]), "--wait", capture=False)
+            up = True
+        except RuntimeError as exc:
+            up = False
+            r.check("compose stack started", False, exc)
+        r.check("compose stack healthy", up and r.wait_health())
         steps = [s1_topology, s2_blender, s3_office, s4_code, s5_worker_crash, s6_partition,
                  s7_restart, s8_security]
-        for fn in steps:
+        for fn in (steps if up else []):
             if a.only and a.only not in fn.__name__:
                 continue
             try:
