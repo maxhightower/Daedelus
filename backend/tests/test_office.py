@@ -7,6 +7,7 @@ with the reason when it is missing (CI installs it).
 
 from __future__ import annotations
 
+import os
 import shutil
 import zipfile
 from pathlib import Path
@@ -21,7 +22,9 @@ from daedelus.editing import EditRejected, apply_manual_edit
 from daedelus.models import PlannedOperation as P
 from daedelus.store import Workspace
 
-LO = pytest.mark.skipif(oc.soffice() is None, reason="LibreOffice (soffice) not installed")
+# CI sets DAEDELUS_REQUIRE_LIBREOFFICE=1: these tests must then run (and fail), never skip
+LO = pytest.mark.skipif(oc.soffice() is None and not os.environ.get("DAEDELUS_REQUIRE_LIBREOFFICE"),
+                        reason="LibreOffice (soffice) not installed")
 
 
 @pytest.fixture()

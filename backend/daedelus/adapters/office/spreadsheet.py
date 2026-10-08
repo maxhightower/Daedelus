@@ -105,7 +105,7 @@ class SpreadsheetAdapter(Adapter):
                         "recalculated", "component_preservation"],
             environment={"requires": "openpyxl (LibreOffice optional for recalculation)",
                          "libreoffice": oc.soffice()},
-            available=ok, unavailable_reason=None if ok else detail, templates=["blank", "data"],
+            available=ok, unavailable_reason=None if ok else detail, templates=["blank", "data", "import"],
             operations=[
                 OperationSpec(name="add_sheet", family="create", aspects=["structure"],
                               target_kinds=["new"], description="Add a worksheet (idempotent by id).",
@@ -416,6 +416,18 @@ class SpreadsheetAdapter(Adapter):
 
     # ------------------------------------------------------------------ lifecycle
     def create(self, native_dir: Path, template: str, params: dict[str, Any]) -> str:
+        if template == "import":
+            try:
+                ids = oc.import_copy(params["path"], native_dir, ENTRY, params, "workbook",
+                                     "Workbook", (".xlsx",))
+            except (KeyError, ValueError) as exc:
+                raise AdapterError(f"import: {exc}") from exc
+            wb = self._load(native_dir / ENTRY)
+            self._reconcile(wb, ids)
+            ids["file_hash"] = oc.h((native_dir / ENTRY).read_bytes().hex())
+            self._recalc(native_dir, ENTRY, ids)
+            oc.save_ids(native_dir, ids)
+            return ENTRY
         op = _openpyxl()
         native_dir.mkdir(parents=True, exist_ok=True)
         wb = op.Workbook()
@@ -842,7 +854,7 @@ class SpreadsheetAdapter(Adapter):
         _ = insp
         return out
 
-    def _grid(self, native_dir: Path, entry: str, max_rows: int = 60, max_cols: int = 16):
+    def _grid(self, native_dir: Path, entry: str, max_rows: int = 200, max_cols: int = 26):
         """Cells for the studio grid: formulas and calculated values kept distinct."""
         wb = self._load(native_dir / entry)
         ids = oc.load_ids(native_dir)
@@ -868,7 +880,24 @@ class SpreadsheetAdapter(Adapter):
                 rows.append(cells)
             sheets.append({"title": ws.title, "rows": rows, "max_row": ws.max_row,
                            "max_col": ws.max_column})
-        return {"sheets": sheets, "calculated": bool(values) or not any(
+        charts = []
+        for cid, spec in ids.get("specs", {}).items():
+            if spec.get("kind") != "chart":
+                continue
+            title = self._title_of(ids, spec["sheet"])
+            try:
+                data = self.values(native_dir, entry, f"{title}!{spec['data']}")
+                cats = (self.values(native_dir, entry, f"{title}!{spec['categories']}")
+                        if spec.get("categories") else [])
+            except Exception as exc:  # reported, never hidden
+                charts.append({"id": cid, "sheet": title, "error": str(exc)})
+                continue
+            names = [str(x) for x in data[0]] if data else []
+            series = {n: [r[j] for r in data[1:]] for j, n in enumerate(names)}
+            charts.append({"id": cid, "sheet": title, "type": spec.get("type", "column"),
+                           "title": spec.get("title"), "anchor": spec.get("anchor"),
+                           "categories": [str(r[0]) for r in cats], "series": series})
+        return {"sheets": sheets, "charts": charts, "calculated": bool(values) or not any(
             isinstance(c, dict) and "f" in c for s in sheets for r in s["rows"] for c in r if c),
             "calc_note": calc.get("reason") or calc.get("engine")}
 

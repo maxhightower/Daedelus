@@ -451,7 +451,7 @@ export interface CanvasConnection {
   target_item_id: string;
   source_anchor: Anchor;
   target_anchor: Anchor;
-  domain_ref: { kind: "binding" | "workflow_edge" | "none"; id?: string | null; workflow_id?: string | null };
+  domain_ref: { kind: "binding" | "workflow_edge" | "artifact_dependency" | "none"; id?: string | null; workflow_id?: string | null };
   presentation_state: Record<string, any>;
   derived: boolean;
 }

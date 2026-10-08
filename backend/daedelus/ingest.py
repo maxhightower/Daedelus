@@ -448,7 +448,8 @@ def _document(store: ProjectStore, src: MediaSource) -> ExtractionResult:
     data = office.read_document(path)
     r.extracted = {**features.text_features(data["text"]), **data}
     r.metadata = {"format": data["format"], "paragraphs": len(data["paragraphs"])}
-    r.partial("view-only: native editing of word-processing documents is not provided in V1")
+    r.partial("view-only source: text extracted; to edit, create a document artifact from it "
+              "(a copy; the source stays unchanged)")
     return r
 
 
@@ -461,7 +462,8 @@ def _spreadsheet(store: ProjectStore, src: MediaSource) -> ExtractionResult:
     r.extracted = {**features.text_features(data["text"]), **data}
     r.metadata = {"format": data["format"], "sheets": len(data["sheets"]),
                   "rows": sum(s["row_count"] for s in data["sheets"])}
-    r.partial("view-only: native spreadsheet editing is not provided in V1")
+    r.partial("view-only source: cells extracted; to edit, create a spreadsheet artifact from it "
+              "(a copy; the source stays unchanged)")
     return r
 
 
@@ -473,8 +475,8 @@ def _presentation(store: ProjectStore, src: MediaSource) -> ExtractionResult:
     data = office.read_presentation(source_file(store, src))
     r.extracted = {**features.text_features(data["text"]), **data}
     r.metadata = {"format": data["format"], "slides": data["slide_count"]}
-    r.partial("view-only: slide text extracted; slide rendering and editing are not provided "
-              "in V1")
+    r.partial("view-only source: slide text extracted; to edit, create a presentation artifact "
+              "from it (a copy; the source stays unchanged)")
     return r
 
 

@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import tempfile
 import threading
 import traceback
 from pathlib import Path
@@ -17,6 +18,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from . import __version__, bindings as binding_mod, ingest
+from . import connectors as conn_mod
 from .adapters import registry as adapter_registry
 from .artifacts import create_artifact, restore_revision
 from .engine import Engine, validate_workflow
@@ -32,7 +34,7 @@ from .models import (
     now_iso,
 )
 from .nodes import NODE_TYPES
-from .adapters import get_adapter
+from .adapters import AdapterError, get_adapter
 from .providers import providers as provider_registry
 from .semantic import service as semsvc
 from .store import ProjectStore, Workspace
@@ -173,6 +175,20 @@ class EditBody(BaseModel):
     operations: list[dict[str, Any]]
     message: str = ""
     base_revision_id: str | None = None
+
+
+class FromSourceBody(BaseModel):
+    source_id: str
+    name: str | None = None
+
+
+class RemoteImportBody(BaseModel):
+    remote_id: str
+    name: str | None = None
+
+
+class PublishBody(BaseModel):
+    connector: str
 
 
 class DependencyCreate(BaseModel):
@@ -438,13 +454,84 @@ def create_app(workspace_root: str | Path | None = None,
     @app.post("/api/projects/{pid}/artifacts")
     async def new_artifact(pid: str, body: ArtifactCreate):
         st = store_for(pid)
+        if body.template == "import":  # file imports only via stored sources / connectors
+            raise HTTPException(400, "use /artifacts/from_source or a connector import")
+        meta = {k: v for k, v in body.metadata.items() if k != "remote"}
         try:
             a, rev = await _in_thread(create_artifact, st, name=body.name, adapter=body.adapter,
                                       template=body.template, params=body.params,
-                                      artifact_type=body.artifact_type, metadata=body.metadata)
-        except RuntimeError as exc:
+                                      artifact_type=body.artifact_type, metadata=meta)
+        except (RuntimeError, AdapterError) as exc:
             raise HTTPException(400, str(exc))
         return {"artifact": a.model_dump(), "revision": rev.model_dump()}
+
+    @app.post("/api/projects/{pid}/artifacts/from_source")
+    async def artifact_from_source(pid: str, body: FromSourceBody):
+        """Make an editable Office artifact from a stored source file (OOXML copied in
+        unchanged; OpenDocument converted on a copy by LibreOffice)."""
+        st = store_for(pid)
+        src = st.get_source(body.source_id)
+        if not src.locator.path:
+            raise HTTPException(400, "source has no stored file")
+        path = st.abs(src.locator.path)
+        ext = path.suffix.lower()
+        try:
+            if ext in conn_mod.LibreOfficeConnector.ODF:
+                tmp = Path(tempfile.mkdtemp(prefix="dd_odf_"))
+                meta, path = await _in_thread(conn_mod.LibreOfficeConnector().to_ooxml, path, tmp)
+                fmt = meta.format
+            else:
+                fmt = ext.lstrip(".")
+            if fmt not in conn_mod.ADAPTER_FOR:
+                raise HTTPException(400, f"{src.name}: not an xlsx/docx/pptx/ods/odt/odp file")
+            a, rev = await _in_thread(
+                create_artifact, st, name=body.name or Path(src.name).stem,
+                adapter=conn_mod.ADAPTER_FOR[fmt], template="import",
+                params={"path": str(path), "name": body.name or src.name},
+                metadata={"imported_from_source": src.id})
+        except conn_mod.ConnectorError as exc:
+            raise HTTPException(409 if isinstance(exc, conn_mod.ConnectorBlocked) else 400,
+                                str(exc))
+        except (RuntimeError, AdapterError) as exc:
+            raise HTTPException(400, str(exc))
+        return {"artifact": a.model_dump(), "revision": rev.model_dump()}
+
+    # -- connectors (Microsoft Graph, Google Drive, LibreOffice) -----------------------
+    @app.get("/api/connectors")
+    def connectors():
+        return [c.status().model_dump() for c in conn_mod.registry().values()]
+
+    def _remote_connector(name: str):
+        c = conn_mod.registry().get(name)
+        if c is None or name == "libreoffice":
+            raise HTTPException(404, f"no remote connector '{name}'")
+        return c
+
+    @app.post("/api/projects/{pid}/connectors/{name}/import")
+    async def connector_import(pid: str, name: str, body: RemoteImportBody):
+        st = store_for(pid)
+        try:
+            a, rev = await _in_thread(conn_mod.import_remote, st, _remote_connector(name),
+                                      body.remote_id, body.name)
+        except conn_mod.ConnectorBlocked as exc:
+            raise HTTPException(409, f"blocked: {exc}")
+        except conn_mod.ConnectorError as exc:
+            raise HTTPException(400, str(exc))
+        return {"artifact": a.model_dump(), "revision": rev.model_dump()}
+
+    @app.post("/api/projects/{pid}/artifacts/{aid}/publish")
+    async def connector_publish(pid: str, aid: str, body: PublishBody):
+        st = store_for(pid)
+        try:
+            remote = await _in_thread(conn_mod.publish_remote, st, aid,
+                                      _remote_connector(body.connector))
+        except conn_mod.ConnectorConflict as exc:
+            raise HTTPException(409, f"conflict: {exc}")
+        except conn_mod.ConnectorBlocked as exc:
+            raise HTTPException(409, f"blocked: {exc}")
+        except conn_mod.ConnectorError as exc:
+            raise HTTPException(400, str(exc))
+        return remote.model_dump()
 
     @app.get("/api/projects/{pid}/artifacts/{aid}")
     def get_artifact(pid: str, aid: str):

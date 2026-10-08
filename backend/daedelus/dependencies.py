@@ -188,6 +188,37 @@ def status(store: ProjectStore, dep: ArtifactDependency, cache: dict | None = No
     return out
 
 
+_STATUS_CACHE: dict[str, tuple[str, list[dict[str, Any]]]] = {}
+
+
+def cached_status(store: ProjectStore) -> list[dict[str, Any]]:
+    """all_status, recomputed only when a dependency or an involved artifact head changed."""
+    deps = list_dependencies(store)
+    if not deps:
+        return []
+    arts = sorted({d.source.artifact_id for d in deps} | {d.target.artifact_id for d in deps})
+    heads = []
+    for a in arts:
+        try:
+            heads.append(store.get_artifact(a).head_revision_id or "")
+        except LookupError:
+            heads.append("missing")
+    key = _h_json([d.model_dump() for d in deps] + heads)
+    root = str(store.root)
+    hit = _STATUS_CACHE.get(root)
+    if hit and hit[0] == key:
+        return hit[1]
+    val = all_status(store)
+    _STATUS_CACHE[root] = (key, val)
+    return val
+
+
+def _h_json(v: Any) -> str:
+    import hashlib
+    import json
+    return hashlib.sha256(json.dumps(v, sort_keys=True, default=str).encode()).hexdigest()
+
+
 def all_status(store: ProjectStore) -> list[dict[str, Any]]:
     cache: dict[str, Any] = {}
     return [status(store, d, cache) for d in list_dependencies(store)]

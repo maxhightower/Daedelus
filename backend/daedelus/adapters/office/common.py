@@ -129,6 +129,25 @@ UNSUPPORTED_PARTS = {
 }
 
 
+def import_copy(src: Path, native_dir: Path, entry: str, params: dict[str, Any],
+                default_root: str, default_name: str, suffixes: tuple[str, ...]) -> dict[str, Any]:
+    """Copy an existing file in unchanged as the native entry; ids are assigned on inspect.
+
+    The file is not rewritten here: unsupported parts it contains (macros, embeddings...) stay
+    intact and make later edits refuse instead of silently dropping them."""
+    src = Path(src)
+    if src.suffix.lower() not in suffixes:
+        raise ValueError(f"cannot import {src.suffix or 'a file without extension'}; "
+                         f"expected {', '.join(suffixes)}")
+    native_dir.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(src, native_dir / entry)
+    ids = {"version": 1, "root": params.get("root_id", default_root),
+           "root_name": params.get("name", default_name), "components": {}, "specs": {},
+           "imported_from": src.name}
+    save_ids(native_dir, ids)
+    return ids
+
+
 def unsupported_features(path: Path, kind: str, own: set[str] | None = None) -> list[str]:
     """Parts the adapter cannot round-trip safely (and did not create itself)."""
     own = own or set()

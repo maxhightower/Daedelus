@@ -98,7 +98,7 @@ class PresentationAdapter(Adapter):
             validation=["file_reopens", "libreoffice_opens", "component_identity",
                         "component_preservation"],
             environment={"requires": "python-pptx (LibreOffice optional for thumbnails)"},
-            available=ok, unavailable_reason=None if ok else detail, templates=["blank"],
+            available=ok, unavailable_reason=None if ok else detail, templates=["blank", "import"],
             operations=[
                 OperationSpec(name="add_slide", family="create", aspects=["structure"],
                               target_kinds=["new"], description="Add a slide from a layout.",
@@ -246,6 +246,14 @@ class PresentationAdapter(Adapter):
 
     # ------------------------------------------------------------------ lifecycle
     def create(self, native_dir: Path, template: str, params: dict[str, Any]) -> str:
+        if template == "import":
+            try:
+                oc.import_copy(params["path"], native_dir, ENTRY, params, "presentation",
+                               "Presentation", (".pptx",))
+            except (KeyError, ValueError) as exc:
+                raise AdapterError(f"import: {exc}") from exc
+            _pptx().Presentation(str(native_dir / ENTRY))  # must parse
+            return ENTRY
         if template != "blank":
             raise AdapterError(f"unknown presentation template: {template}")
         pptx = _pptx()

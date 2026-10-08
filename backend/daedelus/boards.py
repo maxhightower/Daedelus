@@ -86,8 +86,8 @@ class Anchor(_M):
 
 
 class DomainRef(_M):
-    kind: Literal["binding", "workflow_edge", "none"] = "none"
-    id: str | None = None  # binding id / edge id
+    kind: Literal["binding", "workflow_edge", "artifact_dependency", "none"] = "none"
+    id: str | None = None  # binding id / edge id / dependency id
     workflow_id: str | None = None
 
 
@@ -236,6 +236,26 @@ def derived_connections(store: ProjectStore, board: CanvasBoard) -> list[CanvasC
                         domain_ref=DomainRef(kind="workflow_edge", id=e.id, workflow_id=wf.id),
                         presentation_state={**prefs.get(("workflow_edge", e.id, s.id, t.id), {}),
                                             "label": e.source_port}))
+    # dependency connections between artifact views (component-level links, V1.2)
+    from . import dependencies as dep_mod
+
+    for st in dep_mod.cached_status(store):
+        srcs = [i for i in by_res.get(f"artifact:{st['source']['artifact_id']}", [])
+                if i.item_type == "artifact_view"]
+        tgts = [i for i in by_res.get(f"artifact:{st['target']['artifact_id']}", [])
+                if i.item_type == "artifact_view"]
+        for s in srcs:
+            for t in tgts:
+                out.append(CanvasConnection(
+                    id=f"dep:{st['id']}:{s.id}:{t.id}", connection_type="dependency",
+                    source_item_id=s.id, target_item_id=t.id, derived=True,
+                    source_anchor=Anchor(handle="dep-out", component_id=st["source"]["component_id"]),
+                    target_anchor=Anchor(handle="dep-in", component_id=st["target"]["component_id"]),
+                    domain_ref=DomainRef(kind="artifact_dependency", id=st["id"]),
+                    presentation_state={
+                        **prefs.get(("artifact_dependency", st["id"], s.id, t.id), {}),
+                        "label": f"{st['source']['component_id']} → {st['target']['component_id']}",
+                        "status": st["status"], "stale": st["status"] != "synced"}))
     return out
 
 

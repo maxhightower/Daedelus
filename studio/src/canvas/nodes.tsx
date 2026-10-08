@@ -45,6 +45,8 @@ function Missing({ item }: { item: CanvasItem }) {
 }
 
 // ------------------------------------------------------------------ artifact view
+const ICON: Record<string, string> = { blender: "◆", layered2d: "▣", code: "{ }", spreadsheet: "▦", document: "¶", presentation: "▭" };
+
 export const ArtifactViewNode = memo(function ArtifactViewNode({ data, selected }: P) {
   const { item, missing } = data;
   const s = useStudio();
@@ -80,7 +82,7 @@ export const ArtifactViewNode = memo(function ArtifactViewNode({ data, selected 
       <Handle type="target" id="dep-in" position={Position.Bottom} className="h-dep" style={{ left: "35%" }} />
       <Handle type="source" id="dep-out" position={Position.Bottom} className="h-dep" style={{ left: "65%" }} />
       <div className="cnode-head" title="drag to move · double-click to edit in place">
-        <span className="kind-icon">{artifact.artifact_type === "model3d" ? "◆" : artifact.artifact_type === "image2d" ? "▣" : "{ }"}</span>
+        <span className="kind-icon">{ICON[artifact.adapter] ?? "{ }"}</span>
         <b>{artifact.name}</b>
         {item.presentation_state.label && <span className="muted"> · {item.presentation_state.label}</span>}
         <span className="spacer" />

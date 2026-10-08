@@ -227,6 +227,12 @@ export function StudioProvider({ children }: { children: ReactNode }) {
     });
   }, [projectId]);
 
+  // derived connections (e.g. dependency staleness) depend on artifact heads: refetch them
+  const headsKey = artifacts.map((a) => `${a.id}:${a.head_revision_id}`).join(",");
+  useEffect(() => {
+    if (headsKey) reloadBoard();
+  }, [headsKey, reloadBoard]);
+
   const pushHistory = useCallback((b: CanvasBoard) => {
     past.current.push({ items: b.items, connections: b.connections });
     if (past.current.length > 100) past.current.shift();

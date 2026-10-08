@@ -5,6 +5,7 @@ import { rendererFor } from "../canvas/renderers";
 import { BindingEditor } from "../components/BindingEditor";
 import { Badge, ComponentTree, Json, Section, Status, keyLabel, short, targetLabel } from "../components/common";
 import { ContextView } from "../components/ContextView";
+import { DependencyPanel } from "../components/DependencyPanel";
 import { ApprovalBox, ExecutionView } from "../components/ExecutionView";
 import { NodeConfigForm } from "../components/NodeConfigForm";
 import { RevisionView } from "../components/RevisionView";
@@ -156,6 +157,11 @@ function ComponentInspector({ artifactId, componentId, itemId }: { artifactId: s
       <Section title="Edit (creates a native revision)">
         <ComponentEditForm artifact={artifact} componentId={componentId} />
       </Section>
+      {["spreadsheet", "document", "presentation"].includes(artifact.adapter) && (
+        <Section title="Dependencies (cross-artifact)">
+          <DependencyPanel artifact={artifact} componentId={componentId} />
+        </Section>
+      )}
       <Section title={`Bindings anchored here (${anchored.length})`}>
         {anchored.map((b) => (
           <Section key={b.id} title={`${s.sources.find((x) => x.id === b.source_id)?.name} · ${b.role}`} collapsed>
@@ -220,6 +226,11 @@ function ArtifactInspector({ item, artifact }: { item: CanvasItem; artifact: Art
           }}
         />
       </Section>
+      {["spreadsheet", "document", "presentation"].includes(artifact.adapter) && (
+        <Section title="Dependencies (cross-artifact)">
+          <DependencyPanel artifact={artifact} />
+        </Section>
+      )}
       {constrained.length > 0 && (
         <Section title="Constraints">
           {constrained.map((b) =>
@@ -511,6 +522,17 @@ function ConnectionInspector({ connectionId }: { connectionId: string }) {
           )}
         </>
       )}
+      {c.domain_ref.kind === "artifact_dependency" && (() => {
+        const tgt = s.artifacts.find((a) => a.id === s.board?.items.find((i) => i.id === c.target_item_id)?.resource_ref.id);
+        return tgt ? (
+          <Section title="Component dependency">
+            <div className="small">
+              <code>{c.source_anchor.component_id}</code> → <code>{c.target_anchor.component_id}</code> · {String(c.presentation_state.status ?? "")}
+            </div>
+            <DependencyPanel artifact={tgt} componentId={c.target_anchor.component_id} />
+          </Section>
+        ) : null;
+      })()}
       {c.connection_type === "execution" && <div className="small">Workflow edge {c.domain_ref.id}: port {c.source_anchor.port} → {c.target_anchor.port}. Delete with the Delete key (creates a new workflow version).</div>}
       {!c.derived && (
         <div className="form-grid">

@@ -102,7 +102,7 @@ class DocumentAdapter(Adapter):
             validation=["file_reopens", "libreoffice_opens", "component_identity",
                         "component_preservation"],
             environment={"requires": "python-docx (LibreOffice optional for previews)"},
-            available=ok, unavailable_reason=None if ok else detail, templates=["blank"],
+            available=ok, unavailable_reason=None if ok else detail, templates=["blank", "import"],
             operations=[
                 OperationSpec(name="add_heading", family="create", aspects=["structure", "content"],
                               target_kinds=["new"], description="Add a heading (starts a section) "
@@ -268,6 +268,14 @@ class DocumentAdapter(Adapter):
 
     # ------------------------------------------------------------------ lifecycle
     def create(self, native_dir: Path, template: str, params: dict[str, Any]) -> str:
+        if template == "import":
+            try:
+                oc.import_copy(params["path"], native_dir, ENTRY, params, "document", "Document",
+                               (".docx",))
+            except (KeyError, ValueError) as exc:
+                raise AdapterError(f"import: {exc}") from exc
+            self._open(native_dir / ENTRY)  # must parse
+            return ENTRY
         if template != "blank":
             raise AdapterError(f"unknown document template: {template}")
         docx = _docx()

@@ -66,6 +66,8 @@ def main(argv: list[str] | None = None) -> int:
     d11.add_argument("--out", default="evidence/v1_1")
     d11.add_argument("--live", default=None, choices=["anthropic", "gemini"],
                      help="also run live gates with this provider (needs credentials)")
+    d12 = sub.add_parser("demo-v12", help="V1.2 research analysis & presentation pipeline")
+    d12.add_argument("--out", default="evidence/v1_2")
     r = sub.add_parser("run", help="execute a workflow")
     r.add_argument("project")
     r.add_argument("workflow")
@@ -107,6 +109,13 @@ def main(argv: list[str] | None = None) -> int:
             print(f"{d['id']}: {d['status'].upper()} ({d['verification']})"
                   + (f" - blocked by: {d['blocked_by']}" if d["blocked_by"] else ""))
         return 1 if bad else 0
+    if args.cmd == "demo-v12":
+        from .scenarios_v12 import run as run_v12
+
+        rep = run_v12(Path(args.out).resolve())
+        for d in rep["demos"]:
+            print(f"{d['id']}: {d['status'].upper()} ({d['verification']})")
+        return 0 if all(d["status"] == "passed" for d in rep["demos"]) else 1
     if args.cmd in ("run", "replay"):
         from .engine import Engine
         from .store import Workspace

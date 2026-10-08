@@ -24,7 +24,12 @@ jobs:
         with:
           python-version: "3.12"
       - name: System packages
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg libxi6 libxkbcommon0 libxrender1 libxxf86vm1 libxfixes3 libsm6 libgl1 libegl1
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg libxi6 libxkbcommon0 libxrender1 libxxf86vm1 libxfixes3 libsm6 libgl1 libegl1
+          # V1.2 Office adapters: LibreOffice (recalculation, previews, ODF conversion) + poppler
+          sudo apt-get install -y -qq --no-install-recommends libreoffice-calc libreoffice-writer libreoffice-impress poppler-utils fonts-dejavu-core
+          soffice --version
       - name: Cache Blender
         id: blender-cache
         uses: actions/cache@v4
@@ -44,6 +49,7 @@ jobs:
         working-directory: backend
         run: |
           export DAEDELUS_BLENDER=$HOME/blender/blender
+          export DAEDELUS_REQUIRE_LIBREOFFICE=1
           "$DAEDELUS_BLENDER" --version | head -1
           pytest -q -rs --junitxml=../evidence-ci/pytest-linux.xml
       - name: Demonstration scenarios (Section 8)
@@ -54,6 +60,8 @@ jobs:
         run: |
           export DAEDELUS_BLENDER=$HOME/blender/blender
           daedelus demo-v11 --out evidence-ci/v1_1
+      - name: V1.2 research analysis & presentation pipeline (xlsx/docx/pptx + dependencies)
+        run: daedelus demo-v12 --out evidence-ci/v1_2
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -61,6 +69,7 @@ jobs:
           path: |
             evidence-ci/
             !evidence-ci/demo/workspace/
+            !evidence-ci/v1_2/workspace/
 
   studio:
     name: Studio (typecheck, unit tests, build)
@@ -95,7 +104,12 @@ jobs:
           cache: npm
           cache-dependency-path: studio/package-lock.json
       - name: System packages
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg libxi6 libxkbcommon0 libxrender1 libxxf86vm1 libxfixes3 libsm6 libgl1 libegl1
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg libxi6 libxkbcommon0 libxrender1 libxxf86vm1 libxfixes3 libsm6 libgl1 libegl1
+          # V1.2 Office adapters: LibreOffice (recalculation, previews, ODF conversion) + poppler
+          sudo apt-get install -y -qq --no-install-recommends libreoffice-calc libreoffice-writer libreoffice-impress poppler-utils fonts-dejavu-core
+          soffice --version
       - name: Cache Blender
         id: blender-cache
         uses: actions/cache@v4
@@ -121,6 +135,9 @@ jobs:
       - name: V1.1 semantic walkthrough (analysis, context package, plan preview, loop)
         if: always()
         run: cd studio && STUDIO_URL=http://127.0.0.1:8765 OUT=../evidence-ci/semantic node e2e/semantic.e2e.mjs
+      - name: V1.2 office walkthrough (grid/document/slides in place, dependency updates)
+        if: always()
+        run: cd studio && STUDIO_URL=http://127.0.0.1:8765 OUT=../evidence-ci/office node e2e/office.e2e.mjs
       - name: Board performance measurement (150+ items, 200+ connections)
         if: always()
         run: cd studio && STUDIO_URL=http://127.0.0.1:8765 OUT=../evidence-ci/perf node e2e/perf.e2e.mjs

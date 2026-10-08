@@ -12,6 +12,7 @@ import { acquireGL, releaseGL, Viewer3D, type CameraState } from "../components/
 import { useStudio } from "../state";
 import type { Artifact, CanvasItem, MediaSource, Revision } from "../types";
 import { codeDrafts, draftKey, invalidateRevision, useDrafts, type Lod } from "./hooks";
+import { DocView, SheetView, SlidesView } from "./office";
 
 const CodeEditorLazy = lazy(() => import("../components/Code").then((m) => ({ default: m.CodeEditor })));
 const CodeDiffLazy = lazy(() => import("../components/Code").then((m) => ({ default: m.CodeDiff })));
@@ -259,7 +260,7 @@ function FileCardView({ artifact, revision }: ArtifactRendererProps) {
       <div className="muted small">
         native: <code>{artifact.native_dir}/{artifact.entry}</code>
       </div>
-      <div className="muted small">rev {revision?.number ?? "?"} · no embedded editor for this artifact type in V1</div>
+      <div className="muted small">rev {revision?.number ?? "?"} · no embedded editor for this artifact type</div>
     </div>
   );
 }
@@ -268,7 +269,9 @@ export const ARTIFACT_RENDERERS: ArtifactRenderer[] = [
   { id: "model3d", label: "3D viewport", match: (a) => a.adapter === "blender", componentPicking: "exact", nativeEditing: true, View: Model3DView },
   { id: "layered2d", label: "Layered image", match: (a) => a.adapter === "layered2d", componentPicking: "list", nativeEditing: true, View: LayeredView },
   { id: "code", label: "Code / files", match: (a) => a.adapter === "code", componentPicking: "list", nativeEditing: true, View: CodeView },
-  // Spreadsheet / document / presentation artifact adapters register here in a later milestone.
+  { id: "sheet", label: "Spreadsheet grid", match: (a) => a.adapter === "spreadsheet", componentPicking: "exact", nativeEditing: true, View: SheetView },
+  { id: "doc", label: "Document", match: (a) => a.adapter === "document", componentPicking: "exact", nativeEditing: true, View: DocView },
+  { id: "slides", label: "Slides", match: (a) => a.adapter === "presentation", componentPicking: "exact", nativeEditing: true, View: SlidesView },
   { id: "file", label: "File card", match: () => true, componentPicking: "none", nativeEditing: false, View: FileCardView },
 ];
 export const rendererFor = (a: Artifact) => ARTIFACT_RENDERERS.find((r) => r.match(a))!;

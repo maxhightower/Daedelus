@@ -17,6 +17,7 @@ export function TypedEdge({ id, sourceX, sourceY, targetX, targetY, sourcePositi
   const st = STYLE[conn.connection_type];
   const [path, lx, ly] = getBezierPath({ sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition });
   const disabled = conn.presentation_state.enabled === false;
+  const stale = conn.connection_type === "dependency" && conn.presentation_state.stale;
   const label = conn.presentation_state.label ? `${PREFIX[conn.connection_type]}: ${conn.presentation_state.label}` : PREFIX[conn.connection_type];
   return (
     <>
@@ -25,7 +26,7 @@ export function TypedEdge({ id, sourceX, sourceY, targetX, targetY, sourcePositi
         path={path}
         markerEnd={st.marker}
         style={{
-          stroke: st.stroke,
+          stroke: stale ? "#e0a030" : st.stroke,
           strokeDasharray: st.dash,
           strokeWidth: selected ? st.width + 1.5 : st.width,
           opacity: data!.dim ? 0.15 : disabled ? 0.4 : 0.95,
@@ -34,10 +35,12 @@ export function TypedEdge({ id, sourceX, sourceY, targetX, targetY, sourcePositi
       {!data!.dim && (
         <EdgeLabelRenderer>
           <div
-            className={`edge-label t-${conn.connection_type} ${selected ? "sel" : ""}`}
+            className={`edge-label t-${conn.connection_type} ${selected ? "sel" : ""} ${stale ? "stale" : ""}`}
+            data-status={conn.presentation_state.status}
             style={{ transform: `translate(-50%, -50%) translate(${lx}px,${ly}px)` }}
           >
             {label}
+            {stale ? ` · ${String(conn.presentation_state.status).replace("_", " ")}` : ""}
             {conn.presentation_state.hard && " · hard"}
             {conn.target_anchor.component_id && ` → ${conn.target_anchor.component_id}`}
           </div>

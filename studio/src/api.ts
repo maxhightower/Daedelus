@@ -162,3 +162,47 @@ export const boardApi = {
   glb: (pid: string, rid: string) => req<{ path: string }>("GET", `${P(pid)}/revisions/${rid}/glb`),
   operations: (pid: string, aid: string) => req<any[]>("GET", `${P(pid)}/artifacts/${aid}/operations`),
 };
+
+// V1.2 Office views, cross-artifact dependencies, connectors
+export interface OfficeView {
+  artifact_id: string;
+  adapter: "spreadsheet" | "document" | "presentation";
+  revision_id: string;
+  revision_number: number;
+  view: any;
+  pages: string[];
+  pdf?: string | null;
+}
+export interface DependencyEnd {
+  artifact_id: string;
+  component_id: string;
+  artifact_name?: string;
+  component_name?: string;
+  kind?: string;
+}
+export interface DependencyStatus {
+  id: string;
+  route: string;
+  source: DependencyEnd;
+  target: DependencyEnd;
+  status: "synced" | "stale" | "never_synced" | "missing_source" | "missing_target" | "needs_recalc";
+  reason?: string;
+  options?: Record<string, any>;
+}
+export const officeApi = {
+  view: (pid: string, aid: string, revision_id?: string) =>
+    req<OfficeView>("GET", `${P(pid)}/artifacts/${aid}/office${revision_id ? `?revision_id=${revision_id}` : ""}`),
+  dependencies: (pid: string, artifact_id?: string) =>
+    req<DependencyStatus[]>("GET", `${P(pid)}/dependencies${artifact_id ? `?artifact_id=${artifact_id}` : ""}`),
+  addDependency: (pid: string, body: { source: DependencyEnd; target: DependencyEnd; target_kind?: string; options?: any; note?: string }) =>
+    req<DependencyStatus>("POST", `${P(pid)}/dependencies`, body),
+  removeDependency: (pid: string, id: string) => req<any>("DELETE", `${P(pid)}/dependencies/${id}`),
+  sync: (pid: string, body: { dependency_ids?: string[]; target_artifact_ids?: string[]; force?: boolean }) =>
+    req<{ revisions: { artifact_id: string; revision_id: string; revision_number: number; changed: string[] }[]; failed: any[]; skipped: any[]; status: DependencyStatus[] }>(
+      "POST",
+      `${P(pid)}/dependencies/sync`,
+      body,
+    ),
+  connectors: () => req<{ name: string; title: string; configured: boolean; available: boolean; reason?: string; verification: string }[]>("GET", `/api/connectors`),
+  fromSource: (pid: string, source_id: string, name?: string) => req<{ artifact: Artifact; revision: Revision }>("POST", `${P(pid)}/artifacts/from_source`, { source_id, name }),
+};

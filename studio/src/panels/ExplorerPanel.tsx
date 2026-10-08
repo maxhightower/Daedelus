@@ -250,7 +250,7 @@ export function ExplorerPanel() {
             .map((a) => (
               <div key={a.id}>
                 <Row
-                  icon={a.artifact_type === "model3d" ? "◆" : a.artifact_type === "image2d" ? "▣" : "{ }"}
+                  icon={({ blender: "◆", layered2d: "▣", spreadsheet: "▦", document: "¶", presentation: "▭" } as Record<string, string>)[a.adapter] ?? "{ }"}
                   label={a.name}
                   sub={<span className="muted">{s.itemsFor({ kind: "artifact", id: a.id }).length} view(s)</span>}
                   dragRef={{ kind: "artifact", id: a.id }}
