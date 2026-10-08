@@ -163,4 +163,7 @@ NODE_TYPES: dict[str, NodeType] = {n.type: n for n in [
 
 
 def compatible(src_type: str, dst_type: str) -> bool:
-    return src_type == dst_type or "any" in (src_type, dst_type)
+    # an artifact output carries its head revision, so it can feed revision inputs
+    # (e.g. validate or export an artifact without running an agent first)
+    return src_type == dst_type or "any" in (src_type, dst_type) or \
+        (src_type, dst_type) == ("artifact", "revision")

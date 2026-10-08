@@ -414,6 +414,14 @@ def s7_restart(r: Run):
     t_restart = time.time()
     r.check("control plane back after restart", r.wait_health())
     r.dc("start", "worker-office")
+    # keep the slow worker only until its in-flight job is done, then let normal workers run
+    t1 = time.time()
+    while applied and time.time() - t1 < 120:
+        st = r.c.get(f"/api/projects/{pid}/jobs/{applied['id']}").json()["status"]["state"]
+        if st in ("succeeded", "failed", "timed_out", "cancelled", "conflict"):
+            break
+        time.sleep(1)
+    r.docker("rm", "-f", "steady", check=False)
     ex = r.wait_execution(pid, ex["id"], timeout=1200)
     r.metrics["execution_after_restart_seconds"] = round(time.time() - t_restart, 1)
     r.check("interrupted execution resumed and succeeded", ex["status"] == "succeeded",
