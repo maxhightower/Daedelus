@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import json
 import os
-import signal
 import socket
 import subprocess
 import sys
@@ -23,6 +22,7 @@ import pytest
 from daedelus.distributed import cas
 from daedelus.distributed.models import JobRequest, JobResult, Manifest, WorkerInfo
 from daedelus.distributed.queue import JobQueue, LeaseLost
+from daedelus.distributed.worker import kill_tree, new_group_kwargs
 
 WT = "worker-token-" + "x" * 24
 
@@ -170,7 +170,7 @@ class Cluster:
         if max_jobs:
             args += ["--max-jobs", str(max_jobs)]
         p = subprocess.Popen(args, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                             start_new_session=True)
+                             **new_group_kwargs())
         self.procs.append(p)
         t0 = time.time()
         while not any(w["name"] == name for w in self.c.get("/api/cluster/status").json()
@@ -188,9 +188,7 @@ class Cluster:
 
     def close(self):
         for p in self.procs:
-            if p.poll() is None:
-                os.killpg(p.pid, signal.SIGKILL)
-                p.wait()
+            kill_tree(p)
         self.server.should_exit = True
         from daedelus.distributed import service
         service.reset()

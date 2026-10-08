@@ -31,6 +31,30 @@ from .cas import BlobStore, materialize, snapshot
 from .models import MUTATING, JobResult, Lease
 
 
+def new_group_kwargs() -> dict[str, Any]:
+    """Start a child in its own process group/session so the whole tree can be killed."""
+    if os.name == "nt":
+        return {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
+    return {"start_new_session": True}
+
+
+def kill_tree(proc: subprocess.Popen) -> None:
+    """Kill a child and everything it started (Blender, LibreOffice...)."""
+    if proc.poll() is None:
+        if os.name == "nt":
+            subprocess.run(["taskkill", "/F", "/T", "/PID", str(proc.pid)],
+                           capture_output=True)
+        else:
+            try:
+                os.killpg(proc.pid, signal.SIGKILL)
+            except (ProcessLookupError, PermissionError):
+                pass
+    try:
+        proc.wait(timeout=10)
+    except subprocess.TimeoutExpired:
+        proc.kill()
+
+
 class LeaseRevoked(Exception):
     pass
 
@@ -194,8 +218,8 @@ class Worker:
                 return
             state.update(progress=0.2, message=f"running {job.adapter}.{job.method}")
             proc = subprocess.Popen([sys.executable, "-m", "daedelus.distributed.runjob", str(jd)],
-                                    start_new_session=True, stdout=subprocess.PIPE,
-                                    stderr=subprocess.STDOUT)
+                                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                    **new_group_kwargs())
             slow = float(self.faults.get("slow") or 0)
             deadline = t0 + job.timeout_s
             while proc.poll() is None or slow > time.time() - t0:
@@ -251,11 +275,7 @@ class Worker:
             shutil.rmtree(jd, ignore_errors=True)
 
     def _kill(self, proc: subprocess.Popen) -> None:
-        try:
-            os.killpg(proc.pid, signal.SIGKILL)
-        except (ProcessLookupError, PermissionError):
-            pass
-        proc.wait(timeout=10)
+        kill_tree(proc)
 
     def _fail(self, lease: Lease, error: str, retryable: bool, *, cancelled: bool = False) -> None:
         try:
