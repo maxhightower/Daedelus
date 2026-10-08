@@ -134,7 +134,7 @@ not a coding IDE.
 * Studio unit tests (vitest): 3 passed; TypeScript typecheck + production build pass.
 * Studio end-to-end walkthrough (Playwright, real backend + Blender): **15/15** checks
   (`docs/screenshots/e2e_results.json`).
-* CI results: see §10.
+* CI results: all green on Linux and Windows, see §10.
 
 ## 9. Validation that still requires native hardware / GUI
 
@@ -148,7 +148,24 @@ not a coding IDE.
 
 ## 10. Windows build results
 
-_Filled in from the GitHub Actions run of the final commit (see hand-off message)._
+Verified on commit `82b7216` (GitHub Actions, all jobs green):
+
+| Workflow / job | Result |
+|---|---|
+| [CI](https://github.com/maxhightower/Daedelus/actions/runs/37802773969) · Backend tests (Linux, Blender 4.5.14 LTS) + Section 8 demo | success |
+| CI · Studio (typecheck, vitest, production build) | success |
+| CI · Studio end-to-end (Playwright + backend + Blender) | success |
+| [Windows desktop build](https://github.com/maxhightower/Daedelus/actions/runs/37802773706) | success |
+
+Windows job details (artifact `windows-desktop`):
+
+* Core tests on `windows-latest`: 57 collected, 0 failures, 0 errors, **4 skipped** (the Blender
+  tests; there is no Blender on the runner).
+* PyInstaller sidecar built and smoke-tested: the frozen `daedelus-server.exe` served `/api/health`
+  and created a project.
+* Tauri bundles: `Daedelus Studio_0.1.0_x64-setup.exe` (NSIS, 43.8 MB) and
+  `Daedelus Studio_0.1.0_x64_en-US.msi` (44.6 MB). They are unsigned and have not been installed or
+  launched interactively (§9).
 
 ## 11. Known limitations
 
