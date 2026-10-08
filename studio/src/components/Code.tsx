@@ -16,7 +16,7 @@ const lang = (path: string) => {
   return { py: "python", json: "javascript", ts: "typescript", tsx: "typescript", js: "javascript", md: "markdown", diff: "diff" }[ext] ?? "plaintext";
 };
 
-export function CodeView({ path, text, height = 360 }: { path: string; text: string; height?: number }) {
+export function CodeView({ path, text, height = 360 }: { path: string; text: string; height?: number | string }) {
   return (
     <Editor
       height={height}
@@ -29,7 +29,7 @@ export function CodeView({ path, text, height = 360 }: { path: string; text: str
   );
 }
 
-export function CodeDiff({ path, before, after, height = 360 }: { path: string; before: string; after: string; height?: number }) {
+export function CodeDiff({ path, before, after, height = 360 }: { path: string; before: string; after: string; height?: number | string }) {
   return (
     <DiffEditor
       height={height}
@@ -40,6 +40,21 @@ export function CodeDiff({ path, before, after, height = 360 }: { path: string; 
       keepCurrentOriginalModel
       keepCurrentModifiedModel
       options={{ readOnly: true, renderSideBySide: true, minimap: { enabled: false }, fontSize: 12 }}
+    />
+  );
+}
+
+/** Editable Monaco editor (used by in-place and Focus code editing). */
+export function CodeEditor({ path, value, onChange, height = 360 }: { path: string; value: string; onChange: (v: string) => void; height?: number | string }) {
+  return (
+    <Editor
+      height={height}
+      theme="vs-dark"
+      path={`edit://${path}`}
+      language={lang(path)}
+      value={value}
+      onChange={(v) => onChange(v ?? "")}
+      options={{ minimap: { enabled: false }, fontSize: 12, scrollBeyondLastLine: false, automaticLayout: true }}
     />
   );
 }

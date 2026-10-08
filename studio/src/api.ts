@@ -1,6 +1,8 @@
 // Thin typed client for the Daedelus backend.
 import type {
   Artifact,
+  CanvasBoard,
+  ResourceRef,
   Binding,
   Execution,
   ExecutionSummary,
@@ -134,4 +136,21 @@ export const api = {
 
   messages: (pid: string) => req<any[]>("GET", `${P(pid)}/agent/messages`),
   sendMessage: (pid: string, body: any) => req<any>("POST", `${P(pid)}/agent/messages`, body),
+};
+
+// V1 boards and in-place editing
+export const boardApi = {
+  list: (pid: string) => req<{ id: string; name: string; revision: number; items: number; updated_at: string }[]>("GET", `${P(pid)}/boards`),
+  create: (pid: string, name: string, layout: "empty" | "default" = "empty") => req<CanvasBoard>("POST", `${P(pid)}/boards`, { name, layout }),
+  get: (pid: string, bid: string) => req<CanvasBoard>("GET", `${P(pid)}/boards/${bid}`),
+  save: (pid: string, board: CanvasBoard, expected_revision: number | null) =>
+    req<CanvasBoard>("PUT", `${P(pid)}/boards/${board.id}`, { board, expected_revision }),
+  rename: (pid: string, bid: string, name: string) => req<CanvasBoard>("PATCH", `${P(pid)}/boards/${bid}`, { name }),
+  remove: (pid: string, bid: string) => req<any>("DELETE", `${P(pid)}/boards/${bid}`),
+  place: (pid: string, bid: string, resource_ref: ResourceRef, x?: number, y?: number, extra: any = {}) =>
+    req<{ item: any; board: CanvasBoard }>("POST", `${P(pid)}/boards/${bid}/place`, { resource_ref, x, y, ...extra }),
+  edit: (pid: string, aid: string, operations: any[], message: string, base_revision_id?: string | null) =>
+    req<Revision>("POST", `${P(pid)}/artifacts/${aid}/edit`, { operations, message, base_revision_id }),
+  glb: (pid: string, rid: string) => req<{ path: string }>("GET", `${P(pid)}/revisions/${rid}/glb`),
+  operations: (pid: string, aid: string) => req<any[]>("GET", `${P(pid)}/artifacts/${aid}/operations`),
 };

@@ -143,6 +143,7 @@ export interface Revision {
   diff?: string | null;
   has_diff?: boolean;
   vcs_commit?: string | null;
+  origin?: "create" | "workflow" | "manual" | "restore" | null;
 }
 
 export interface WorkflowNode {
@@ -308,3 +309,80 @@ export const targetKey = (t: TargetSelector): string =>
     : t.scope === "artifact"
       ? `artifact:${t.artifact_id}`
       : `artifact:${t.artifact_id}#${t.component_id}`;
+
+// ---------------------------------------------------------------------------
+// V1 spatial boards (mirrors backend/daedelus/boards.py)
+// ---------------------------------------------------------------------------
+
+export type ResourceKind = "artifact" | "source" | "workflow" | "workflow_node" | "execution" | "note" | "frame" | "none";
+export type ItemType = "artifact_view" | "source" | "operation" | "note" | "frame" | "workflow";
+export type ConnectionType = "reference" | "execution" | "dependency" | "annotation";
+
+export interface ResourceRef {
+  kind: ResourceKind;
+  id?: string | null;
+  workflow_id?: string | null;
+  node_id?: string | null;
+}
+
+export interface CanvasItem {
+  id: string;
+  item_type: ItemType;
+  resource_ref: ResourceRef;
+  position: { x: number; y: number };
+  size: { width: number; height: number };
+  z_index: number;
+  presentation_state: Record<string, any>;
+  group_id?: string | null;
+  collapsed: boolean;
+  metadata: Record<string, any>;
+}
+
+export interface Anchor {
+  handle?: string | null;
+  component_id?: string | null;
+  port?: string | null;
+}
+
+export interface CanvasConnection {
+  id: string;
+  connection_type: ConnectionType;
+  source_item_id: string;
+  target_item_id: string;
+  source_anchor: Anchor;
+  target_anchor: Anchor;
+  domain_ref: { kind: "binding" | "workflow_edge" | "none"; id?: string | null; workflow_id?: string | null };
+  presentation_state: Record<string, any>;
+  derived: boolean;
+}
+
+export interface Viewport {
+  x: number;
+  y: number;
+  zoom: number;
+}
+
+export interface CanvasBoard {
+  id: string;
+  project_id: string;
+  name: string;
+  schema_version: number;
+  revision: number;
+  items: CanvasItem[];
+  connections: CanvasConnection[];
+  saved_views: { id: string; name: string; viewport: Viewport }[];
+  viewport: Viewport;
+  created_at: string;
+  updated_at: string;
+  missing_items?: string[];
+}
+
+export const refKey = (r: ResourceRef): string =>
+  r.kind === "workflow_node" ? `workflow_node:${r.workflow_id}:${r.node_id}` : `${r.kind}:${r.id}`;
+
+export type Selection =
+  | { kind: "none" }
+  | { kind: "items"; itemIds: string[] }
+  | { kind: "component"; itemId: string | null; artifactId: string; componentId: string }
+  | { kind: "connection"; connectionId: string }
+  | { kind: "resource"; ref: ResourceRef };
