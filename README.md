@@ -10,7 +10,11 @@ OpenRaster layered images, git-tracked code).
 Media type, meaning and scope are independent concepts. No medium, provider or pipeline is
 built in as primary.
 
-![Workflow editor after a run](docs/screenshots/08_workflow_after_run.png)
+The studio is one spatial workspace: an explorer, an infinite canvas of live artifact views,
+references and workflow operations, and a contextual inspector. Artifacts are edited in place
+or in Focus through their native adapters.
+
+![Spatial board](docs/screenshots/v1/v1_06_binding_on_component.png)
 
 ## Layout
 
@@ -18,8 +22,8 @@ built in as primary.
 |---|---|
 | `backend/` | Python package `daedelus`: domain model, SQLite/filesystem store, ingestion, binding resolver, workflow engine, adapters (Blender, OpenRaster, git/code), planners (deterministic heuristic, Claude), FastAPI, CLI, demonstration scenarios, tests |
 | `studio/` | React + TypeScript studio (React Flow, Three.js, Monaco); `studio/src-tauri` Tauri 2 desktop shell; `studio/e2e` Playwright walkthrough |
-| `docs/` | [Architecture](docs/ARCHITECTURE.md), [V0 report](docs/V0_REPORT.md), UI screenshots |
-| `evidence/` | Demonstration report, before/after renders, manifest diff |
+| `docs/` | [Architecture](docs/ARCHITECTURE.md), [V1 spatial canvas architecture](docs/V1_ARCHITECTURE.md), [V0 report](docs/V0_REPORT.md), [V1 report](docs/V1_REPORT.md), UI screenshots |
+| `evidence/` | Demonstration report, before/after renders, manifest diff; `evidence/v1` walkthrough and performance results |
 | `.github/workflows/` | Linux CI (backend + Blender, studio, browser e2e) and Windows desktop build |
 
 ## Quick start (development)

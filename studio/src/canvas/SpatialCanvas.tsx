@@ -370,20 +370,23 @@ export function SpatialCanvas() {
       if (s.focusItemId) return;
       if (e.key === "Enter" && s.selection.kind === "items" && s.selection.itemIds.length === 1) {
         const it = itemById(s.selection.itemIds[0]);
-        if (it && ["artifact_view", "note"].includes(it.item_type)) {
+        if (it && e.shiftKey && it.item_type === "artifact_view") {
           e.preventDefault();
-          s.setActive(it.id);
+          s.setFocusItem(it.id); // Level 3
+        } else if (it && ["artifact_view", "note"].includes(it.item_type)) {
+          e.preventDefault();
+          s.setActive(it.id); // Level 2
         }
       }
       if ((e.key === "Delete" || e.key === "Backspace") && !s.activeItemId) {
         e.preventDefault();
         deleteSelection();
       }
-      if (e.shiftKey && e.key === "!") {
+      if (e.shiftKey && e.code === "Digit1") {
         const b = itemBounds(board!.items);
         if (b) rf.fitBounds(b, { padding: 0.08, duration: 300 });
       }
-      if (e.shiftKey && e.key === "@" && selectedIds.size) {
+      if (e.shiftKey && e.code === "Digit2" && selectedIds.size) {
         const b = itemBounds(board!.items.filter((i) => selectedIds.has(i.id)));
         if (b) rf.fitBounds(b, { padding: 0.25, duration: 300 });
       }

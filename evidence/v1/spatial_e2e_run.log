@@ -55,6 +55,8 @@ PASS [F integrated workflows] incremental: only the sky unit re-ran in the 2D ag
 PASS [F integrated workflows] new validate operation ran
 PASS [F integrated workflows] execution did not rearrange or reset the board
 PASS [undo/redo] Ctrl+Z undoes a board-layout action without touching artifact revisions
-PASS [undo/redo] no uncaught page errors
+PASS [keyboard] Shift+Enter opens the selected view in Focus
+PASS [keyboard] Escape leaves Focus
+PASS [keyboard] no uncaught page errors
 
-PASS: 58/58
+PASS: 60/60

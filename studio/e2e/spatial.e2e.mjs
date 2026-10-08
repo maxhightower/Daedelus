@@ -523,6 +523,14 @@ try {
   const headStill = (await artByName("Table")).head_revision_id === headU;
   check("Ctrl+Z undoes a board-layout action without touching artifact revisions", nAfter === nBefore + 1 && nUndo === nBefore && headStill, `${nBefore} ${nAfter} ${nUndo}`);
 
+  // keyboard path into Focus and back (Shift+Enter, Escape)
+  scenario = "keyboard";
+  await locateInExplorer("ex-artifact-Background");
+  await page.keyboard.press("Shift+Enter");
+  check("Shift+Enter opens the selected view in Focus", await page.locator("[data-testid=focus-editor]").waitFor({ timeout: 10000 }).then(() => true, () => false));
+  await page.keyboard.press("Escape");
+  check("Escape leaves Focus", await page.locator("[data-testid=focus-editor]").waitFor({ state: "detached", timeout: 10000 }).then(() => true, () => false));
+
   check("no uncaught page errors", pageErrors.length === 0, pageErrors.join(" | "));
 } catch (e) {
   check("walkthrough completed without exceptions", false, e?.stack || e);

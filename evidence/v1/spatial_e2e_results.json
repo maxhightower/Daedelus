@@ -342,7 +342,19 @@
   "detail": ""
  },
  {
-  "scenario": "undo/redo",
+  "scenario": "keyboard",
+  "name": "Shift+Enter opens the selected view in Focus",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "keyboard",
+  "name": "Escape leaves Focus",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "keyboard",
   "name": "no uncaught page errors",
   "ok": true,
   "detail": ""
