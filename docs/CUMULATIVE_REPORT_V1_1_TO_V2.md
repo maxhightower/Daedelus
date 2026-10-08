@@ -11,8 +11,8 @@ Three milestones on stacked branches; none merged into main, no pull requests.
 | Architecture | [V1_1_ARCHITECTURE](V1_1_ARCHITECTURE.md) | [V1_2_ARCHITECTURE](V1_2_ARCHITECTURE.md) | [V2_ARCHITECTURE](V2_ARCHITECTURE.md), [SECURITY_MODEL](SECURITY_MODEL.md), [CLOUD_DEPLOYMENT](CLOUD_DEPLOYMENT.md) |
 | Evidence | `evidence/v1_1` | `evidence/v1_2` | `evidence/v2` |
 | Screenshots | `docs/screenshots/v1_1` | `docs/screenshots/v1_2` | `docs/screenshots/v2` |
-| CI (Linux) | [37828963032](https://github.com/maxhightower/Daedelus/actions/runs/37828963032) success | [37836874690](https://github.com/maxhightower/Daedelus/actions/runs/37836874690) success | see V2 report §11 |
-| Windows build | [37828962983](https://github.com/maxhightower/Daedelus/actions/runs/37828962983) success | [37836874558](https://github.com/maxhightower/Daedelus/actions/runs/37836874558) success | see V2 report §11 |
+| CI (Linux) | [37828963032](https://github.com/maxhightower/Daedelus/actions/runs/37828963032) success | [37836874690](https://github.com/maxhightower/Daedelus/actions/runs/37836874690) success | [37851627827](https://github.com/maxhightower/Daedelus/actions/runs/37851627827) success (code identical to `923ca4f`) |
+| Windows build | [37828962983](https://github.com/maxhightower/Daedelus/actions/runs/37828962983) success | [37836874558](https://github.com/maxhightower/Daedelus/actions/runs/37836874558) success | [37851627872](https://github.com/maxhightower/Daedelus/actions/runs/37851627872) success |
 
 ## What each milestone added
 

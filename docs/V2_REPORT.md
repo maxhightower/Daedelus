@@ -111,7 +111,7 @@ Logs: `evidence/v2/regression/`.
 
 ## 6. CI
 
-* CI on `923ca4f`: see §11 (filled in after the run).
+* CI: see §11.
 * Windows desktop build on `e925ab2`:
   [run 37849484795](https://github.com/maxhightower/Daedelus/actions/runs/37849484795),
   **success**. Its first run on `6b4b4b8` had failed: the POSIX-only `os.killpg` was used in
@@ -177,4 +177,23 @@ such. Live AI verified: none.
 
 ## 11. CI result on the frozen SHA
 
-(filled in after the CI run on `923ca4f`)
+The runs triggered directly on `923ca4f` were cancelled by the workflow's concurrency rule
+when the documentation commit `641a400` was pushed. `641a400` contains **no code changes**
+relative to `923ca4f`: `git diff --name-only 923ca4f 641a400` lists only `docs/`,
+`evidence/` and `README.md`.
+
+* **CI** [run 37851627827](https://github.com/maxhightower/Daedelus/actions/runs/37851627827)
+  on `641a400` (code identical to `923ca4f`): **success**. The run comprised:
+  * backend tests with Blender and LibreOffice;
+  * the V0, V1.1 and V1.2 demonstrations;
+  * the studio build and the five browser walkthroughs, including the V2 execution
+    walkthrough;
+  * the perf measurement;
+  * the **V2 cluster job**: images built from scratch with default base images on a GitHub
+    runner, and container end-to-end S1–S8 passed.
+* **Windows desktop build**
+  [run 37851627872](https://github.com/maxhightower/Daedelus/actions/runs/37851627872):
+  **success**. The installers were built but not installed (register N1).
+* The cluster job had already passed **42/42** on GitHub's runner at `e925ab2`
+  ([run 37849484750](https://github.com/maxhightower/Daedelus/actions/runs/37849484750),
+  cluster job). That is a second, independent host besides this container.
