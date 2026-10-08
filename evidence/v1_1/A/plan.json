@@ -1,0 +1,239 @@
+{
+ "provider": "heuristic",
+ "model": "heuristic-v1",
+ "deterministic": true,
+ "operations": [
+  {
+   "op": "add_primitive",
+   "component_id": null,
+   "params": {
+    "id": "trunk",
+    "name": "Trunk",
+    "parent": "tree",
+    "primitive": "cylinder",
+    "vertices": 8,
+    "size": [
+     0.33,
+     0.33,
+     0.33
+    ],
+    "location": [
+     0,
+     0,
+     0.165
+    ]
+   },
+   "derived_from": [
+    "bind_da9cea8b41bc",
+    "bind_63e67659eef4",
+    "bind_2ec6b7eb3cea"
+   ],
+   "rationale": "trunk base radius 0.17 m (default height 3.0 m)"
+  },
+  {
+   "op": "extrude_faces",
+   "component_id": "trunk",
+   "params": {
+    "axis": "Z",
+    "distance": 1.32,
+    "steps": 4,
+    "scale_per_step": 0.82,
+    "twist_per_step": 18.0
+   },
+   "derived_from": [
+    "bind_da9cea8b41bc",
+    "bind_63e67659eef4",
+    "bind_2ec6b7eb3cea"
+   ],
+   "rationale": "twisted, tapering trunk (reference silhouette taper -0.08)"
+  },
+  {
+   "op": "add_branch",
+   "component_id": null,
+   "params": {
+    "id": "branch_1",
+    "name": "Branch 1",
+    "parent": "tree",
+    "points": [
+     [
+      0,
+      0,
+      1.0230000000000001
+     ],
+     [
+      0.41250000000000003,
+      0.11249999999999999,
+      1.2480000000000002
+     ],
+     [
+      0.7425,
+      0.20249999999999999,
+      1.4355000000000002
+     ]
+    ],
+    "radius": 0.07425000000000001,
+    "radii": [
+     1.0,
+     0.6,
+     0.25
+    ],
+    "resolution": 4,
+    "bevel_resolution": 1
+   },
+   "derived_from": [
+    "bind_da9cea8b41bc",
+    "bind_63e67659eef4",
+    "bind_2ec6b7eb3cea"
+   ],
+   "rationale": "branch curve following the trunk direction"
+  },
+  {
+   "op": "add_branch",
+   "component_id": null,
+   "params": {
+    "id": "branch_2",
+    "name": "Branch 2",
+    "parent": "tree",
+    "points": [
+     [
+      0,
+      0,
+      1.188
+     ],
+     [
+      -0.3375,
+      -0.1875,
+      1.323
+     ],
+     [
+      -0.6075,
+      -0.3375,
+      1.4355
+     ]
+    ],
+    "radius": 0.07425000000000001,
+    "radii": [
+     1.0,
+     0.6,
+     0.25
+    ],
+    "resolution": 4,
+    "bevel_resolution": 1
+   },
+   "derived_from": [
+    "bind_da9cea8b41bc",
+    "bind_63e67659eef4",
+    "bind_2ec6b7eb3cea"
+   ],
+   "rationale": "branch curve following the trunk direction"
+  },
+  {
+   "op": "add_primitive",
+   "component_id": null,
+   "params": {
+    "id": "canopy",
+    "name": "Canopy",
+    "parent": "tree",
+    "primitive": "ico_sphere",
+    "detail": 1,
+    "size": [
+     1.04409,
+     1.04409,
+     0.7830675
+    ],
+    "location": [
+     0,
+     0,
+     1.963227
+    ]
+   },
+   "derived_from": [
+    "bind_da9cea8b41bc",
+    "bind_63e67659eef4",
+    "bind_2ec6b7eb3cea"
+   ],
+   "rationale": "canopy width 1.04 m from reference aspect 0.39"
+  },
+  {
+   "op": "set_material",
+   "component_id": "trunk",
+   "params": {
+    "base_color": "#453f2c",
+    "roughness": 0.9
+   },
+   "derived_from": [
+    "bind_da9cea8b41bc",
+    "bind_63e67659eef4",
+    "bind_2ec6b7eb3cea"
+   ],
+   "rationale": "bark colour #453f2c: darkest measured foreground colour"
+  },
+  {
+   "op": "set_material",
+   "component_id": "canopy",
+   "params": {
+    "base_color": "#464621",
+    "roughness": 0.7
+   },
+   "derived_from": [
+    "bind_da9cea8b41bc",
+    "bind_63e67659eef4",
+    "bind_2ec6b7eb3cea"
+   ],
+   "rationale": "leaf colour #464621: greenest measured colour of the inspiration references"
+  },
+  {
+   "op": "set_shading",
+   "component_id": "tree",
+   "params": {
+    "smooth": false
+   },
+   "derived_from": [
+    "bind_da9cea8b41bc",
+    "bind_63e67659eef4",
+    "bind_2ec6b7eb3cea"
+   ],
+   "rationale": "flat shading for a stylised low-poly look"
+  },
+  {
+   "op": "set_material",
+   "component_id": "branch_1",
+   "params": {
+    "base_color": "#453f2c",
+    "roughness": 0.9
+   },
+   "derived_from": [
+    "bind_da9cea8b41bc",
+    "bind_63e67659eef4",
+    "bind_2ec6b7eb3cea"
+   ],
+   "rationale": "branches share the bark colour"
+  },
+  {
+   "op": "set_material",
+   "component_id": "branch_2",
+   "params": {
+    "base_color": "#453f2c",
+    "roughness": 0.9
+   },
+   "derived_from": [
+    "bind_da9cea8b41bc",
+    "bind_63e67659eef4",
+    "bind_2ec6b7eb3cea"
+   ],
+   "rationale": "branches share the bark colour"
+  }
+ ],
+ "interpretations": {
+  "bind_da9cea8b41bc": "reference: used measured observations (10) in recipe 'tree'",
+  "bind_63e67659eef4": "inspiration: used measured observations (9) in recipe 'tree'",
+  "bind_2ec6b7eb3cea": "constraint: used measured observations (3) in recipe 'tree'"
+ },
+ "notes": [
+  "deterministic recipe 'tree' (heuristic provider - parameters come from measurements, not from recognising the references)",
+  "polygon budget: 400.0; low-poly: True; twisted: True"
+ ],
+ "warnings": [],
+ "usage": {},
+ "recorded": false
+}

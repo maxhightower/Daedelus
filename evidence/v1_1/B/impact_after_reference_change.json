@@ -1,0 +1,37 @@
+{
+ "workflow_id": "wf_b5e39d155c93",
+ "version": 1,
+ "nodes": [
+  {
+   "node_id": "agent",
+   "label": "Agent",
+   "artifact_id": "art_359c2069ad6c",
+   "artifact": "Tree",
+   "units": [
+    {
+     "unit": "artifact:art_359c2069ad6c#tree",
+     "stale": false,
+     "reasons": [],
+     "conflicts": []
+    },
+    {
+     "unit": "artifact:art_359c2069ad6c#canopy",
+     "stale": false,
+     "reasons": [],
+     "conflicts": []
+    },
+    {
+     "unit": "artifact:art_359c2069ad6c#trunk",
+     "stale": true,
+     "reasons": [
+      "binding 'Twisted trunk photo' (reference) changed"
+     ],
+     "conflicts": []
+    }
+   ]
+  }
+ ],
+ "affected_artifacts": [
+  "art_359c2069ad6c"
+ ]
+}

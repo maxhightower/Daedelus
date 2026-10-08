@@ -1,0 +1,108 @@
+{
+ "id": "ana_e663ffcf8e88",
+ "source_id": "src_ad396af59bff",
+ "source_hash": "53e4d57bdb36fbc8dff4b06c98a03c9bfc8cc22979d65d16d5ac2ac62e4b55dd",
+ "media_type": "text",
+ "provider": "heuristic",
+ "model": "heuristic-semantic-v1",
+ "pathway": "text_rules",
+ "status": "partial",
+ "summary": "2 requirement(s), 0 instruction(s), 1 measurable limit(s)",
+ "observations": [
+  {
+   "id": "obs_2635fd97ee4a",
+   "kind": "structure",
+   "text": "Game asset guide",
+   "value": {
+    "heading": true
+   },
+   "basis": "quoted",
+   "confidence": null,
+   "aspects": [],
+   "location": {
+    "page": null,
+    "section": "Game asset guide",
+    "paragraph": null,
+    "line": 1,
+    "start_seconds": null,
+    "end_seconds": null,
+    "region": null,
+    "frame": null
+   }
+  },
+  {
+   "id": "obs_03290b303f49",
+   "kind": "requirement",
+   "text": "The model must have no more than 400 polygons.",
+   "value": {},
+   "basis": "quoted",
+   "confidence": null,
+   "aspects": [],
+   "location": {
+    "page": null,
+    "section": "Game asset guide",
+    "paragraph": null,
+    "line": 3,
+    "start_seconds": null,
+    "end_seconds": null,
+    "region": null,
+    "frame": null
+   }
+  },
+  {
+   "id": "obs_ed8c4d272122",
+   "kind": "requirement",
+   "text": "Keep the trunk visibly twisted.",
+   "value": {
+    "preserve": "trunk visibly twisted",
+    "of": ""
+   },
+   "basis": "quoted",
+   "confidence": null,
+   "aspects": [],
+   "location": {
+    "page": null,
+    "section": "Game asset guide",
+    "paragraph": null,
+    "line": 4,
+    "start_seconds": null,
+    "end_seconds": null,
+    "region": null,
+    "frame": null
+   }
+  }
+ ],
+ "derived_constraints": [
+  {
+   "property": "poly_count",
+   "op": "lte",
+   "value": 400.0,
+   "text": "The model must have no more than 400 polygons.",
+   "location": {
+    "page": null,
+    "section": "Game asset guide",
+    "paragraph": null,
+    "line": 3,
+    "start_seconds": null,
+    "end_seconds": null,
+    "region": null,
+    "frame": null
+   }
+  }
+ ],
+ "limitations": [
+  "rule-based extraction: only explicit sentences and numeric limits are recognised; implied meaning is not understood"
+ ],
+ "segment": null,
+ "usage": {
+  "calls": 0,
+  "input_tokens": null,
+  "output_tokens": null,
+  "latency_ms": 0.3,
+  "cost_usd": null
+ },
+ "request_hash": "b7b3e481a1e33a442e235372069a2f9a546fd7778510a55bd4c419f40a8512a1",
+ "recorded": false,
+ "fixture_origin": null,
+ "created_at": "2026-10-08T19:05:33.707+00:00"
+}

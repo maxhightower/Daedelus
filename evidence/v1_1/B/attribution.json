@@ -1,0 +1,20 @@
+[
+ {
+  "binding_id": "bind_2d0669c9c772",
+  "source_id": "src_baa07a686b4a",
+  "source_name": "Twisted trunk photo",
+  "role": "reference",
+  "aspects": [
+   "color",
+   "material"
+  ],
+  "anchor": "artifact:art_359c2069ad6c#trunk",
+  "unit": "artifact:art_359c2069ad6c#trunk",
+  "presented": true,
+  "applied": true,
+  "operations": [
+   0
+  ],
+  "interpretation": "reference (drive, weight 0.60): dominant foreground colour of region [0.1, 0.72, 0.35, 0.25] (measured) #34251a -> base colour #928f80 -> #5a4f43"
+ }
+]

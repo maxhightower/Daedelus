@@ -1,0 +1,116 @@
+[
+ {
+  "scenario": "setup",
+  "name": "project, sources, bindings and workflow created",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "1 source understanding",
+  "name": "live providers are listed but marked unavailable without credentials",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "1 source understanding",
+  "name": "analysis card shows provider, status and limitations",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "1 source understanding",
+  "name": "observations show how they were obtained (measured)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "2 context package",
+  "name": "context package lists each source with its user-assigned meaning",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "2 context package",
+  "name": "the polygon limit is shown as enforced (hard constraint binding)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "2 context package",
+  "name": "region-bound reference is visible",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "2 context package",
+  "name": "provider status line shows live providers unavailable",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "3 plan preview",
+  "name": "preview shows planned operations without applying them",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "3 plan preview",
+  "name": "preview labels the recipe as deterministic (no understanding claimed)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "3 plan preview",
+  "name": "preview created no revision",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "4 run + loop",
+  "name": "execution succeeded",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "4 run + loop",
+  "name": "loop reached its objective",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "4 run + loop",
+  "name": "operation node shows the loop result on the canvas",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "4 run + loop",
+  "name": "loop view shows measured findings per iteration",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "4 run + loop",
+  "name": "loop view shows the render of each iteration",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "4 run + loop",
+  "name": "3D view of the new model is framed (canopy projects to a finite point)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "4 run + loop",
+  "name": "final revision satisfies the polygon budget (measured)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "4 run + loop",
+  "name": "no uncaught page errors",
+  "ok": true,
+  "detail": ""
+ }
+]

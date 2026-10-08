@@ -1,0 +1,129 @@
+{
+ "id": "ana_fb908ff988f7",
+ "source_id": "src_2aa2fe50f1c0",
+ "source_hash": "ac705ebf29d04381ab49137be4c54b268c2e0170e34a99f7900c9a206c279327",
+ "media_type": "text",
+ "provider": "heuristic",
+ "model": "heuristic-semantic-v1",
+ "pathway": "text_rules",
+ "status": "partial",
+ "summary": "3 requirement(s), 1 instruction(s), 0 measurable limit(s)",
+ "observations": [
+  {
+   "id": "obs_ebbd52918034",
+   "kind": "structure",
+   "text": "Text utilities - requirements",
+   "value": {
+    "heading": true
+   },
+   "basis": "quoted",
+   "confidence": null,
+   "aspects": [],
+   "location": {
+    "page": null,
+    "section": "Text utilities - requirements",
+    "paragraph": null,
+    "line": 1,
+    "start_seconds": null,
+    "end_seconds": null,
+    "region": null,
+    "frame": null
+   }
+  },
+  {
+   "id": "obs_31e1643d9260",
+   "kind": "instruction",
+   "text": "1. Add a function `slugify(text)` to textutils.py.",
+   "value": {},
+   "basis": "quoted",
+   "confidence": null,
+   "aspects": [],
+   "location": {
+    "page": null,
+    "section": "Text utilities - requirements",
+    "paragraph": null,
+    "line": 2,
+    "start_seconds": null,
+    "end_seconds": null,
+    "region": null,
+    "frame": null
+   }
+  },
+  {
+   "id": "obs_7613a970d967",
+   "kind": "requirement",
+   "text": "2. It must lowercase the text and replace every run of non-alphanumeric characters with a",
+   "value": {},
+   "basis": "quoted",
+   "confidence": null,
+   "aspects": [],
+   "location": {
+    "page": null,
+    "section": "Text utilities - requirements",
+    "paragraph": null,
+    "line": 3,
+    "start_seconds": null,
+    "end_seconds": null,
+    "region": null,
+    "frame": null
+   }
+  },
+  {
+   "id": "obs_bc2cfb55287d",
+   "kind": "requirement",
+   "text": "3. Leading and trailing hyphens must be removed.",
+   "value": {},
+   "basis": "quoted",
+   "confidence": null,
+   "aspects": [],
+   "location": {
+    "page": null,
+    "section": "Text utilities - requirements",
+    "paragraph": null,
+    "line": 5,
+    "start_seconds": null,
+    "end_seconds": null,
+    "region": null,
+    "frame": null
+   }
+  },
+  {
+   "id": "obs_8c5d84ad3e38",
+   "kind": "requirement",
+   "text": "4. Existing functions must keep working; all tests must pass.",
+   "value": {
+    "preserve": "working",
+    "of": ""
+   },
+   "basis": "quoted",
+   "confidence": null,
+   "aspects": [],
+   "location": {
+    "page": null,
+    "section": "Text utilities - requirements",
+    "paragraph": null,
+    "line": 6,
+    "start_seconds": null,
+    "end_seconds": null,
+    "region": null,
+    "frame": null
+   }
+  }
+ ],
+ "derived_constraints": [],
+ "limitations": [
+  "rule-based extraction: only explicit sentences and numeric limits are recognised; implied meaning is not understood"
+ ],
+ "segment": null,
+ "usage": {
+  "calls": 0,
+  "input_tokens": null,
+  "output_tokens": null,
+  "latency_ms": 0.3,
+  "cost_usd": null
+ },
+ "request_hash": "6aff7fa29e9ddea8b5e60ada443388c3b56f63f759358087e56c0e9eeb27da37",
+ "recorded": false,
+ "fixture_origin": null,
+ "created_at": "2026-10-08T19:05:52.159+00:00"
+}

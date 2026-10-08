@@ -1,0 +1,233 @@
+{
+ "id": "ana_bed330964ae9",
+ "source_id": "src_86d333acfcdf",
+ "source_hash": "ac8a677ef0a19cfd6e8dd8cf259b3089e5f6ef0707d85b808dc42837cfc1eaec",
+ "media_type": "video",
+ "provider": "heuristic",
+ "model": "heuristic-semantic-v1",
+ "pathway": "video_frames_measured",
+ "status": "partial",
+ "summary": "6 sampled frame(s) measured; content not understood",
+ "observations": [
+  {
+   "id": "obs_968c090a46e8",
+   "kind": "color",
+   "text": "frame at 0.5s: dominant #383b44",
+   "value": {
+    "palette": [
+     {
+      "hex": "#383b44",
+      "weight": 0.8507
+     },
+     {
+      "hex": "#bebec0",
+      "weight": 0.1343
+     },
+     {
+      "hex": "#3a3b40",
+      "weight": 0.0073
+     }
+    ]
+   },
+   "basis": "measured",
+   "confidence": 1.0,
+   "aspects": [],
+   "location": {
+    "page": null,
+    "section": null,
+    "paragraph": null,
+    "line": null,
+    "start_seconds": 0.5,
+    "end_seconds": null,
+    "region": null,
+    "frame": "<scratch>/freeze_v11/v11demo/workspace/projects/prj_a26659040667/sources/src_86d333acfcdf/frames/frame_00.png"
+   }
+  },
+  {
+   "id": "obs_28e7f05dc10f",
+   "kind": "color",
+   "text": "frame at 1.5s: dominant #383b44",
+   "value": {
+    "palette": [
+     {
+      "hex": "#383b44",
+      "weight": 0.8499
+     },
+     {
+      "hex": "#bebfc0",
+      "weight": 0.1347
+     },
+     {
+      "hex": "#3a3b40",
+      "weight": 0.0076
+     }
+    ]
+   },
+   "basis": "measured",
+   "confidence": 1.0,
+   "aspects": [],
+   "location": {
+    "page": null,
+    "section": null,
+    "paragraph": null,
+    "line": null,
+    "start_seconds": 1.5,
+    "end_seconds": null,
+    "region": null,
+    "frame": "<scratch>/freeze_v11/v11demo/workspace/projects/prj_a26659040667/sources/src_86d333acfcdf/frames/frame_01.png"
+   }
+  },
+  {
+   "id": "obs_27d012822548",
+   "kind": "color",
+   "text": "frame at 2.5s: dominant #383b44",
+   "value": {
+    "palette": [
+     {
+      "hex": "#383b44",
+      "weight": 0.8416
+     },
+     {
+      "hex": "#bfc0c1",
+      "weight": 0.1348
+     },
+     {
+      "hex": "#393a43",
+      "weight": 0.0124
+     }
+    ]
+   },
+   "basis": "measured",
+   "confidence": 1.0,
+   "aspects": [],
+   "location": {
+    "page": null,
+    "section": null,
+    "paragraph": null,
+    "line": null,
+    "start_seconds": 2.5,
+    "end_seconds": null,
+    "region": null,
+    "frame": "<scratch>/freeze_v11/v11demo/workspace/projects/prj_a26659040667/sources/src_86d333acfcdf/frames/frame_02.png"
+   }
+  },
+  {
+   "id": "obs_58fa1728fffb",
+   "kind": "color",
+   "text": "frame at 3.5s: dominant #383b44",
+   "value": {
+    "palette": [
+     {
+      "hex": "#383b44",
+      "weight": 0.8416
+     },
+     {
+      "hex": "#bfc0c1",
+      "weight": 0.1349
+     },
+     {
+      "hex": "#393a43",
+      "weight": 0.012
+     }
+    ]
+   },
+   "basis": "measured",
+   "confidence": 1.0,
+   "aspects": [],
+   "location": {
+    "page": null,
+    "section": null,
+    "paragraph": null,
+    "line": null,
+    "start_seconds": 3.5,
+    "end_seconds": null,
+    "region": null,
+    "frame": "<scratch>/freeze_v11/v11demo/workspace/projects/prj_a26659040667/sources/src_86d333acfcdf/frames/frame_03.png"
+   }
+  },
+  {
+   "id": "obs_6b841ba8cc76",
+   "kind": "color",
+   "text": "frame at 4.5s: dominant #383b44",
+   "value": {
+    "palette": [
+     {
+      "hex": "#383b44",
+      "weight": 0.8426
+     },
+     {
+      "hex": "#bfbfc1",
+      "weight": 0.1349
+     },
+     {
+      "hex": "#393a43",
+      "weight": 0.0115
+     }
+    ]
+   },
+   "basis": "measured",
+   "confidence": 1.0,
+   "aspects": [],
+   "location": {
+    "page": null,
+    "section": null,
+    "paragraph": null,
+    "line": null,
+    "start_seconds": 4.5,
+    "end_seconds": null,
+    "region": null,
+    "frame": "<scratch>/freeze_v11/v11demo/workspace/projects/prj_a26659040667/sources/src_86d333acfcdf/frames/frame_04.png"
+   }
+  },
+  {
+   "id": "obs_eacd7472671f",
+   "kind": "color",
+   "text": "frame at 5.5s: dominant #383b44",
+   "value": {
+    "palette": [
+     {
+      "hex": "#383b44",
+      "weight": 0.8393
+     },
+     {
+      "hex": "#bfc0c1",
+      "weight": 0.1349
+     },
+     {
+      "hex": "#393a43",
+      "weight": 0.0147
+     }
+    ]
+   },
+   "basis": "measured",
+   "confidence": 1.0,
+   "aspects": [],
+   "location": {
+    "page": null,
+    "section": null,
+    "paragraph": null,
+    "line": null,
+    "start_seconds": 5.5,
+    "end_seconds": null,
+    "region": null,
+    "frame": "<scratch>/freeze_v11/v11demo/workspace/projects/prj_a26659040667/sources/src_86d333acfcdf/frames/frame_05.png"
+   }
+  }
+ ],
+ "derived_constraints": [],
+ "limitations": [
+  "no step, action, narration or technique understanding: the local analyser only measures sampled frames; a live multimodal provider is required"
+ ],
+ "segment": null,
+ "usage": {
+  "calls": 0,
+  "input_tokens": null,
+  "output_tokens": null,
+  "latency_ms": 0.2,
+  "cost_usd": null
+ },
+ "request_hash": "11fff616ad677a8b57d8665025edef2b93c66355cb9110a57861ee7338f75580",
+ "recorded": false,
+ "fixture_origin": null,
+ "created_at": "2026-10-08T19:05:53.284+00:00"
+}

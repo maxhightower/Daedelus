@@ -1,0 +1,19 @@
+--- /dev/null
++++ b/tests/test_slugify.py
+@@ -0,0 +1,6 @@
++from textutils import slugify
++
++
++def test_slugify():
++    assert slugify('Hello, World!') == 'hello-world'
++    assert slugify('  --A  B--  ') == 'a-b'
+--- a/textutils.py
++++ b/textutils.py
+@@ -1,2 +1,7 @@
++def slugify(text):
++    import re
++    return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
++
++
+ def title_case(text):
+     return text.title()

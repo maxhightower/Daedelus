@@ -1,0 +1,73 @@
+{
+ "status": "achieved",
+ "limits": {
+  "max_iterations": 3,
+  "max_seconds": 900,
+  "max_calls": 24,
+  "max_cost_usd": 5.0
+ },
+ "evaluator": "heuristic",
+ "iterations": [
+  {
+   "iteration": 0,
+   "revision_id": "rev_1e648eb03d88",
+   "revision_number": 2,
+   "render": "artifacts/art_359c2069ad6c/revisions/0002/previews/preview.png",
+   "units": [
+    {
+     "unit": "artifact:art_359c2069ad6c#tree",
+     "evaluation": {
+      "id": "eval_a3eb98f2fb05",
+      "provider": "heuristic",
+      "model": "heuristic-semantic-v1",
+      "findings": [
+       {
+        "criterion": "poly_count lte 400.0 from 'Game asset guide'",
+        "status": "pass",
+        "kind": "constraint",
+        "detail": "measured 178; source text: \"The model must have no more than 400 polygons.\"",
+        "component_id": "tree",
+        "binding_id": "bind_2ec6b7eb3cea",
+        "evidence": {
+         "property": "poly_count",
+         "op": "lte",
+         "value": 400.0,
+         "actual": 178,
+         "advisory": false,
+         "origin": "derived from source"
+        },
+        "suggestion": ""
+       }
+      ],
+      "summary": "measured checks only; no visual judgement (no AI model)",
+      "usage": {
+       "calls": 0,
+       "input_tokens": null,
+       "output_tokens": null,
+       "latency_ms": null,
+       "cost_usd": null
+      },
+      "recorded": false,
+      "passed": true,
+      "measured_passed": true,
+      "semantic_passed": null
+     }
+    }
+   ],
+   "passed": true
+  }
+ ],
+ "stop_reason": "achieved",
+ "iterations_run": 0,
+ "best_valid_revision_id": "rev_1e648eb03d88",
+ "final_revision_id": "rev_1e648eb03d88",
+ "usage": {
+  "calls": 0,
+  "input_tokens": null,
+  "output_tokens": null,
+  "latency_ms": null,
+  "cost_usd": null
+ },
+ "seconds": 0.45,
+ "unresolved": []
+}

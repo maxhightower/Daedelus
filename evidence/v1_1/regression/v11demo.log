@@ -1,0 +1,40 @@
+Demo A
+  [PASS] A workflow succeeded
+  [PASS] A trunk, branches and canopy were created as components
+  [PASS] A the photograph was analysed as the bound trunk region
+  [PASS] A the guide's polygon budget was extracted with its source text
+  [PASS] A evaluate/revise loop ran and reached its objective
+  [PASS] A final model satisfies the polygon budget (measured)
+  [PASS] A native .blend reopens
+  [PASS] A render and GLB previews produced
+  [PASS] A trunk and canopy have distinct materials from the references
+Demo B
+  [PASS] B first run succeeded
+  [PASS] B trunk and canopy units both executed
+  [PASS] B impact preview: only the trunk unit is stale
+  [PASS] B second run succeeded
+  [PASS] B only the trunk unit executed; canopy skipped
+  [PASS] B revision changed exactly the trunk
+  [PASS] B canopy and branches are byte-for-byte unchanged in the scene
+  [PASS] B component preservation validated
+Demo C
+  [PASS] C workflow succeeded
+  [PASS] C only the sky layer changed
+  [PASS] C sun and hills layers unchanged
+  [PASS] C region edit changed only the hills layer
+  [PASS] C sky and sun unchanged by the region edit
+  [PASS] C OpenRaster file reopens
+Demo D
+  [PASS] D workflow succeeded (plan applied, tests run)
+  [PASS] D requirements extracted from the document with line locations
+  [PASS] D git commit recorded
+  [PASS] D reviewable diff contains slugify
+  [PASS] D allowlisted test command executed and passed
+Demo E
+  [PASS] E local analyser measures frames but reports no steps (no false understanding)
+A: PASSED (integration)
+B: PASSED (integration)
+C: PASSED (integration)
+D: PASSED (synthetic-fixture)
+E: BLOCKED (blocked) - blocked by: live video understanding needs a multimodal provider with credentials (Gemini for video files/URLs, or Claude for sampled frames); none available: gemini: no Gemini credentials in the environment (GEMINI_API_KEY / GOOGLE_API_KEY, or Vertex AI configuration); anthropic: no Anthropic credentials detected in the environment (ANTHROPIC_API_KEY / ANTHROPIC_AUTH_TOKEN / ANTHROPIC_PROFILE)
+exit 0

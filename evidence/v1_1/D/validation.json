@@ -1,0 +1,30 @@
+{
+ "passed": true,
+ "artifacts": [
+  {
+   "artifact_id": "art_07d9d02b8fac",
+   "artifact": "textutils",
+   "revision_id": "rev_ee94e1e3df64",
+   "report": {
+    "passed": true,
+    "checks": [
+     {
+      "name": "file_reopens",
+      "passed": true,
+      "detail": "working tree clean and committed",
+      "data": {}
+     },
+     {
+      "name": "tests",
+      "passed": true,
+      "detail": "`python -m pytest -q` exited 0",
+      "data": {
+       "output": "..                                                                       [100%]\n2 passed in 0.01s\n",
+       "command": "python -m pytest -q"
+      }
+     }
+    ]
+   }
+  }
+ ]
+}

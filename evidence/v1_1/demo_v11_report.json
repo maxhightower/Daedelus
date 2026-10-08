@@ -1,0 +1,328 @@
+{
+ "provider": "heuristic",
+ "live_provider": null,
+ "seconds": 24.7,
+ "providers": [
+  {
+   "name": "heuristic",
+   "description": "Deterministic local planner: maps measured source features to operation families by role and aspect. No AI model; no semantic understanding.",
+   "available": true,
+   "detail": "ok",
+   "contracts": [
+    "analyze",
+    "plan",
+    "evaluate",
+    "revise"
+   ],
+   "pathways": [
+    "image (measured)",
+    "image region (measured)",
+    "text (rules)",
+    "pdf (rules)",
+    "video (frame measurements only)"
+   ],
+   "live": false
+  },
+  {
+   "name": "anthropic",
+   "description": "Claude (Anthropic API): analyses images, PDFs, text and sampled video frames; plans, evaluates renders and revises.",
+   "available": false,
+   "detail": "no Anthropic credentials detected in the environment (ANTHROPIC_API_KEY / ANTHROPIC_AUTH_TOKEN / ANTHROPIC_PROFILE)",
+   "contracts": [
+    "analyze",
+    "plan",
+    "evaluate",
+    "revise"
+   ],
+   "pathways": [
+    "image",
+    "image region",
+    "pdf",
+    "text",
+    "video frames (sampled)"
+   ],
+   "live": true
+  },
+  {
+   "name": "gemini",
+   "description": "Gemini (Google Gen AI SDK): analyses images, PDFs, text, uploaded video and video URLs with timestamps; can also plan and evaluate.",
+   "available": false,
+   "detail": "no Gemini credentials in the environment (GEMINI_API_KEY / GOOGLE_API_KEY, or Vertex AI configuration)",
+   "contracts": [
+    "analyze",
+    "plan",
+    "evaluate",
+    "revise"
+   ],
+   "pathways": [
+    "image",
+    "image region",
+    "pdf",
+    "text",
+    "video file (inline)",
+    "video URL"
+   ],
+   "live": true
+  },
+  {
+   "name": "replay",
+   "description": "Replays recorded or synthetic provider responses (offline, reproducible). Never a live model call.",
+   "available": true,
+   "detail": "1 fixture(s)",
+   "contracts": [
+    "analyze",
+    "plan",
+    "evaluate",
+    "revise"
+   ],
+   "pathways": [
+    "any (from fixtures)"
+   ],
+   "live": false
+  }
+ ],
+ "demos": [
+  {
+   "id": "A",
+   "title": "Image-guided 3D creation (stylised tree, Blender)",
+   "verification": "integration",
+   "status": "passed",
+   "blocked_by": null,
+   "checks": [
+    {
+     "name": "workflow succeeded",
+     "ok": true,
+     "detail": "None"
+    },
+    {
+     "name": "trunk, branches and canopy were created as components",
+     "ok": true,
+     "detail": "['branch_1', 'branch_2', 'canopy', 'tree', 'trunk']"
+    },
+    {
+     "name": "the photograph was analysed as the bound trunk region",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "name": "the guide's polygon budget was extracted with its source text",
+     "ok": true,
+     "detail": "[DerivedConstraint(property='poly_count', op='lte', value=400.0, text='The model must have no more than 400 polygons.', location=SourceLocation(page=None, section='Game asset guide', paragraph=None, line=3, start_seconds=None, end_seconds=None, region=None, frame=None))]"
+    },
+    {
+     "name": "evaluate/revise loop ran and reached its objective",
+     "ok": true,
+     "detail": "achieved"
+    },
+    {
+     "name": "final model satisfies the polygon budget (measured)",
+     "ok": true,
+     "detail": "178"
+    },
+    {
+     "name": "native .blend reopens",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "name": "render and GLB previews produced",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "name": "trunk and canopy have distinct materials from the references",
+     "ok": true,
+     "detail": "('#453f2c', '#464621')"
+    }
+   ],
+   "files": {
+    "render_rev1.png": "<scratch>/freeze_v11/v11demo/A/render_rev1.png",
+    "render_rev2.png": "<scratch>/freeze_v11/v11demo/A/render_rev2.png",
+    "tree.glb": "<scratch>/freeze_v11/v11demo/A/tree.glb",
+    "tree.blend": "<scratch>/freeze_v11/v11demo/A/tree.blend",
+    "context_package": "<scratch>/freeze_v11/v11demo/A/context_package.json",
+    "analyses": "<scratch>/freeze_v11/v11demo/A/analyses"
+   },
+   "notes": [
+    "deterministic recipe 'tree' (heuristic provider - parameters come from measurements, not from recognising the references)",
+    "polygon budget: 400.0; low-poly: True; twisted: True"
+   ],
+   "metrics": {
+    "seconds": 5.82,
+    "poly_count": 178,
+    "iterations": 0,
+    "operations": 10,
+    "provider": "heuristic",
+    "trunk_color": "#453f2c",
+    "canopy_color": "#464621"
+   }
+  },
+  {
+   "id": "B",
+   "title": "Component-specific visual adaptation (one reference changes one component)",
+   "verification": "integration",
+   "status": "passed",
+   "blocked_by": null,
+   "checks": [
+    {
+     "name": "first run succeeded",
+     "ok": true,
+     "detail": "None"
+    },
+    {
+     "name": "trunk and canopy units both executed",
+     "ok": true,
+     "detail": "{'tree': 'succeeded', 'canopy': 'succeeded', 'trunk': 'succeeded'}"
+    },
+    {
+     "name": "impact preview: only the trunk unit is stale",
+     "ok": true,
+     "detail": "['trunk']"
+    },
+    {
+     "name": "second run succeeded",
+     "ok": true,
+     "detail": "None"
+    },
+    {
+     "name": "only the trunk unit executed; canopy skipped",
+     "ok": true,
+     "detail": "{'tree': 'skipped', 'canopy': 'skipped', 'trunk': 'succeeded'}"
+    },
+    {
+     "name": "revision changed exactly the trunk",
+     "ok": true,
+     "detail": "['trunk']"
+    },
+    {
+     "name": "canopy and branches are byte-for-byte unchanged in the scene",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "name": "component preservation validated",
+     "ok": true,
+     "detail": ""
+    }
+   ],
+   "files": {
+    "render_rev3.png": "<scratch>/freeze_v11/v11demo/B/render_rev3.png",
+    "render_rev4.png": "<scratch>/freeze_v11/v11demo/B/render_rev4.png"
+   },
+   "notes": [],
+   "metrics": {
+    "trunk_color_before": "#928f80",
+    "trunk_color_after": "#5a4f43"
+   }
+  },
+  {
+   "id": "C",
+   "title": "2D semantic editing of one layer and one region (OpenRaster)",
+   "verification": "integration",
+   "status": "passed",
+   "blocked_by": null,
+   "checks": [
+    {
+     "name": "workflow succeeded",
+     "ok": true,
+     "detail": "None"
+    },
+    {
+     "name": "only the sky layer changed",
+     "ok": true,
+     "detail": "['sky']"
+    },
+    {
+     "name": "sun and hills layers unchanged",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "name": "region edit changed only the hills layer",
+     "ok": true,
+     "detail": "['hills']"
+    },
+    {
+     "name": "sky and sun unchanged by the region edit",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "name": "OpenRaster file reopens",
+     "ok": true,
+     "detail": ""
+    }
+   ],
+   "files": {
+    "poster_rev1.png": "<scratch>/freeze_v11/v11demo/C/poster_rev1.png",
+    "poster_rev2.png": "<scratch>/freeze_v11/v11demo/C/poster_rev2.png",
+    "poster_rev3.png": "<scratch>/freeze_v11/v11demo/C/poster_rev3.png",
+    "poster.ora": "<scratch>/freeze_v11/v11demo/C/poster.ora"
+   },
+   "notes": [],
+   "metrics": {}
+  },
+  {
+   "id": "D",
+   "title": "Document-guided code modification (git + pytest)",
+   "verification": "synthetic-fixture",
+   "status": "passed",
+   "blocked_by": null,
+   "checks": [
+    {
+     "name": "workflow succeeded (plan applied, tests run)",
+     "ok": true,
+     "detail": "None"
+    },
+    {
+     "name": "requirements extracted from the document with line locations",
+     "ok": true,
+     "detail": "3"
+    },
+    {
+     "name": "git commit recorded",
+     "ok": true,
+     "detail": "5c03a28a3d98a9b17bc9988f52808ec04a90f90b"
+    },
+    {
+     "name": "reviewable diff contains slugify",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "name": "allowlisted test command executed and passed",
+     "ok": true,
+     "detail": "[{'name': 'tests', 'passed': True, 'detail': '`python -m pytest -q` exited 0', 'data': {'output': '..                                                                       [100%]\\n2 passed in 0.01s\\n', 'command': 'python -m pytest -q'}}]"
+    }
+   ],
+   "files": {
+    "diff": "<scratch>/freeze_v11/v11demo/D/change.diff",
+    "analyses": "<scratch>/freeze_v11/v11demo/D/analyses"
+   },
+   "notes": [
+    "planner response is a SYNTHETIC fixture (no live model available): it proves the plan -> git -> tests path, not natural-language understanding"
+   ],
+   "metrics": {}
+  },
+  {
+   "id": "E",
+   "title": "Video as optional instructional input",
+   "verification": "blocked",
+   "status": "blocked",
+   "blocked_by": "live video understanding needs a multimodal provider with credentials (Gemini for video files/URLs, or Claude for sampled frames); none available: gemini: no Gemini credentials in the environment (GEMINI_API_KEY / GOOGLE_API_KEY, or Vertex AI configuration); anthropic: no Anthropic credentials detected in the environment (ANTHROPIC_API_KEY / ANTHROPIC_AUTH_TOKEN / ANTHROPIC_PROFILE)",
+   "checks": [
+    {
+     "name": "local analyser measures frames but reports no steps (no false understanding)",
+     "ok": true,
+     "detail": "partial"
+    }
+   ],
+   "files": {},
+   "notes": [
+    "gemini: no Gemini credentials in the environment (GEMINI_API_KEY / GOOGLE_API_KEY, or Vertex AI configuration)",
+    "anthropic: no Anthropic credentials detected in the environment (ANTHROPIC_API_KEY / ANTHROPIC_AUTH_TOKEN / ANTHROPIC_PROFILE)"
+   ],
+   "metrics": {}
+  }
+ ]
+}

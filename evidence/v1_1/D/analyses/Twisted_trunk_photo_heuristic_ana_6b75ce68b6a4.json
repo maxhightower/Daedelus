@@ -1,0 +1,398 @@
+{
+ "id": "ana_6b75ce68b6a4",
+ "source_id": "src_baa07a686b4a",
+ "source_hash": "9d47c35273244baf32e30758a65cd778a3f4c909d2233df01ee9757405f0a74b",
+ "media_type": "image",
+ "provider": "heuristic",
+ "model": "heuristic-semantic-v1",
+ "pathway": "measured",
+ "status": "partial",
+ "summary": "measured 11 visual properties of region [0.03, 0.0, 0.5, 0.97]",
+ "observations": [
+  {
+   "id": "obs_70c40a522c94",
+   "kind": "color",
+   "text": "colour #534e39 covers 26% of the region",
+   "value": {
+    "hex": "#534e39",
+    "weight": 0.2619
+   },
+   "basis": "measured",
+   "confidence": 1.0,
+   "aspects": [
+    "color",
+    "palette"
+   ],
+   "location": {
+    "page": null,
+    "section": null,
+    "paragraph": null,
+    "line": null,
+    "start_seconds": null,
+    "end_seconds": null,
+    "region": [
+     0.03,
+     0.0,
+     0.5,
+     0.97
+    ],
+    "frame": null
+   }
+  },
+  {
+   "id": "obs_3e040550e13e",
+   "kind": "color",
+   "text": "colour #706d55 covers 23% of the region",
+   "value": {
+    "hex": "#706d55",
+    "weight": 0.2311
+   },
+   "basis": "measured",
+   "confidence": 1.0,
+   "aspects": [
+    "color",
+    "palette"
+   ],
+   "location": {
+    "page": null,
+    "section": null,
+    "paragraph": null,
+    "line": null,
+    "start_seconds": null,
+    "end_seconds": null,
+    "region": [
+     0.03,
+     0.0,
+     0.5,
+     0.97
+    ],
+    "frame": null
+   }
+  },
+  {
+   "id": "obs_e8d1d931c4ea",
+   "kind": "color",
+   "text": "colour #30291b covers 23% of the region",
+   "value": {
+    "hex": "#30291b",
+    "weight": 0.2252
+   },
+   "basis": "measured",
+   "confidence": 1.0,
+   "aspects": [
+    "color",
+    "palette"
+   ],
+   "location": {
+    "page": null,
+    "section": null,
+    "paragraph": null,
+    "line": null,
+    "start_seconds": null,
+    "end_seconds": null,
+    "region": [
+     0.03,
+     0.0,
+     0.5,
+     0.97
+    ],
+    "frame": null
+   }
+  },
+  {
+   "id": "obs_459d804b9bc0",
+   "kind": "color",
+   "text": "colour #8d8a73 covers 18% of the region",
+   "value": {
+    "hex": "#8d8a73",
+    "weight": 0.1783
+   },
+   "basis": "measured",
+   "confidence": 1.0,
+   "aspects": [
+    "color",
+    "palette"
+   ],
+   "location": {
+    "page": null,
+    "section": null,
+    "paragraph": null,
+    "line": null,
+    "start_seconds": null,
+    "end_seconds": null,
+    "region": [
+     0.03,
+     0.0,
+     0.5,
+     0.97
+    ],
+    "frame": null
+   }
+  },
+  {
+   "id": "obs_7f872605619f",
+   "kind": "color",
+   "text": "colour #cecec4 covers 10% of the region",
+   "value": {
+    "hex": "#cecec4",
+    "weight": 0.1035
+   },
+   "basis": "measured",
+   "confidence": 1.0,
+   "aspects": [
+    "color",
+    "palette"
+   ],
+   "location": {
+    "page": null,
+    "section": null,
+    "paragraph": null,
+    "line": null,
+    "start_seconds": null,
+    "end_seconds": null,
+    "region": [
+     0.03,
+     0.0,
+     0.5,
+     0.97
+    ],
+    "frame": null
+   }
+  },
+  {
+   "id": "obs_d4c185748bfc",
+   "kind": "lighting",
+   "text": "brightness 0.3996, contrast 0.2127, warm cast",
+   "value": {
+    "brightness": 0.3996,
+    "contrast": 0.2127,
+    "saturation": 0.2157,
+    "warmth": 0.0899
+   },
+   "basis": "measured",
+   "confidence": 1.0,
+   "aspects": [
+    "lighting",
+    "mood"
+   ],
+   "location": {
+    "page": null,
+    "section": null,
+    "paragraph": null,
+    "line": null,
+    "start_seconds": null,
+    "end_seconds": null,
+    "region": [
+     0.03,
+     0.0,
+     0.5,
+     0.97
+    ],
+    "frame": null
+   }
+  },
+  {
+   "id": "obs_6789619591b8",
+   "kind": "composition",
+   "text": "aspect 0.3867; edge energy is balanced (orientation 0.4579); edge density 0.5022",
+   "value": {
+    "aspect": 0.3867,
+    "orientation": 0.4579,
+    "edge_density": 0.5022
+   },
+   "basis": "measured",
+   "confidence": 1.0,
+   "aspects": [
+    "composition"
+   ],
+   "location": {
+    "page": null,
+    "section": null,
+    "paragraph": null,
+    "line": null,
+    "start_seconds": null,
+    "end_seconds": null,
+    "region": [
+     0.03,
+     0.0,
+     0.5,
+     0.97
+    ],
+    "frame": null
+   }
+  },
+  {
+   "id": "obs_c5512ffdbd88",
+   "kind": "proportion",
+   "text": "foreground silhouette 0.3867:1 (width:height), covers 66%; similar width top and bottom",
+   "value": {
+    "aspect": 0.3867,
+    "coverage": 0.6625,
+    "taper": -0.0785,
+    "top_width": 0.6319,
+    "bottom_width": 0.6857,
+    "mid_fill": 0.5303,
+    "bbox": [
+     0.0,
+     0.0,
+     1.0,
+     1.0
+    ]
+   },
+   "basis": "measured",
+   "confidence": 0.6,
+   "aspects": [
+    "geometry",
+    "proportions",
+    "shape"
+   ],
+   "location": {
+    "page": null,
+    "section": null,
+    "paragraph": null,
+    "line": null,
+    "start_seconds": null,
+    "end_seconds": null,
+    "region": [
+     0.0,
+     0.0,
+     1.0,
+     1.0
+    ],
+    "frame": null
+   }
+  },
+  {
+   "id": "obs_62b21f80f861",
+   "kind": "color",
+   "text": "foreground colour #c6c4b8 (26% of the silhouette)",
+   "value": {
+    "hex": "#c6c4b8",
+    "weight": 0.2619,
+    "foreground": true
+   },
+   "basis": "measured",
+   "confidence": 0.6,
+   "aspects": [
+    "color",
+    "material"
+   ],
+   "location": {
+    "page": null,
+    "section": null,
+    "paragraph": null,
+    "line": null,
+    "start_seconds": null,
+    "end_seconds": null,
+    "region": [
+     0.0,
+     0.0,
+     1.0,
+     1.0
+    ],
+    "frame": null
+   }
+  },
+  {
+   "id": "obs_6b14ee0175e0",
+   "kind": "color",
+   "text": "foreground colour #453f2c (26% of the silhouette)",
+   "value": {
+    "hex": "#453f2c",
+    "weight": 0.2616,
+    "foreground": true
+   },
+   "basis": "measured",
+   "confidence": 0.6,
+   "aspects": [
+    "color",
+    "material"
+   ],
+   "location": {
+    "page": null,
+    "section": null,
+    "paragraph": null,
+    "line": null,
+    "start_seconds": null,
+    "end_seconds": null,
+    "region": [
+     0.0,
+     0.0,
+     1.0,
+     1.0
+    ],
+    "frame": null
+   }
+  },
+  {
+   "id": "obs_927c61225f89",
+   "kind": "color",
+   "text": "foreground colour #57583e (24% of the silhouette)",
+   "value": {
+    "hex": "#57583e",
+    "weight": 0.2425,
+    "foreground": true
+   },
+   "basis": "measured",
+   "confidence": 0.6,
+   "aspects": [
+    "color",
+    "material"
+   ],
+   "location": {
+    "page": null,
+    "section": null,
+    "paragraph": null,
+    "line": null,
+    "start_seconds": null,
+    "end_seconds": null,
+    "region": [
+     0.0,
+     0.0,
+     1.0,
+     1.0
+    ],
+    "frame": null
+   }
+  },
+  {
+   "id": "obs_c4995cad91a0",
+   "kind": "uncertainty",
+   "text": "No object recognition: the local analyser measures pixels and cannot tell what the image depicts.",
+   "value": {},
+   "basis": "inferred",
+   "confidence": null,
+   "aspects": [],
+   "location": null
+  }
+ ],
+ "derived_constraints": [],
+ "limitations": [
+  "No object recognition: the local analyser measures pixels and cannot tell what the image depicts.",
+  "silhouette assumes a background distinct from the subject; proportions are 2D image ratios, not 3D sizes"
+ ],
+ "segment": {
+  "kind": "region",
+  "start": null,
+  "end": null,
+  "page": null,
+  "region": [
+   0.03,
+   0.0,
+   0.5,
+   0.97
+  ],
+  "note": "the trunk (left half of the photograph)"
+ },
+ "usage": {
+  "calls": 0,
+  "input_tokens": null,
+  "output_tokens": null,
+  "latency_ms": 214.4,
+  "cost_usd": null
+ },
+ "request_hash": "1dd114a62a3028a079fc3066c5c730da40c67230ecea4b420326aa5008679b53",
+ "recorded": false,
+ "fixture_origin": null,
+ "created_at": "2026-10-08T19:05:33.702+00:00"
+}
