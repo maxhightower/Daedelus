@@ -60,6 +60,8 @@ CREATE TABLE IF NOT EXISTS unit_state (workflow_id TEXT, node_id TEXT, unit TEXT
     detail TEXT, PRIMARY KEY (workflow_id, node_id, unit));
 CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, created_at TEXT,
     doc TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS docs (kind TEXT NOT NULL, id TEXT NOT NULL, updated_at TEXT,
+    doc TEXT NOT NULL, PRIMARY KEY (kind, id));
 """
 
 SCHEMA_VERSION = "1"
@@ -95,6 +97,30 @@ class ProjectStore:
 
     def _many(self, model: type[T], sql: str, args: Iterable[Any] = ()) -> list[T]:
         return [model.model_validate_json(r[0]) for r in self._exec(sql, args).fetchall()]
+
+    def lock(self) -> threading.RLock:
+        return self._lock
+
+    # -- generic documents (boards and other presentation state) ----------------
+    def put_doc(self, kind: str, doc_id: str, doc: BaseModel) -> None:
+        self._exec("INSERT OR REPLACE INTO docs(kind, id, updated_at, doc) VALUES (?, ?, ?, ?)",
+                   (kind, doc_id, now_iso(), doc.model_dump_json()))
+
+    def get_doc(self, kind: str, doc_id: str, model: type[T]) -> T | None:
+        return self._one(model, "SELECT doc FROM docs WHERE kind=? AND id=?", (kind, doc_id))
+
+    def list_docs(self, kind: str, model: type[T]) -> list[T]:
+        return self._many(model, "SELECT doc FROM docs WHERE kind=? ORDER BY rowid", (kind,))
+
+    def delete_doc(self, kind: str, doc_id: str) -> None:
+        self._exec("DELETE FROM docs WHERE kind=? AND id=?", (kind, doc_id))
+
+    def get_meta(self, key: str) -> str | None:
+        row = self._exec("SELECT value FROM meta WHERE key=?", (key,)).fetchone()
+        return row[0] if row else None
+
+    def set_meta(self, key: str, value: str) -> None:
+        self._exec("INSERT OR REPLACE INTO meta(key, value) VALUES (?, ?)", (key, value))
 
     # -- paths -------------------------------------------------------------
     def abs(self, rel: str | os.PathLike[str]) -> Path:

@@ -40,7 +40,9 @@ EXT_TYPES: dict[MediaType, set[str]] = {
     MediaType.image: {".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp", ".tif", ".tiff"},
     MediaType.video: {".mp4", ".mov", ".webm", ".mkv", ".avi", ".m4v"},
     MediaType.audio: {".mp3", ".wav", ".ogg", ".flac", ".m4a"},
-    MediaType.document: {".pdf"},
+    MediaType.document: {".pdf", ".docx", ".odt"},
+    MediaType.spreadsheet: {".csv", ".tsv", ".xlsx", ".xlsm", ".ods"},
+    MediaType.presentation: {".pptx", ".odp"},
     MediaType.text: {".txt", ".md", ".markdown", ".rst"},
     MediaType.model3d: {".glb", ".gltf", ".obj", ".stl", ".blend", ".ply", ".fbx"},
     MediaType.code: {".py", ".ts", ".tsx", ".js", ".jsx", ".rs", ".go", ".java", ".c", ".cc",
@@ -435,7 +437,47 @@ def _url(store: ProjectStore, src: MediaSource) -> ExtractionResult:
     return r
 
 
-@extractor(MediaType.document, "document.pdf")
+@extractor(MediaType.document, "document.pdf+docx+odt")
+def _document(store: ProjectStore, src: MediaSource) -> ExtractionResult:
+    path = source_file(store, src)
+    if path.suffix.lower() == ".pdf":
+        return _pdf(store, src)
+    from . import office
+
+    r = ExtractionResult()
+    data = office.read_document(path)
+    r.extracted = {**features.text_features(data["text"]), **data}
+    r.metadata = {"format": data["format"], "paragraphs": len(data["paragraphs"])}
+    r.partial("view-only: native editing of word-processing documents is not provided in V1")
+    return r
+
+
+@extractor(MediaType.spreadsheet, "spreadsheet.tables")
+def _spreadsheet(store: ProjectStore, src: MediaSource) -> ExtractionResult:
+    from . import office
+
+    r = ExtractionResult()
+    data = office.read_spreadsheet(source_file(store, src))
+    r.extracted = {**features.text_features(data["text"]), **data}
+    r.metadata = {"format": data["format"], "sheets": len(data["sheets"]),
+                  "rows": sum(s["row_count"] for s in data["sheets"])}
+    r.partial("view-only: native spreadsheet editing is not provided in V1")
+    return r
+
+
+@extractor(MediaType.presentation, "presentation.slides")
+def _presentation(store: ProjectStore, src: MediaSource) -> ExtractionResult:
+    from . import office
+
+    r = ExtractionResult()
+    data = office.read_presentation(source_file(store, src))
+    r.extracted = {**features.text_features(data["text"]), **data}
+    r.metadata = {"format": data["format"], "slides": data["slide_count"]}
+    r.partial("view-only: slide text extracted; slide rendering and editing are not provided "
+              "in V1")
+    return r
+
+
 def _pdf(store: ProjectStore, src: MediaSource) -> ExtractionResult:
     from pypdf import PdfReader
 

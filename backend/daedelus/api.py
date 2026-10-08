@@ -127,6 +127,31 @@ class AgentMessage(BaseModel):
     workflow_id: str | None = None
 
 
+class BoardCreate(BaseModel):
+    name: str
+    layout: str = "empty"  # "empty" | "default" (all project resources in frames)
+
+
+class BoardSave(BaseModel):
+    board: dict[str, Any]
+    expected_revision: int | None = None
+
+
+class PlaceBody(BaseModel):
+    resource_ref: dict[str, Any]
+    x: float | None = None
+    y: float | None = None
+    width: float | None = None
+    height: float | None = None
+    presentation_state: dict[str, Any] = Field(default_factory=dict)
+
+
+class EditBody(BaseModel):
+    operations: list[dict[str, Any]]
+    message: str = ""
+    base_revision_id: str | None = None
+
+
 class PreviewBody(BaseModel):
     node_id: str
     all_units: bool = False
@@ -595,6 +620,98 @@ def create_app(workspace_root: str | Path | None = None,
                                 "source_id": src.id, "binding_id": b.id})
         return {"source": src.model_dump(), "binding": b.model_dump(), "reply": reply,
                 "impact": imp}
+
+    # -- spatial boards -------------------------------------------------------------
+    from . import boards as board_mod
+    from .editing import EditRejected, apply_manual_edit, ensure_glb_with_ids
+    from .models import PlannedOperation
+
+    @app.get("/api/projects/{pid}/boards")
+    def list_boards(pid: str):
+        st = store_for(pid)
+        return [{"id": b.id, "name": b.name, "revision": b.revision, "items": len(b.items),
+                 "updated_at": b.updated_at} for b in board_mod.ensure_boards(st)]
+
+    @app.post("/api/projects/{pid}/boards")
+    def create_board(pid: str, body: BoardCreate):
+        st = store_for(pid)
+        board_mod.ensure_boards(st)
+        b = (board_mod.default_board(st, body.name) if body.layout == "default" else
+             board_mod.CanvasBoard(project_id=st.get_project().id, name=body.name))
+        return board_mod.board_view(st, board_mod.save_board(st, b))
+
+    @app.get("/api/projects/{pid}/boards/{bid}")
+    def get_board(pid: str, bid: str):
+        st = store_for(pid)
+        return board_mod.board_view(st, board_mod.get_board(st, bid))
+
+    @app.put("/api/projects/{pid}/boards/{bid}")
+    def save_board(pid: str, bid: str, body: BoardSave):
+        st = store_for(pid)
+        board_mod.get_board(st, bid)
+        doc = {k: v for k, v in body.board.items() if k != "missing_items"}
+        b = board_mod.CanvasBoard.model_validate({**doc, "id": bid})
+        try:
+            saved = board_mod.save_board(st, b, expected_revision=body.expected_revision)
+        except board_mod.BoardConflict as exc:
+            raise HTTPException(409, str(exc))
+        return board_mod.board_view(st, saved)
+
+    @app.patch("/api/projects/{pid}/boards/{bid}")
+    def rename_board(pid: str, bid: str, body: dict[str, Any]):
+        st = store_for(pid)
+        b = board_mod.get_board(st, bid)
+        if "name" in body:
+            b.name = str(body["name"]).strip() or b.name
+        return board_mod.board_view(st, board_mod.save_board(st, b))
+
+    @app.delete("/api/projects/{pid}/boards/{bid}")
+    def delete_board(pid: str, bid: str):
+        st = store_for(pid)
+        if len(board_mod.list_boards(st)) <= 1:
+            raise HTTPException(400, "a project keeps at least one board")
+        board_mod.delete_board(st, bid)
+        return {"deleted": bid}
+
+    @app.post("/api/projects/{pid}/boards/{bid}/place")
+    def place(pid: str, bid: str, body: PlaceBody):
+        st = store_for(pid)
+        b = board_mod.get_board(st, bid)
+        kw: dict[str, Any] = {"presentation_state": body.presentation_state}
+        if body.width and body.height:
+            kw["size"] = board_mod.Size(width=body.width, height=body.height)
+        item = board_mod.place_resource(st, b, board_mod.ResourceRef(**body.resource_ref),
+                                        body.x, body.y, **kw)
+        view = board_mod.board_view(st, board_mod.save_board(st, b))
+        return {"item": item.model_dump(), "board": view}
+
+    # -- in-place artifact editing -------------------------------------------------
+    @app.post("/api/projects/{pid}/artifacts/{aid}/edit")
+    async def edit_artifact(pid: str, aid: str, body: EditBody):
+        st = store_for(pid)
+        ops = [PlannedOperation(**o) for o in body.operations]
+        try:
+            rev = await _in_thread(apply_manual_edit, st, aid, ops, message=body.message,
+                                   base_revision_id=body.base_revision_id,
+                                   lock=engine_for(pid)._run_lock)
+        except EditRejected as exc:
+            return JSONResponse(status_code=409 if "changed since" in str(exc) else 422,
+                                content={"detail": str(exc), "report": exc.report})
+        return rev.model_dump()
+
+    @app.get("/api/projects/{pid}/revisions/{rid}/glb")
+    async def revision_glb(pid: str, rid: str):
+        st = store_for(pid)
+        path = await _in_thread(ensure_glb_with_ids, st, rid)
+        if not path:
+            raise HTTPException(404, "this artifact has no 3D representation")
+        return {"path": path}
+
+    @app.get("/api/projects/{pid}/artifacts/{aid}/operations")
+    def artifact_operations(pid: str, aid: str):
+        a = store_for(pid).get_artifact(aid)
+        info = adapter_registry()[a.adapter].info()
+        return [o.model_dump() for o in info.operations]
 
     # -- static studio ----------------------------------------------------------
     dist = Path(studio_dist or os.environ.get("DAEDELUS_STUDIO_DIST", "") or

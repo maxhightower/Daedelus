@@ -876,7 +876,8 @@ class Engine:
             self.store, art, insp=after,
             message=apply_ctx["message"], operations=ops, execution_id=ex.id, node_id=node.id,
             units=[u["unit"] for u in unit_infos], operation_results=op_results,
-            attribution=attribution, changed_components=changed, validation=rep)
+            attribution=attribution, changed_components=changed, validation=rep,
+            origin="workflow")
         shutil.rmtree(ckpt, ignore_errors=True)
         art = self.store.get_artifact(art.id)
         # record fingerprints for executed units, refresh observed state for the rest

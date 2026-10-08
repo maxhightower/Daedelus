@@ -67,7 +67,7 @@ def summarize_source(src: MediaSource, binding: SourceBinding | None = None) -> 
         if seg and seg.kind == "region" and seg.region:
             out["region"] = seg.region
             out["notes"] = ["region recorded; measurements are for the whole image"]
-    elif mt in ("text", "document", "url", "code"):
+    elif mt in ("text", "document", "url", "code", "spreadsheet", "presentation"):
         directives = dict(ex.get("directives", {}))
         colors = list(ex.get("colors", []))
         keywords = list(ex.get("keywords", []))[:12]

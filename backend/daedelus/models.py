@@ -49,6 +49,8 @@ class MediaType(str, Enum):
     audio = "audio"
     url = "url"
     file = "file"
+    spreadsheet = "spreadsheet"
+    presentation = "presentation"
 
 
 class ProcessingState(str, Enum):
@@ -331,6 +333,7 @@ class ArtifactRevision(_Model):
     validation: ValidationReport | None = None
     diff: str | None = None  # unified diff for text/code artifacts
     vcs_commit: str | None = None
+    origin: Literal["create", "workflow", "manual", "restore"] | None = None
 
 
 class Artifact(_Model):

@@ -106,7 +106,7 @@ def create_artifact(store: ProjectStore, *, name: str, adapter: str, template: s
     a.metadata["baseline"] = _baseline(insp)
     a.metadata["template"] = template
     store.save_artifact(a)
-    rev = record_revision(store, a, message=f"Created from template '{template}'")
+    rev = record_revision(store, a, message=f"Created from template '{template}'", origin="create")
     return store.get_artifact(a.id), rev
 
 
@@ -118,4 +118,5 @@ def restore_revision(store: ProjectStore, artifact_id: str, revision_id: str) ->
     native = native_path(store, a)
     restore_tree(store.abs(target.snapshot_dir), native)
     get_adapter(a.adapter).after_restore(native, a.entry, f"Restore revision {target.number}")
-    return record_revision(store, a, message=f"Restored revision {target.number}")
+    return record_revision(store, a, message=f"Restored revision {target.number}",
+                           origin="restore")

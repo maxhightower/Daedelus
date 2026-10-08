@@ -355,7 +355,7 @@ def preview(job):
     out = {}
     if job.get("glb_path"):
         bpy.ops.export_scene.gltf(filepath=job["glb_path"], export_format="GLB",
-                                  use_selection=False, export_apply=True)
+                                  use_selection=False, export_apply=True, export_extras=True)
         out["glb"] = job["glb_path"]
     if job.get("png_path"):
         setup_preview_scene()
@@ -378,7 +378,8 @@ def export(job):
     fmt = job["format"]
     path = job["path"]
     if fmt == "glb":
-        bpy.ops.export_scene.gltf(filepath=path, export_format="GLB", export_apply=True)
+        bpy.ops.export_scene.gltf(filepath=path, export_format="GLB", export_apply=True,
+                                  export_extras=True)
     elif fmt == "obj":
         bpy.ops.wm.obj_export(filepath=path, apply_modifiers=True)
     elif fmt == "stl":

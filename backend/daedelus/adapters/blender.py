@@ -211,6 +211,7 @@ class BlenderAdapter(Adapter):
             out["render"] = png
         if glb.exists():
             out["glb"] = glb
+            out["glb_ids"] = glb  # node extras carry daedelus_id (component picking)
         return out
 
     def export(self, native_dir: Path, entry: str, fmt: str, out_dir: Path) -> Path:
