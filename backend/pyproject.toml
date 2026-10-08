@@ -1,0 +1,35 @@
+[project]
+name = "daedelus"
+version = "0.1.0"
+description = "Daedelus: universal multimodal agentic creation studio (backend: sources, bindings, workflow engine, adapters)"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+dependencies = [
+  "pydantic>=2.6",
+  "fastapi>=0.110",
+  "uvicorn>=0.29",
+  "python-multipart>=0.0.9",
+  "pillow>=10.0",
+  "numpy>=1.26",
+  "pypdf>=4.0",
+  "httpx>=0.27",
+]
+
+[project.optional-dependencies]
+anthropic = ["anthropic>=0.40"]
+dev = ["pytest>=8.0", "pytest-timeout>=2.3", "reportlab>=4.0"]
+
+[project.scripts]
+daedelus = "daedelus.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["daedelus"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+timeout = 600
+markers = ["blender: requires a Blender executable (DAEDELUS_BLENDER or on PATH)"]

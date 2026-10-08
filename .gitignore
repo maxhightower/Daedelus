@@ -4,3 +4,9 @@ __pycache__/
 *.pyc
 dist/
 .pytest_cache/
+backend/.venv/
+*.egg-info/
+evidence/**/workspace/
+studio/src-tauri/target/
+studio/src-tauri/binaries/
+.DS_Store
