@@ -15,6 +15,9 @@ import bpy  # type: ignore
 from mathutils import Vector  # type: ignore
 
 ID_PROP = "daedelus_id"
+GEOM = ("MESH", "CURVE")
+MOD_TYPES = {"decimate": "DECIMATE", "solidify": "SOLIDIFY", "array": "ARRAY", "mirror": "MIRROR",
+             "subdivision": "SUBSURF", "bevel": "BEVEL", "taper": "SIMPLE_DEFORM"}
 
 
 def r5(x):
@@ -41,7 +44,7 @@ def world_bbox(objs):
     dg = bpy.context.evaluated_depsgraph_get()
     pts = []
     for o in objs:
-        if o.type != "MESH":
+        if o.type not in GEOM:
             continue
         ev = o.evaluated_get(dg)
         mesh = ev.to_mesh()
@@ -56,7 +59,7 @@ def world_bbox(objs):
 
 
 def material_props(obj):
-    if obj.type != "MESH" or not obj.data.materials or obj.data.materials[0] is None:
+    if obj.type not in GEOM or not obj.data.materials or obj.data.materials[0] is None:
         return None
     mat = obj.data.materials[0]
     props = {"name": mat.name}
@@ -92,6 +95,16 @@ def modifier_props(obj):
             d.update(method=m.deform_method, factor=r5(m.factor), axis=m.deform_axis)
         elif m.type == "BEVEL":
             d.update(width=r5(m.width), segments=m.segments)
+        elif m.type == "SUBSURF":
+            d.update(levels=m.levels, render_levels=m.render_levels)
+        elif m.type == "DECIMATE":
+            d.update(ratio=r5(m.ratio))
+        elif m.type == "SOLIDIFY":
+            d.update(thickness=r5(m.thickness))
+        elif m.type == "ARRAY":
+            d.update(count=m.count, offset=[r5(v) for v in m.relative_offset_displace])
+        elif m.type == "MIRROR":
+            d.update(axis=[bool(v) for v in m.use_axis])
         out.append(d)
     return out
 
@@ -102,7 +115,7 @@ def state_hash(obj):
     h.update(obj.type.encode())
     for row in obj.matrix_local:
         h.update(json.dumps([r5(v) for v in row]).encode())
-    if obj.type == "MESH":
+    if obj.type in GEOM:
         dg = bpy.context.evaluated_depsgraph_get()
         ev = obj.evaluated_get(dg)
         mesh = ev.to_mesh()
@@ -110,6 +123,8 @@ def state_hash(obj):
             h.update(json.dumps([r5(v.co.x), r5(v.co.y), r5(v.co.z)]).encode())
         ev.to_mesh_clear()
         h.update(json.dumps(material_props(obj), sort_keys=True).encode())
+        if obj.type == "MESH":
+            h.update(json.dumps([p.use_smooth for p in obj.data.polygons[:1]]).encode())
     h.update(json.dumps(modifier_props(obj), sort_keys=True).encode())
     return h.hexdigest()
 
@@ -120,7 +135,7 @@ def inspect():
     for cid, o in sorted(objs.items()):
         parent = o.parent.get(ID_PROP) if o.parent is not None else None
         components.append({"id": cid, "name": o.get("daedelus_name", o.name),
-                           "kind": "mesh" if o.type == "MESH" else "group",
+                           "kind": {"MESH": "mesh", "CURVE": "curve"}.get(o.type, "group"),
                            "parent_id": parent, "native_ref": o.name,
                            "metadata": {"blender_type": o.type}})
         states[cid] = state_hash(o)
@@ -130,9 +145,10 @@ def inspect():
             mn, mx = bb
             m = {"width": r5(mx.x - mn.x), "depth": r5(mx.y - mn.y), "height": r5(mx.z - mn.z),
                  "min_z": r5(mn.z), "max_z": r5(mx.z)}
-        meshes = [x for x in subtree(o) if x.type == "MESH"]
+        meshes = [x for x in subtree(o) if x.type in GEOM]
         m["object_count"] = len(subtree(o))
-        m["vertex_count"] = sum(len(x.data.vertices) for x in meshes)
+        m["vertex_count"] = sum(len(x.data.vertices) for x in meshes if x.type == "MESH")
+        m["poly_count"] = evaluated_polys(meshes)
         measurements[cid] = m
         mods = {mm["name"]: mm for x in meshes for mm in modifier_props(x)}
         properties[cid] = {
@@ -141,26 +157,65 @@ def inspect():
             "material": material_props(meshes[0]) if meshes else None,
             "taper": mods.get("dd_taper", {}).get("factor", 0.0),
             "bevel": mods.get("dd_bevel", {}).get("width", 0.0),
+            "subdivision": mods.get("dd_subdivision", {}).get("levels", 0),
+            "modifiers": sorted({mm["type"] for x in meshes for mm in modifier_props(x)}),
+            "own_modifiers": modifier_props(o),
             "dimensions": {k: m.get(k) for k in ("width", "depth", "height")},
+            "rotation_euler": [r5(math.degrees(a)) for a in o.rotation_euler],
+            "smooth": bool(o.type == "MESH" and len(o.data.polygons) and
+                           o.data.polygons[0].use_smooth),
+            "children": sorted(c.get(ID_PROP) for c in o.children if ID_PROP in c.keys()),
+            "curve": ({"resolution": o.data.resolution_u, "bevel_resolution":
+                       o.data.bevel_resolution, "radius": r5(o.data.bevel_depth)}
+                      if o.type == "CURVE" else None),
+            "own_poly_count": evaluated_polys([o]) if o.type in GEOM else 0,
         }
     return {"components": components, "states": states, "measurements": measurements,
             "properties": properties}
+
+
+def evaluated_polys(objs):
+    dg = bpy.context.evaluated_depsgraph_get()
+    n = 0
+    for o in objs:
+        ev = o.evaluated_get(dg)
+        mesh = ev.to_mesh()
+        n += len(mesh.polygons)
+        ev.to_mesh_clear()
+    return n
 
 
 def make_primitive(spec):
     prim = spec.get("primitive", "cube")
     size = spec.get("size", [1, 1, 1])
     loc = spec.get("location", [0, 0, 0])
+    segs = int(spec.get("vertices", 24))
     if prim == "empty":
         bpy.ops.object.empty_add(type="PLAIN_AXES", location=loc)
     elif prim == "cylinder":
-        bpy.ops.mesh.primitive_cylinder_add(vertices=spec.get("vertices", 24), radius=0.5,
-                                            depth=1.0, location=loc)
+        bpy.ops.mesh.primitive_cylinder_add(vertices=segs, radius=0.5, depth=1.0, location=loc)
+    elif prim == "cone":
+        bpy.ops.mesh.primitive_cone_add(vertices=segs, radius1=0.5,
+                                        radius2=0.5 * float(spec.get("top_ratio", 0.0)),
+                                        depth=1.0, location=loc)
     elif prim == "uv_sphere":
-        bpy.ops.mesh.primitive_uv_sphere_add(radius=0.5, location=loc)
+        bpy.ops.mesh.primitive_uv_sphere_add(segments=max(8, segs), ring_count=max(4, segs // 2),
+                                             radius=0.5, location=loc)
+    elif prim == "ico_sphere":
+        bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=int(spec.get("detail", 2)),
+                                              radius=0.5, location=loc)
+    elif prim == "torus":
+        bpy.ops.mesh.primitive_torus_add(major_radius=0.5,
+                                         minor_radius=0.5 * float(spec.get("thickness", 0.25)),
+                                         major_segments=max(8, segs), minor_segments=12,
+                                         location=loc)
+    elif prim == "plane":
+        bpy.ops.mesh.primitive_plane_add(size=1.0, location=loc)
     else:
         bpy.ops.mesh.primitive_cube_add(size=1.0, location=loc)
     obj = bpy.context.active_object
+    if spec.get("rotation_euler"):
+        obj.rotation_euler = [math.radians(a) for a in spec["rotation_euler"]]
     if prim != "empty":
         # bake size into mesh data so object scale stays a free, editable parameter
         obj.scale = size
@@ -219,11 +274,11 @@ def op_set_material(obj, params):
         bsdf.inputs["Metallic"].default_value = float(params["metallic"])
     n = 0
     for o in subtree(obj, exclude):
-        if o.type == "MESH":
+        if o.type in GEOM:
             o.data.materials.clear()
             o.data.materials.append(mat)
             n += 1
-    return f"material {params['base_color']} on {n} mesh(es)"
+    return f"material {params['base_color']} on {n} object(s)"
 
 
 def _modifier(o, name, mtype):
@@ -275,7 +330,197 @@ def op_add_primitive(_obj, params):
     return f"created {params.get('primitive', 'cube')} {params['id']}"
 
 
+def make_branch(spec):
+    """A curve with a round bevel: trunk, branch, cable, handle... Stays an editable curve."""
+    pts = spec["points"]
+    cu = bpy.data.curves.new(spec.get("name", spec["id"]), type="CURVE")
+    cu.dimensions = "3D"
+    cu.bevel_depth = float(spec.get("radius", 0.05))
+    cu.bevel_resolution = int(spec.get("bevel_resolution", 3))
+    cu.resolution_u = int(spec.get("resolution", 8))
+    cu.use_fill_caps = True
+    sp = cu.splines.new("POLY" if spec.get("straight") else "BEZIER")
+    radii = spec.get("radii") or [1.0] * len(pts)
+    if sp.type == "BEZIER":
+        sp.bezier_points.add(len(pts) - 1)
+        for bp, p, r in zip(sp.bezier_points, pts, radii):
+            bp.co = p
+            bp.handle_left_type = bp.handle_right_type = "AUTO"
+            bp.radius = float(r)
+    else:
+        sp.points.add(len(pts) - 1)
+        for pp, p, r in zip(sp.points, pts, radii):
+            pp.co = (*p, 1.0)
+            pp.radius = float(r)
+    obj = bpy.data.objects.new(spec.get("name", spec["id"]), cu)
+    bpy.context.scene.collection.objects.link(obj)
+    obj[ID_PROP] = spec["id"]
+    obj["daedelus_name"] = spec.get("name", spec["id"])
+    parent = spec.get("parent")
+    if parent:
+        p = comp_objects().get(parent)
+        if p is None:
+            raise ValueError(f"parent component not found: {parent}")
+        obj.parent = p
+        obj.matrix_parent_inverse = p.matrix_world.inverted()
+    return obj
+
+
+def op_add_branch(_obj, params):
+    if params["id"] in comp_objects():
+        return f"component {params['id']} already exists (idempotent no-op)"
+    make_branch(params)
+    return f"created curve {params['id']} with {len(params['points'])} points"
+
+
+def op_extrude_faces(obj, params):
+    """Extrude the faces facing ``axis`` in steps; each step can scale (taper) and twist."""
+    import bmesh  # type: ignore
+
+    if obj.type != "MESH":
+        raise ValueError("extrude_faces needs a mesh component")
+    axis = Vector({"Z": (0, 0, 1), "-Z": (0, 0, -1), "X": (1, 0, 0), "-X": (-1, 0, 0),
+                   "Y": (0, 1, 0), "-Y": (0, -1, 0)}[params.get("axis", "Z")])
+    steps = int(params.get("steps", 1))
+    dist = float(params["distance"]) / steps
+    scale = float(params.get("scale_per_step", 1.0))
+    twist = math.radians(float(params.get("twist_per_step", 0.0)))
+    offset = params.get("offset_per_step") or [0.0, 0.0, 0.0]
+    from mathutils import Matrix  # type: ignore
+
+    bm = bmesh.new()
+    bm.from_mesh(obj.data)
+    faces = [f for f in bm.faces if f.normal.dot(axis) > 0.7]
+    if not faces:
+        bm.free()
+        raise ValueError(f"no faces facing {params.get('axis', 'Z')}")
+    for _ in range(steps):
+        res = bmesh.ops.extrude_face_region(bm, geom=faces)
+        verts = [e for e in res["geom"] if isinstance(e, bmesh.types.BMVert)]
+        faces = [e for e in res["geom"] if isinstance(e, bmesh.types.BMFace)]
+        bmesh.ops.translate(bm, verts=verts, vec=axis * dist + Vector(offset))
+        c = sum((v.co for v in verts), Vector()) / max(1, len(verts))
+        if scale != 1.0:
+            bmesh.ops.scale(bm, verts=verts, vec=Vector([scale if abs(a) < 0.5 else 1.0
+                                                         for a in axis]),
+                            space=Matrix.Translation(-c))
+        if twist:
+            bmesh.ops.rotate(bm, verts=verts, cent=c, matrix=Matrix.Rotation(twist, 3, axis))
+    bm.to_mesh(obj.data)
+    bm.free()
+    obj.data.update()
+    return f"extruded {steps} step(s) of {dist:.3f} along {params.get('axis', 'Z')}" + \
+        (f", scale {scale}/step" if scale != 1 else "") + \
+        (f", twist {params.get('twist_per_step')} deg/step" if twist else "")
+
+
+def op_set_curve_detail(obj, params):
+    n = 0
+    for o in subtree(obj, set(params.get("exclude", []))):
+        if o.type != "CURVE":
+            continue
+        if "resolution" in params:
+            o.data.resolution_u = int(params["resolution"])
+        if "bevel_resolution" in params:
+            o.data.bevel_resolution = int(params["bevel_resolution"])
+        if "radius" in params:
+            o.data.bevel_depth = float(params["radius"])
+        n += 1
+    return f"curve detail {params} on {n} curve(s)"
+
+
+def op_set_subdivision(obj, params):
+    n = 0
+    for o in subtree(obj, set(params.get("exclude", []))):
+        if o.type != "MESH":
+            continue
+        lv = int(params["levels"])
+        if lv == 0:
+            m = o.modifiers.get("dd_subdivision")
+            if m:
+                o.modifiers.remove(m)
+        else:
+            m = _modifier(o, "dd_subdivision", "SUBSURF")
+            m.levels = lv
+            m.render_levels = int(params.get("render_levels", lv))
+        n += 1
+    return f"subdivision levels {params['levels']} on {n} mesh(es)"
+
+
+def op_set_modifier(obj, params):
+    kind = params["type"]
+    mtype = MOD_TYPES[kind]
+    remove = bool(params.get("remove"))
+    n = 0
+    for o in subtree(obj, set(params.get("exclude", []))):
+        if o.type != "MESH":
+            continue
+        name = f"dd_{kind}"
+        if remove:
+            m = o.modifiers.get(name)
+            if m:
+                o.modifiers.remove(m)
+            n += 1
+            continue
+        m = _modifier(o, name, mtype)
+        if kind == "decimate":
+            m.ratio = float(params.get("ratio", 0.5))
+        elif kind == "solidify":
+            m.thickness = float(params.get("thickness", 0.02))
+        elif kind == "array":
+            m.count = int(params.get("count", 2))
+            m.relative_offset_displace = params.get("offset", [1.0, 0.0, 0.0])
+        elif kind == "mirror":
+            ax = params.get("axis", "X")
+            m.use_axis = (ax == "X", ax == "Y", ax == "Z")
+        n += 1
+    return f"{'removed' if remove else 'set'} {kind} modifier on {n} mesh(es)"
+
+
+def op_set_parent(obj, params):
+    target = params.get("parent")
+    if target:
+        p = comp_objects().get(target)
+        if p is None:
+            raise ValueError(f"parent component not found: {target}")
+        if p == obj or obj in p.children_recursive:
+            raise ValueError("parenting would create a cycle")
+        mw = obj.matrix_world.copy()
+        obj.parent = p
+        obj.matrix_world = mw
+    else:
+        mw = obj.matrix_world.copy()
+        obj.parent = None
+        obj.matrix_world = mw
+    return f"parent -> {target or '(none)'}"
+
+
+def op_set_shading(obj, params):
+    n = 0
+    for o in subtree(obj, set(params.get("exclude", []))):
+        if o.type == "MESH":
+            for p in o.data.polygons:
+                p.use_smooth = bool(params["smooth"])
+            n += 1
+    return f"{'smooth' if params['smooth'] else 'flat'} shading on {n} mesh(es)"
+
+
+def op_remove_component(obj, params):
+    objs = subtree(obj)
+    for o in objs:
+        bpy.data.objects.remove(o, do_unlink=True)
+    return f"removed {len(objs)} object(s)"
+
+
 OPS = {
+    "add_branch": op_add_branch,
+    "extrude_faces": op_extrude_faces,
+    "set_subdivision": op_set_subdivision,
+    "set_curve_detail": op_set_curve_detail,
+    "set_modifier": op_set_modifier,
+    "set_parent": op_set_parent,
+    "set_shading": op_set_shading,
+    "remove_component": op_remove_component,
     "set_dimensions": op_set_dimensions,
     "set_material": op_set_material,
     "set_taper": op_set_taper,
@@ -293,7 +538,7 @@ def apply(job):
         try:
             fn = OPS[name]
             obj = None
-            if name != "add_primitive":
+            if name not in ("add_primitive", "add_branch"):
                 obj = comp_objects().get(op.get("component_id"))
                 if obj is None:
                     raise ValueError(f"component not found: {op.get('component_id')}")
@@ -313,7 +558,7 @@ def apply(job):
 
 def setup_preview_scene():
     scene = bpy.context.scene
-    objs = [o for o in scene.objects if o.type == "MESH"]
+    objs = [o for o in scene.objects if o.type in GEOM]
     bb = world_bbox(objs)
     center, radius = Vector((0, 0, 0)), 1.0
     if bb:

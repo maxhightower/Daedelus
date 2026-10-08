@@ -27,6 +27,7 @@ from .base import (
 )
 
 WORKER = Path(__file__).with_name("blender_worker.py")
+VEC3 = {"type": "array", "items": {"type": "number"}, "minItems": 3, "maxItems": 3}
 ENTRY = "model.blend"
 
 
@@ -49,7 +50,7 @@ def find_blender() -> str | None:
 
 class BlenderAdapter(Adapter):
     name = "blender"
-    version = "1"
+    version = "2"
 
     def __init__(self, timeout: float = 300.0):
         self.timeout = timeout
@@ -71,8 +72,8 @@ class BlenderAdapter(Adapter):
             artifact_types=["model3d"], native_formats=[".blend"],
             preview_formats=["png (Cycles CPU render)", "glb"],
             export_formats=["glb", "obj", "stl"],
-            scopes=["artifact", "group", "mesh"],
-            measurements=["width", "depth", "height", "vertex_count", "object_count"],
+            scopes=["artifact", "group", "mesh", "curve"],
+            measurements=["width", "depth", "height", "vertex_count", "object_count", "poly_count"],
             validation=["component_preservation", "constraints", "op_results", "file_reopens"],
             environment={"requires": "Blender 4.2+ executable", "executable": detail if ok else None},
             available=ok, unavailable_reason=None if ok else detail,
@@ -133,12 +134,130 @@ class BlenderAdapter(Adapter):
                         "id": {"type": "string", "pattern": "[A-Za-z0-9_.-]+"},
                         "name": {"type": "string"},
                         "primitive": {"type": "string",
-                                      "enum": ["cube", "cylinder", "uv_sphere", "empty"]},
+                                      "enum": ["cube", "cylinder", "cone", "uv_sphere",
+                                               "ico_sphere", "torus", "plane", "empty"]},
                         "parent": {"type": "string"},
-                        "location": {"type": "array", "items": {"type": "number"}},
-                        "size": {"type": "array", "items": {"type": "number"}}}}),
+                        "location": VEC3,
+                        "rotation_euler": VEC3,
+                        "size": VEC3,
+                        "vertices": {"type": "integer", "minimum": 3, "maximum": 128},
+                        "top_ratio": {"type": "number", "minimum": 0, "maximum": 1},
+                        "detail": {"type": "integer", "minimum": 1, "maximum": 5},
+                        "thickness": {"type": "number", "minimum": 0.01, "maximum": 1},
+                        "subdivide": {"type": "integer", "minimum": 0, "maximum": 4}}}),
+                OperationSpec(
+                    name="add_branch", family="create", aspects=["geometry", "shape"],
+                    target_kinds=["new"],
+                    description="Create a curve component with a round profile through the "
+                    "given points (trunks, branches, cables, handles). Radii scale the profile "
+                    "per point. Idempotent by id.",
+                    params_schema={"type": "object", "required": ["id", "points"],
+                                   "additionalProperties": False, "properties": {
+                                       "id": {"type": "string", "pattern": "[A-Za-z0-9_.-]+"},
+                                       "name": {"type": "string"},
+                                       "parent": {"type": "string"},
+                                       "points": {"type": "array", "items": VEC3,
+                                                  "minItems": 2, "maxItems": 16},
+                                       "radius": {"type": "number", "minimum": 0.001,
+                                                  "maximum": 5},
+                                       "radii": {"type": "array", "items": {
+                                           "type": "number", "minimum": 0, "maximum": 10},
+                                           "maxItems": 16},
+                                       "resolution": {"type": "integer", "minimum": 1,
+                                                      "maximum": 24},
+                                       "bevel_resolution": {"type": "integer", "minimum": 0,
+                                                            "maximum": 8},
+                                       "straight": {"type": "boolean"}}}),
+                OperationSpec(
+                    name="extrude_faces", family="shape", aspects=["shape", "geometry"],
+                    target_kinds=["mesh"],
+                    description="Extrude the faces facing an axis in steps; each step may "
+                    "scale (taper), twist (degrees) and offset the new ring. Destructive on the "
+                    "mesh data (checkpointed by the engine).",
+                    params_schema={"type": "object", "required": ["distance"],
+                                   "additionalProperties": False, "properties": {
+                                       "axis": {"type": "string",
+                                                "enum": ["Z", "-Z", "X", "-X", "Y", "-Y"]},
+                                       "distance": {"type": "number", "minimum": 0.001,
+                                                    "maximum": 100},
+                                       "steps": {"type": "integer", "minimum": 1, "maximum": 24},
+                                       "scale_per_step": {"type": "number", "minimum": 0.05,
+                                                          "maximum": 3},
+                                       "twist_per_step": {"type": "number", "minimum": -180,
+                                                          "maximum": 180},
+                                       "offset_per_step": VEC3}}),
+                OperationSpec(
+                    name="set_subdivision", family="detail", aspects=["shape", "style",
+                                                                      "detail"],
+                    target_kinds=["*"], subtree=True,
+                    description="Non-destructive subdivision surface (levels 0 removes it).",
+                    params_schema={"type": "object", "required": ["levels"],
+                                   "additionalProperties": False, "properties": {
+                                       "levels": {"type": "integer", "minimum": 0, "maximum": 4},
+                                       "render_levels": {"type": "integer", "minimum": 0,
+                                                         "maximum": 4},
+                                       **sub}}),
+                OperationSpec(
+                    name="set_curve_detail", family="detail", aspects=["detail", "shape"],
+                    target_kinds=["*"], subtree=True,
+                    description="Curve tessellation and profile: resolution along the curve, "
+                    "bevel (profile) resolution and radius.",
+                    params_schema={"type": "object", "additionalProperties": False,
+                                   "properties": {
+                                       "resolution": {"type": "integer", "minimum": 1,
+                                                      "maximum": 24},
+                                       "bevel_resolution": {"type": "integer", "minimum": 0,
+                                                            "maximum": 8},
+                                       "radius": {"type": "number", "minimum": 0.001,
+                                                  "maximum": 5}, **sub}}),
+                OperationSpec(
+                    name="set_modifier", family="modifier", aspects=["shape", "detail",
+                                                                     "technique"],
+                    target_kinds=["*"], subtree=True,
+                    description="Configure (or remove) one of a bounded set of non-destructive "
+                    "modifiers: decimate (polygon budget), solidify, array, mirror.",
+                    params_schema={"type": "object", "required": ["type"],
+                                   "additionalProperties": False, "properties": {
+                                       "type": {"type": "string", "enum": [
+                                           "decimate", "solidify", "array", "mirror"]},
+                                       "remove": {"type": "boolean"},
+                                       "ratio": {"type": "number", "minimum": 0.01,
+                                                 "maximum": 1},
+                                       "thickness": {"type": "number", "minimum": -1,
+                                                     "maximum": 1},
+                                       "count": {"type": "integer", "minimum": 1,
+                                                 "maximum": 64},
+                                       "offset": VEC3,
+                                       "axis": {"type": "string", "enum": ["X", "Y", "Z"]},
+                                       **sub}}),
+                OperationSpec(
+                    name="set_parent", family="structure", aspects=["composition"],
+                    target_kinds=["*"],
+                    description="Re-parent a component (empty parent = scene root); keeps its "
+                    "world transform.",
+                    params_schema={"type": "object", "additionalProperties": False,
+                                   "properties": {"parent": {"type": "string"}}}),
+                OperationSpec(
+                    name="set_shading", family="detail", aspects=["style"],
+                    target_kinds=["*"], subtree=True,
+                    description="Smooth or flat shading on subtree meshes.",
+                    params_schema={"type": "object", "required": ["smooth"],
+                                   "additionalProperties": False, "properties": {
+                                       "smooth": {"type": "boolean"}, **sub}}),
+                OperationSpec(
+                    name="remove_component", family="structure", aspects=["composition"],
+                    target_kinds=["*"], subtree=True,
+                    description="Delete a component and its subtree (scope-checked; the engine "
+                    "checkpoints and records the removal).",
+                    params_schema={"type": "object", "additionalProperties": False,
+                                   "properties": {}}),
             ],
         )
+
+    def created_kind(self, op: PlannedOperation) -> str:
+        if op.op == "add_branch":
+            return "curve"
+        return "group" if op.params.get("primitive") == "empty" else "mesh"
 
     # ------------------------------------------------------------------
     def _run(self, job: dict[str, Any], blend: Path | None = None) -> dict[str, Any]:

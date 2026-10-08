@@ -37,6 +37,21 @@ from .base import (
 
 ENTRY = "image.ora"
 MIMETYPE = b"image/openraster"
+REGION = {"type": "array", "items": {"type": "number", "minimum": 0, "maximum": 1},
+          "minItems": 4, "maxItems": 4}
+
+
+def region_mask(size: tuple[int, int], region: list[float], feather: float) -> Image.Image:
+    """L-mode mask of a normalised [x, y, w, h] box with a feathered edge."""
+    w, h = size
+    x, y, rw, rh = region
+    m = Image.new("L", size, 0)
+    ImageDraw.Draw(m).rectangle([x * w, y * h, (x + rw) * w, (y + rh) * h], fill=255)
+    if feather > 0:
+        m = m.filter(ImageFilter.GaussianBlur(feather * min(rw * w, rh * h)))
+    return m
+
+
 DEFAULT_GRADE = {"tint": None, "tint_strength": 0.0, "brightness": 1.0, "saturation": 1.0,
                  "contrast": 1.0}
 
@@ -293,7 +308,30 @@ class LayeredImageAdapter(Adapter):
                                        "fit": {"type": "string", "enum": ["cover", "contain"]},
                                        "blur": {"type": "number", "minimum": 0, "maximum": 50},
                                        "mix": {"type": "number", "minimum": 0, "maximum": 1},
-                                       "preserve_alpha": {"type": "boolean"}}}),
+                                       "preserve_alpha": {"type": "boolean"},
+                                       "source_region": REGION, "region": REGION,
+                                       "feather": {"type": "number", "minimum": 0,
+                                                   "maximum": 0.5}}}),
+                OperationSpec(
+                    name="grade_region", family="region_grade",
+                    aspects=["color", "lighting", "mood", "style"], target_kinds=layer_kinds,
+                    description="Bake a colour grade into a normalised region [x, y, w, h] of one "
+                                "layer, with a feathered edge. Pixels outside the region and "
+                                "other layers are untouched.",
+                    params_schema={"type": "object", "additionalProperties": False,
+                                   "required": ["region"], "properties": {
+                                       "region": REGION,
+                                       "feather": {"type": "number", "minimum": 0,
+                                                   "maximum": 0.5},
+                                       "tint": HEX_COLOR,
+                                       "tint_strength": {"type": "number", "minimum": 0,
+                                                         "maximum": 1},
+                                       "brightness": {"type": "number", "minimum": 0.2,
+                                                      "maximum": 2.0},
+                                       "saturation": {"type": "number", "minimum": 0,
+                                                      "maximum": 2.5},
+                                       "contrast": {"type": "number", "minimum": 0.2,
+                                                    "maximum": 2.5}}}),
                 OperationSpec(
                     name="set_layer_props", family="layer_props", aspects=["composition"],
                     target_kinds=layer_kinds, description="Opacity / visibility / name.",
@@ -407,18 +445,43 @@ class LayeredImageAdapter(Adapter):
                 raise AdapterError(f"source image not available: {p['source_id']}")
             with Image.open(sp) as im:
                 ref = im.convert("RGBA")
-            size = (l.base.width, l.base.height)
+            if p.get("source_region"):
+                sx, sy, sw, sh = p["source_region"]
+                ref = ref.crop((int(sx * ref.width), int(sy * ref.height),
+                                int((sx + sw) * ref.width), int((sy + sh) * ref.height)))
+            W, H = l.base.width, l.base.height
+            region = p.get("region") or [0, 0, 1, 1]
+            rx, ry, rw, rh = region
+            size = (max(1, int(rw * W)), max(1, int(rh * H)))
             ref = (ImageOps.fit(ref, size, Image.Resampling.LANCZOS) if p.get("fit", "cover")
                    == "cover" else ImageOps.pad(ref, size, Image.Resampling.LANCZOS))
             if p.get("blur", 0) > 0:
                 ref = ref.filter(ImageFilter.GaussianBlur(float(p["blur"])))
+            placed = l.base.copy()
+            placed.paste(ref, (int(rx * W), int(ry * H)))
             mix = float(p.get("mix", 1.0))
-            base = Image.blend(l.base, ref, mix) if mix < 1.0 else ref
+            mask = region_mask((W, H), region, float(p.get("feather", 0.0)))
+            if mix < 1.0:
+                mask = mask.point(lambda v: int(v * mix))
+            base = Image.composite(placed, l.base, mask)
             if p.get("preserve_alpha", True):
                 base.putalpha(l.base.getchannel("A"))
             l.base = base
             l.base_kind = "reference"
-            return f"painted source {p['source_id']} into {l.id} (mix {mix})"
+            where = "" if region == [0, 0, 1, 1] else f" region {region}"
+            return f"painted source {p['source_id']} into {l.id}{where} (mix {mix})"
+        if op.op == "grade_region":
+            l = doc.layer(op.component_id or "")
+            g = {**DEFAULT_GRADE, **{k: v for k, v in p.items()
+                                     if k not in ("region", "feather")}}
+            graded = apply_grade(l.base, g)
+            mask = region_mask((l.base.width, l.base.height), p["region"],
+                               float(p.get("feather", 0.1)))
+            alpha = l.base.getchannel("A")
+            out = Image.composite(graded, l.base, mask)
+            out.putalpha(alpha)
+            l.base = out
+            return f"region grade {p['region']} on {l.id}"
         if op.op == "set_layer_props":
             l = doc.layer(op.component_id or "")
             if "opacity" in p:

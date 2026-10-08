@@ -50,6 +50,10 @@ from .models import (
 )
 from .nodes import NODE_TYPES, compatible
 from .providers import PlanRequest, ProviderError, get_provider, providers
+from .providers.base import EvaluateRequest, ReviseRequest
+from .semantic import service as semsvc
+from .semantic.evaluation import constraint_findings
+from .semantic.models import Evaluation, Usage
 from .store import ProjectStore
 
 MEASURABLE_OPS = {"preserve", "forbid_change", "eq", "lte", "gte", "range"}
@@ -539,7 +543,9 @@ class Engine:
         parts["constraints"] = _h(ctx.constraints)
         parts["conflicts"] = _h([c.model_dump() for c in ctx.conflicts])
         parts["node_config"] = _h({k: cfg.get(k) for k in ("instructions", "allowed_ops", "model",
-                                                           "fan_out", "target_component")})
+                                                           "fan_out", "target_component")}
+                                  | {k: cfg[k] for k in ("understand", "analysis_provider",
+                                                         "analysis_model") if cfg.get(k)})
         parts["planner"] = _h([provider, adapter_name, adapter_version])
         parts["upstream"] = _h([(u["artifact_id"], u["revision_id"]) for u in upstream])
         parts["ancestors"] = _h(ancestors)
@@ -562,7 +568,8 @@ class Engine:
 
     def plan_units(self, wf: Workflow, node: WorkflowNode, cfg: dict[str, Any],
                    art: Artifact, insp, *, allowed_sources: set[str] | None,
-                   upstream: list[dict[str, Any]], mode: str) -> list[dict[str, Any]]:
+                   upstream: list[dict[str, Any]], mode: str,
+                   analyze: bool = True) -> list[dict[str, Any]]:
         """Resolve + fingerprint every unit (no planning yet). Used by execution and impact."""
         adapter = get_adapter(art.adapter)
         provider = cfg.get("provider") or self.store.get_project().settings.default_provider
@@ -581,6 +588,18 @@ class Engine:
             ancestors = [fps[a] for a in art.ancestors(u) if a in fps]
             parts = self._fingerprint_inputs(ctx, cfg, adapter.name, adapter.version, provider,
                                              upstream, ancestors)
+            if cfg.get("understand"):
+                # Understand stage: analyses of the applicable sources are part of the inputs.
+                # Impact/preview (analyze=False) only read cached analyses - no provider calls.
+                ana_provider = cfg.get("analysis_provider") or provider
+                try:
+                    anas = (semsvc.ensure_analyses(self.store, ctx, ana_provider,
+                                                   cfg.get("analysis_model") or None)
+                            if analyze else semsvc.cached_analyses(self.store, ctx))
+                except ProviderError as exc:
+                    raise NodeFailure(f"analysis provider '{ana_provider}' failed: {exc}")
+                parts["semantic"] = _h([(a.source_id, a.id, a.provider, a.model, a.status)
+                                        if a else None for a in anas])
             fp = _h(parts)
             fps[u] = fp
             key = sel.key()
@@ -675,7 +694,8 @@ class Engine:
                     baseline={c: art.metadata.get("baseline", {}).get(c, {})
                               for c in info["subtree"]},
                     upstream=upstream, source_files=source_files,
-                    model=cfg.get("model") or None)
+                    model=cfg.get("model") or None,
+                    semantic=self._package(info, art, insp, adapter, cfg))
                 (self.store.execution_dir(ex.id) / f"plan_request_{node.id}_"
                  f"{_h(info['unit'])[:10]}.json").write_text(req.model_dump_json(indent=1))
                 try:
@@ -684,17 +704,8 @@ class Engine:
                     ur.status = RunStatus.failed
                     ur.error = str(exc)
                     raise NodeFailure(f"planner '{provider_name}' failed for {info['unit']}: {exc}")
-                errors = adapter.validate_operations(plan.operations, art.components)
-                allowed_scope = set(info["subtree"])
-                for i, op in enumerate(plan.operations):
-                    spec = adapter.op_spec(op.op)
-                    if spec and spec.target_kinds == ["new"]:
-                        parent = op.params.get("parent")
-                        if parent and parent not in allowed_scope:
-                            errors.append(f"op {i} creates a component outside the unit scope")
-                    elif op.component_id and op.component_id not in allowed_scope:
-                        errors.append(f"op {i} ({op.op}) targets '{op.component_id}', outside "
-                                      f"unit {info['unit']}")
+                errors = self._validate_plan(adapter, art, plan.operations,
+                                             set(info["subtree"]), f"unit {info['unit']}")
                 ur.plan = plan.model_dump()
                 if errors:
                     ur.status = RunStatus.failed
@@ -716,6 +727,190 @@ class Engine:
                 raise ExecutionPaused()
 
         self._apply_units(ex, wf, node, nr, cfg, art, adapter, planned, unit_infos)
+        if (cfg.get("loop") or {}).get("enabled"):
+            self._agent_loop(ex, wf, node, nr, cfg, art.id, adapter, provider, planned,
+                             unit_infos, upstream)
+
+    # -- semantic context ------------------------------------------------------
+    def _package(self, info, art, insp, adapter, cfg) -> dict[str, Any]:
+        if not cfg.get("understand"):
+            return {}
+        ops = [o.name for o in adapter.info().operations
+               if not cfg.get("allowed_ops") or o.name in cfg["allowed_ops"]]
+        return semsvc.context_package(
+            self.store, info["ctx"], art,
+            properties={c: insp.properties.get(c, {}) for c in info["subtree"]},
+            measurements={c: insp.measurements.get(c, {}) for c in info["subtree"]},
+            operations=ops)
+
+    def _plan_request(self, art, unit_info, ctx, adapter, cfg, insp, upstream) -> PlanRequest:
+        cid = unit_info["component_id"]
+        subtree = [cid] + art.descendants(cid)
+        info = {"ctx": ctx, "subtree": subtree}
+        return PlanRequest(
+            unit=unit_info["unit"], artifact=art, component=art.component(cid), context=ctx,
+            adapter=adapter.info(), allowed_ops=cfg.get("allowed_ops") or None,
+            instructions=cfg.get("instructions", ""),
+            properties={c: insp.properties.get(c, {}) for c in subtree},
+            measurements={c: insp.measurements.get(c, {}) for c in subtree},
+            baseline={c: art.metadata.get("baseline", {}).get(c, {}) for c in subtree},
+            upstream=upstream, source_files=self._source_files(), model=cfg.get("model") or None,
+            semantic=self._package(info, art, insp, adapter, cfg))
+
+    def _validate_plan(self, adapter, art, ops, scope: set[str], unit: str) -> list[str]:
+        errors = adapter.validate_operations(ops, art.components)
+        scope = set(scope)
+        for i, op in enumerate(ops):
+            spec = adapter.op_spec(op.op)
+            parent = op.params.get("parent")
+            if spec and spec.target_kinds == ["new"]:
+                if parent and parent not in scope:
+                    errors.append(f"op {i} creates a component outside the unit scope")
+                elif isinstance(op.params.get("id"), str):
+                    scope.add(op.params["id"])  # created inside the unit: later ops may edit it
+                continue
+            if op.component_id and op.component_id not in scope:
+                errors.append(f"op {i} ({op.op}) targets '{op.component_id}', outside {unit}")
+            if parent and parent not in scope:
+                errors.append(f"op {i} ({op.op}) moves a component under '{parent}', outside "
+                              f"{unit}")
+        return errors
+
+    # -- Evaluate -> Revise loop -------------------------------------------------
+    def _agent_loop(self, ex, wf, node, nr, cfg, art_id, adapter, provider, planned, unit_infos,
+                    upstream) -> None:
+        """Bounded Render -> Evaluate -> Revise iterations after the first execution.
+
+        Every applied revision is kept. Measured findings (constraints) are authoritative; a
+        semantic judgement can request changes but never turns a failed measurement into a
+        pass. If an enforced hard constraint is still violated when the limits are reached, the
+        node fails with the best valid revision named - it is never silently accepted.
+        """
+        loop = {"max_iterations": 3, "max_seconds": 900, "max_calls": 24, "max_cost_usd": 5.0,
+                "evaluator": "", "evaluator_model": "", "criteria": [],
+                **(cfg.get("loop") or {})}
+        evaluator = get_provider(loop.get("evaluator") or provider.name)
+        started = time.monotonic()
+        usage = Usage()
+        for ur in nr.units:  # the first plan's provider usage counts toward the budget
+            u = (ur.plan or {}).get("usage") or {}
+            if u:
+                usage = usage.add(Usage(**{k: v for k, v in u.items() if k in Usage.model_fields}))
+        iterations: list[dict[str, Any]] = []
+        record = {"status": "running", "limits": {k: loop[k] for k in (
+            "max_iterations", "max_seconds", "max_calls", "max_cost_usd")},
+            "evaluator": evaluator.name, "iterations": iterations}
+        nr.outputs["loop"] = record
+        last_ops = [op for _, op in planned]
+        best_valid: str | None = None
+        it = 0
+        while True:
+            art = self.store.get_artifact(art_id)
+            rev = self.store.get_revision(art.head_revision_id)
+            insp = adapter.inspect(native_path(self.store, art), art.entry)
+            previews = {k: str(self.store.abs(v)) for k, v in rev.previews.items()
+                        if k == "render"}
+            step: dict[str, Any] = {"iteration": it, "revision_id": rev.id,
+                                    "revision_number": rev.number,
+                                    "render": rev.previews.get("render"), "units": []}
+            iterations.append(step)
+            all_pass, hard_ok = True, True
+            evals: list[tuple[dict, PlanRequest, Evaluation]] = []
+            for ui in unit_infos:
+                ui["subtree"] = [ui["component_id"]] + art.descendants(ui["component_id"])
+                ctx = self.store.get_context(ui["context_id"])
+                pr = self._plan_request(art, ui, ctx, adapter, cfg, insp, upstream)
+                det = constraint_findings(pr.semantic, insp.measurements, ui["component_id"])
+                ereq = EvaluateRequest(plan_request=pr, previews=previews,
+                                       measurements_after={c: insp.measurements.get(c, {})
+                                                           for c in pr.properties},
+                                       deterministic=det, criteria=loop.get("criteria") or [],
+                                       model=loop.get("evaluator_model") or None, iteration=it)
+                try:
+                    ev = evaluator.evaluate(ereq)
+                except ProviderError as exc:
+                    step["error"] = f"evaluator '{evaluator.name}' failed: {exc}"
+                    ev = Evaluation(provider=evaluator.name, findings=det,
+                                    summary=f"semantic evaluation failed: {exc}")
+                usage = usage.add(ev.usage)
+                evals.append((ui, pr, ev))
+                step["units"].append({"unit": ui["unit"], "evaluation": ev.as_dict()})
+                all_pass &= ev.passed
+                hard_ok &= not ev.hard_failures
+            if hard_ok:
+                best_valid = rev.id
+            step["passed"] = all_pass
+            elapsed = time.monotonic() - started
+            stop = None
+            if all_pass:
+                stop = "achieved"
+            elif it >= int(loop["max_iterations"]):
+                stop = "iteration limit reached"
+            elif elapsed > float(loop["max_seconds"]):
+                stop = "time limit reached"
+            elif usage.calls >= int(loop["max_calls"]):
+                stop = "call limit reached"
+            elif usage.cost_usd is not None and usage.cost_usd >= float(loop["max_cost_usd"]):
+                stop = "cost limit reached"
+            if stop:
+                break
+            # Revise: one bounded corrective plan per failing unit
+            it += 1
+            planned2, infos2 = [], []
+            for ui, pr, ev in evals:
+                if ev.passed:
+                    continue
+                rreq = ReviseRequest(plan_request=pr, evaluation=ev, iteration=it,
+                                     previous_operations=last_ops,
+                                     max_operations=int(loop.get("max_operations", 12)))
+                try:
+                    plan = provider.revise(rreq)
+                except ProviderError as exc:
+                    stop = f"revision planner failed: {exc}"
+                    break
+                usage = usage.add(Usage(**{k: v for k, v in (plan.usage or {}).items()
+                                           if k in Usage.model_fields}))
+                errs = self._validate_plan(adapter, art, plan.operations, set(
+                    [ui["component_id"]] + art.descendants(ui["component_id"])), ui["unit"])
+                step.setdefault("revisions", []).append(
+                    {"unit": ui["unit"], "plan": plan.model_dump(), "errors": errs})
+                if errs:
+                    stop = "revision plan rejected by schema/scope validation"
+                    break
+                planned2 += [(ui["unit"], op) for op in plan.operations]
+                cid = ui["component_id"]
+                infos2.append({**ui, "subtree": [cid] + art.descendants(cid),
+                               "interpretations": plan.interpretations,
+                               "provider": plan.provider, "model": plan.model})
+            if stop:
+                break
+            if not planned2:
+                stop = "no corrective operations proposed"
+                break
+            self._log(ex, nr, f"loop iteration {it}: applying {len(planned2)} corrective op(s)")
+            try:
+                self._apply_units(ex, wf, node, nr, cfg, art, adapter, planned2, infos2)
+            except NodeFailure as exc:
+                step["apply_error"] = str(exc)
+                stop = "corrective revision failed validation and was rolled back"
+                break
+            last_ops = [op for _, op in planned2]
+        final = iterations[-1]
+        record.update(status="achieved" if stop == "achieved" else "unresolved", stop_reason=stop,
+                      iterations_run=it, best_valid_revision_id=best_valid,
+                      final_revision_id=final["revision_id"],
+                      usage=usage.model_dump(), seconds=round(time.monotonic() - started, 2),
+                      unresolved=[f for u in final["units"] for f in u["evaluation"]["findings"]
+                                  if f["status"] != "pass"])
+        nr.outputs["loop"] = record
+        self._log(ex, nr, f"loop {record['status']}: {stop}")
+        hard = [f for f in record["unresolved"] if f["kind"] == "constraint"]
+        if hard:
+            raise NodeFailure(
+                f"hard constraint(s) still violated after {it} correction(s) ({stop}): "
+                + "; ".join(f"{f['criterion']} - {f['detail']}" for f in hard)
+                + (f". Best valid revision: {best_valid}" if best_valid else
+                   ". No revision satisfied the hard constraints."))
 
     def _source_files(self) -> dict[str, str]:
         out = {}
@@ -925,7 +1120,7 @@ class Engine:
             allowed = self._static_allowed(wf, node)
             upstream = self._current_upstream(wf, node)
             infos = self.plan_units(wf, node, cfg, art, insp, allowed_sources=allowed,
-                                    upstream=upstream, mode="incremental")
+                                    upstream=upstream, mode="incremental", analyze=False)
             stale = [i for i in infos if i["stale"]]
             if stale:
                 affected.add(art.id)
@@ -983,7 +1178,8 @@ class Engine:
         insp = adapter.inspect(native_path(self.store, art), art.entry)
         upstream = self._current_upstream(wf, node)
         infos = self.plan_units(wf, node, cfg, art, insp, allowed_sources=self._static_allowed(
-            wf, node), upstream=upstream, mode="full" if all_units else "incremental")
+            wf, node), upstream=upstream, mode="full" if all_units else "incremental",
+            analyze=False)
         provider_name = cfg.get("provider") or self.store.get_project().settings.default_provider
         provider = get_provider(provider_name)
         out = []
@@ -1002,7 +1198,9 @@ class Engine:
                     baseline={c: art.metadata.get("baseline", {}).get(c, {})
                               for c in info["subtree"]},
                     upstream=upstream, source_files=self._source_files(),
-                    model=cfg.get("model") or None)
+                    model=cfg.get("model") or None,
+                    semantic=self._package(info, art, insp, adapter, cfg))
+                item["semantic_context"] = req.semantic
                 try:
                     plan = provider.plan(req)
                     item["plan"] = plan.model_dump()

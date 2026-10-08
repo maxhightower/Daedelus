@@ -3,7 +3,6 @@ name = "daedelus"
 version = "0.1.0"
 description = "Daedelus: universal multimodal agentic creation studio (backend: sources, bindings, workflow engine, adapters)"
 requires-python = ">=3.11"
-license = { text = "Apache-2.0" }
 dependencies = [
   "pydantic>=2.6",
   "fastapi>=0.110",
@@ -17,6 +16,7 @@ dependencies = [
 
 [project.optional-dependencies]
 anthropic = ["anthropic>=0.40"]
+gemini = ["google-genai>=1.0"]
 dev = ["pytest>=8.0", "pytest-timeout>=2.3", "reportlab>=4.0"]
 
 [project.scripts]

@@ -32,7 +32,9 @@ from .models import (
     now_iso,
 )
 from .nodes import NODE_TYPES
+from .adapters import get_adapter
 from .providers import providers as provider_registry
+from .semantic import service as semsvc
 from .store import ProjectStore, Workspace
 
 
@@ -127,6 +129,27 @@ class AgentMessage(BaseModel):
     workflow_id: str | None = None
 
 
+class AnalyzeBody(BaseModel):
+    provider: str = "heuristic"
+    model: str | None = None
+    segment: SourceSegment | None = None
+    force: bool = False
+
+
+class GenerateBody(BaseModel):
+    prompt: str
+    provider: str = "gemini"
+    model: str | None = None
+    name: str = "Generated image"
+    reference_ids: list[str] = Field(default_factory=list)
+
+
+class ContextBody(BaseModel):
+    artifact_id: str | None = None
+    component_id: str | None = None
+    source_ids: list[str] | None = None
+
+
 class BoardCreate(BaseModel):
     name: str
     layout: str = "empty"  # "empty" | "default" (all project resources in frames)
@@ -204,8 +227,7 @@ def create_app(workspace_root: str | Path | None = None,
         provs = []
         for p in provider_registry().values():
             ok, why = p.available()
-            provs.append({"name": p.name, "description": p.description, "available": ok,
-                          "detail": why})
+            provs.append(p.describe())
         return {"ok": True, "version": __version__, "workspace": str(ws.root),
                 "adapters": adapters, "providers": provs}
 
@@ -450,6 +472,78 @@ def create_app(workspace_root: str | Path | None = None,
         st = store_for(pid)
         ctx = binding_mod.resolve(st, body.target, source_ids=body.source_ids)
         return ctx.model_dump()
+
+    # -- semantic understanding --------------------------------------------------
+    @app.get("/api/providers")
+    def list_providers():
+        return [p.describe() for p in provider_registry().values()]
+
+    @app.post("/api/projects/{pid}/sources/{sid}/analyze")
+    async def analyze_source(pid: str, sid: str, body: AnalyzeBody):
+        from .providers.base import ProviderError as PErr
+
+        st = store_for(pid)
+        try:
+            src = st.get_source(sid)
+        except KeyError:
+            raise HTTPException(404, "source not found")
+        try:
+            ana = await _in_thread(semsvc.analyze_source, st, src, body.provider,
+                                   body.model or None, body.segment, body.force)
+        except PErr as exc:
+            raise HTTPException(422, str(exc))
+        return ana.model_dump()
+
+    @app.post("/api/projects/{pid}/sources/generate")
+    async def generate_source(pid: str, body: GenerateBody):
+        """Generate an image with a live provider and register it as a *generated* source."""
+        from .providers import get_provider
+        from .providers.base import ProviderError as PErr
+
+        st = store_for(pid)
+        prov = get_provider(body.provider)
+        ok, why = prov.available()
+        if not ok or not hasattr(prov, "generate_image"):
+            raise HTTPException(422, f"image generation unavailable ({body.provider}): {why}")
+        refs = [str(st.abs(st.get_source(r).locator.path)) for r in body.reference_ids]
+        try:
+            data, mime, usage = await _in_thread(prov.generate_image, body.prompt, refs,
+                                                 body.model or None)
+        except PErr as exc:
+            raise HTTPException(422, str(exc))
+        ext = ".jpg" if "jpeg" in mime else ".png"
+        src = ingest.register_bytes(st, data, f"generated{ext}", name=body.name,
+                                    origin="generated")
+        src.provenance.notes = json.dumps({"provider": body.provider, "prompt": body.prompt,
+                                           "references": body.reference_ids,
+                                           "usage": usage.model_dump()})
+        st.save_source(src)
+        return src.model_dump()
+
+    @app.get("/api/projects/{pid}/sources/{sid}/analyses")
+    def source_analyses(pid: str, sid: str):
+        return [a.model_dump() for a in semsvc.analyses_for(store_for(pid), sid)]
+
+    @app.post("/api/projects/{pid}/agent/context")
+    def agent_context(pid: str, body: ContextBody):
+        """The context package an agent would receive for a target (cached analyses only:
+        inspecting never triggers a provider call)."""
+        st = store_for(pid)
+        art = st.get_artifact(body.artifact_id) if body.artifact_id else None
+        cid = body.component_id or (art.root_id() if art else None)
+        sel = TargetSelector(scope="component" if art else "project",
+                             artifact_id=art.id if art else None, component_id=cid)
+        ctx = binding_mod.resolve(st, sel, source_ids=body.source_ids, artifact=art)
+        props, meas, ops = {}, {}, []
+        if art is not None:
+            ad = get_adapter(art.adapter)
+            ops = [o.name for o in ad.info().operations]
+            rev = st.get_revision(art.head_revision_id) if art.head_revision_id else None
+            if rev is not None:
+                meas = {c: m for c, m in rev.measurements.items()
+                        if c == cid or c in art.descendants(cid)}
+        return semsvc.context_package(st, ctx, art, properties=props, measurements=meas,
+                                      operations=ops)
 
     # -- workflows ------------------------------------------------------------
     @app.get("/api/projects/{pid}/workflows")

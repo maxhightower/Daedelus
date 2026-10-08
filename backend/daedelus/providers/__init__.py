@@ -7,9 +7,12 @@ from .base import Plan, PlanRequest, Provider, ProviderError
 
 def providers() -> dict[str, Provider]:
     from .anthropic_provider import AnthropicProvider
+    from .gemini_provider import GeminiProvider
     from .heuristic import HeuristicProvider
+    from .replay import ReplayProvider
 
-    return {p.name: p for p in (HeuristicProvider(), AnthropicProvider())}
+    return {p.name: p for p in (HeuristicProvider(), AnthropicProvider(), GeminiProvider(),
+                                ReplayProvider())}
 
 
 def get_provider(name: str) -> Provider:

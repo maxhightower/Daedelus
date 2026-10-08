@@ -110,9 +110,14 @@ class Adapter(ABC):
     def op_spec(self, name: str) -> OperationSpec | None:
         return next((o for o in self.info().operations if o.name == name), None)
 
+    def created_kind(self, op: PlannedOperation) -> str:
+        """Component kind created by a ``new`` operation ('*' = unknown/any)."""
+        return "*"
+
     def validate_operations(self, ops: list[PlannedOperation],
                             components: list[Component]) -> list[str]:
-        """Static checks of a plan against this adapter's catalogue."""
+        """Static checks of a plan against this adapter's catalogue. Components created by
+        earlier operations of the same plan may be targeted by later ones."""
         errors = []
         comp_ids = {c.id: c for c in components}
         for i, op in enumerate(ops):
@@ -120,12 +125,18 @@ class Adapter(ABC):
             if spec is None:
                 errors.append(f"op {i}: unknown operation '{op.op}' for adapter {self.name}")
                 continue
+            if spec.target_kinds == ["new"] and isinstance(op.params.get("id"), str):
+                new_id = op.params["id"]
+                if new_id not in comp_ids:
+                    comp_ids[new_id] = Component(id=new_id, name=new_id,
+                                                 kind=self.created_kind(op),
+                                                 parent_id=op.params.get("parent"))
             if op.component_id is not None:
                 comp = comp_ids.get(op.component_id)
                 if comp is None and spec.target_kinds != ["new"]:
                     errors.append(f"op {i} ({op.op}): unknown component '{op.component_id}'")
                 elif comp is not None and "*" not in spec.target_kinds and \
-                        comp.kind not in spec.target_kinds:
+                        comp.kind != "*" and comp.kind not in spec.target_kinds:
                     errors.append(f"op {i} ({op.op}): component kind '{comp.kind}' not in "
                                   f"{spec.target_kinds}")
             errors.extend(f"op {i} ({op.op}): {e}" for e in

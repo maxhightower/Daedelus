@@ -20,7 +20,11 @@ from typing import Any
 
 from .. import features
 from ..models import PlannedOperation, ResolvedEntry
-from .base import Plan, PlanRequest, Provider
+from ..semantic import heuristic as sem_heuristic
+from ..semantic.models import Evaluation, SourceAnalysis
+from . import recipes
+from .base import (AnalyzeRequest, EvaluateRequest, Plan, PlanRequest, Provider,
+                   ReviseRequest)
 
 APPEARANCE = {"color", "material", "palette", "style", "general"}
 GRADE_ASPECTS = {"color", "palette", "mood", "lighting", "style", "general"}
@@ -63,10 +67,99 @@ class HeuristicProvider(Provider):
     name = "heuristic"
     description = ("Deterministic local planner: maps measured source features to operation "
                    "families by role and aspect. No AI model; no semantic understanding.")
+    contracts = ("analyze", "plan", "evaluate", "revise")
+    pathways = ("image (measured)", "image region (measured)", "text (rules)", "pdf (rules)",
+                "video (frame measurements only)")
+
+    # -------------------------------------------------------------- semantic contracts
+    def analyze(self, req: AnalyzeRequest) -> SourceAnalysis:
+        return sem_heuristic.analyze(req.source, file_path=req.file_path, text=req.text,
+                                     frames=req.frames, segment=req.segment,
+                                     extracted=req.source.extracted or {})
+
+    def evaluate(self, req: EvaluateRequest) -> Evaluation:
+        return sem_heuristic.heuristic_evaluate(req)
+
+    def revise(self, req: ReviseRequest) -> Plan:
+        pr = req.plan_request
+        avail = set(self.ops_for(pr))
+        plan = Plan(provider=self.name, model="heuristic-v1", deterministic=True)
+        root = pr.component.id if pr.component else pr.artifact.root_id()
+        done: set[tuple[str, str]] = set()
+
+        def emit(op: str, cid: str, params: dict[str, Any], why: str) -> None:
+            if op in avail and (op, cid) not in done and len(plan.operations) < req.max_operations:
+                done.add((op, cid))
+                plan.operations.append(PlannedOperation(op=op, component_id=cid, params=params,
+                                                        rationale=why))
+
+        for f in req.evaluation.findings:
+            if f.status == "pass":
+                continue
+            cid = f.component_id or root
+            ev = f.evidence or {}
+            prop, limit, actual = ev.get("property"), ev.get("value"), ev.get("actual")
+            if f.kind in ("constraint", "deterministic") and prop == "poly_count" and actual \
+                    and limit:
+                self._reduce_polys(pr, cid, float(actual), float(limit), emit)
+            elif f.kind == "constraint" and prop in ("height", "width", "depth") and limit:
+                op = ev.get("op")
+                tgt = float(limit) * (0.98 if op == "lte" else 1.02 if op == "gte" else 1.0)
+                emit("set_dimensions", cid, {prop: round(tgt, 4), "keep_ground": True},
+                     f"{prop} {actual} violates {op} {limit}")
+            elif f.kind == "deterministic" and ev.get("reference"):
+                rough = ((pr.properties.get(cid, {}) or {}).get("material") or {}).get("roughness")
+                params: dict[str, Any] = {"base_color": ev["reference"]}
+                if rough is not None:
+                    params["roughness"] = rough
+                emit("set_material", cid, params, f.detail)
+        if not plan.operations:
+            plan.notes.append("no deterministic correction available for the failed findings")
+        plan.notes.append(f"heuristic revision, iteration {req.iteration}")
+        return plan
+
+    @staticmethod
+    def _reduce_polys(pr: PlanRequest, cid: str, actual: float, limit: float, emit) -> None:
+        """Lower detail on the largest polygon contributors (leaves of the unit) until the
+        estimated total fits the budget: curve tessellation, then subdivision, then a bounded
+        decimate. Estimates only - the next evaluation measures the real result."""
+        leaves = [c for c in [cid] + pr.artifact.descendants(cid)
+                  if not pr.properties.get(c, {}).get("children")]
+        contrib = sorted(((pr.properties.get(c, {}).get("own_poly_count") or 0, c)
+                          for c in leaves), reverse=True)
+        excess = actual - limit
+        for polys, c in contrib:
+            if excess <= 0 or polys <= 0:
+                break
+            props = pr.properties.get(c, {})
+            curve = props.get("curve")
+            if curve:
+                res = max(1, int(curve["resolution"]) // 2)
+                bev = max(0, int(curve["bevel_resolution"]) - 1)
+                if (res, bev) == (curve["resolution"], curve["bevel_resolution"]):
+                    continue
+                emit("set_curve_detail", c, {"resolution": res, "bevel_resolution": bev},
+                     f"poly_count {actual:.0f} > {limit:.0f}: '{c}' ({polys} polys) - curve "
+                     f"resolution {curve['resolution']}->{res}, profile "
+                     f"{curve['bevel_resolution']}->{bev}")
+                excess -= polys * 0.5
+            elif props.get("subdivision"):
+                sub = int(props["subdivision"])
+                emit("set_subdivision", c, {"levels": sub - 1},
+                     f"poly_count {actual:.0f} > {limit:.0f}: '{c}' subdivision {sub}->{sub - 1}")
+                excess -= polys * 0.75
+            elif polys > 24:
+                ratio = round(_clamp((polys - excess) / polys, 0.5, 0.95), 3)
+                emit("set_modifier", c, {"type": "decimate", "ratio": ratio},
+                     f"poly_count {actual:.0f} > {limit:.0f}: decimate '{c}' to {ratio}")
+                excess -= polys * (1 - ratio)
 
     def plan(self, req: PlanRequest) -> Plan:
         plan = Plan(provider=self.name, model="heuristic-v1", deterministic=True)
         ops_avail = self.ops_for(req)
+        recipe = self._recipe(req, ops_avail)
+        if recipe is not None:
+            return recipe
         families = {}
         for spec in ops_avail.values():
             families.setdefault(spec.family, spec.name)
@@ -122,6 +215,30 @@ class HeuristicProvider(Provider):
         return plan
 
     # ------------------------------------------------------------------ helpers
+    def _recipe(self, req: PlanRequest, ops_avail) -> Plan | None:
+        name = recipes.match(req.instructions)
+        if name is None or "add_primitive" not in ops_avail:
+            return None
+        cid = req.component.id if req.component else req.artifact.root_id()
+        sub = [c for c in req.artifact.components if c.parent_id == cid]
+        if sub:  # only builds into an empty target; edits of existing objects use families
+            return None
+        ops, notes = recipes.build(name, cid, req.semantic or {}, req.instructions)
+        ops = [o for o in ops if o.op in ops_avail]
+        used = [e["binding_id"] for e in (req.semantic or {}).get("entries", [])
+                if e.get("applies") and e["category"] in ("reference", "inspiration",
+                                                         "constraint", "guideline")]
+        for o in ops:
+            o.derived_from = used
+        plan = Plan(provider=self.name, model="heuristic-v1", deterministic=True,
+                    operations=ops, notes=notes)
+        for e in (req.semantic or {}).get("entries", []):
+            plan.interpretations[e["binding_id"]] = (
+                f"{e['category']}: used measured observations "
+                f"({len(e['observations'])}) in recipe '{name}'" if e["binding_id"] in used else
+                f"{e['category']}: presented, not used by the recipe")
+        return plan
+
     def _directives(self, req: PlanRequest, entries: list[ResolvedEntry]):
         """Merge directives general -> specific; node instructions are most specific."""
         out: dict[str, str] = {}
