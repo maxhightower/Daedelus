@@ -1,0 +1,43 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Daedelus Studio",
+  "version": "0.1.0",
+  "identifier": "org.daedelus.studio",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:5173",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Daedelus Studio",
+        "width": 1600,
+        "height": 1000,
+        "minWidth": 1100,
+        "minHeight": 700
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis", "msi", "deb", "appimage"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "externalBin": ["binaries/daedelus-server"],
+    "shortDescription": "Multimodal agentic creation studio",
+    "longDescription": "Compose multimodal sources, assign roles and scopes, and direct agents through configurable workflows to produce editable 3D, 2D and code artifacts.",
+    "windows": {
+      "nsis": { "installMode": "currentUser" }
+    }
+  }
+}

@@ -1,0 +1,489 @@
+{
+ "passed": true,
+ "duration_seconds": 53.6,
+ "project_id": "prj_eecd4a3e9b3b",
+ "workspace": "/home/user/Daedelus/evidence/demo/workspace",
+ "info": {
+  "sources": {
+   "style": "src_c27b8675d3ba",
+   "table_ref": "src_543b195243ca",
+   "leg_insp": "src_6742191e4f12",
+   "leg_insp_b": "src_06cb0dea03ff",
+   "bg_sunset": "src_40473f48bbc7",
+   "bg_dawn": "src_39452248405a",
+   "conventions": "src_5d4e8d3e070d",
+   "video": "src_a2752f506534"
+  },
+  "bindings": {
+   "style": "bind_e17ad0bb17d2",
+   "table_geometry": "bind_8071f7c1c1c7",
+   "table_eval": "bind_ab8f6388af80",
+   "legs": "bind_ba32b199ca75",
+   "bg_palette": "bind_7df762c1996f",
+   "sky": "bind_d2f4c424621f",
+   "conventions": "bind_a4da56448443",
+   "video": "bind_04a865902fd6"
+  },
+  "artifacts": {
+   "table": "art_78a118df28ec",
+   "background": "art_554f3ed46c8b",
+   "manifest": "art_4f0672650f88"
+  },
+  "workflow_id": "wf_35cc5b16ed33",
+  "media": {
+   "table_reference": "/home/user/Daedelus/evidence/demo/inputs/table_reference.png",
+   "leg_inspiration": "/home/user/Daedelus/evidence/demo/inputs/leg_inspiration.png",
+   "leg_inspiration_b": "/home/user/Daedelus/evidence/demo/inputs/leg_inspiration_b.png",
+   "background_sunset": "/home/user/Daedelus/evidence/demo/inputs/background_sunset.png",
+   "background_dawn": "/home/user/Daedelus/evidence/demo/inputs/background_dawn.png",
+   "style_guide": "/home/user/Daedelus/evidence/demo/inputs/style_guide.md",
+   "code_conventions": "/home/user/Daedelus/evidence/demo/inputs/manifest_conventions.md"
+  }
+ },
+ "checks": [
+  {
+   "scenario": "S0 initial run",
+   "check": "execution succeeded",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "scenario": "S0 initial run",
+   "check": "Table has a new revision",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S0 initial run",
+   "check": "Background has a new revision",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S0 initial run",
+   "check": "Scene manifest has a new revision",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S0 initial run",
+   "check": "legs height preserved (hard constraint)",
+   "passed": true,
+   "detail": [
+    "artifact:art_78a118df28ec#legs height preserve None (Leg inspiration (tapered)): before 0.72, after 0.72"
+   ]
+  },
+  {
+   "scenario": "S0 initial run",
+   "check": "manifest tests executed and passed",
+   "passed": true,
+   "detail": "`python -m pytest -q` exited 0"
+  },
+  {
+   "scenario": "S0 initial run",
+   "check": "manifest change has a reviewable diff",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S0 initial run",
+   "check": "immediate re-run executes nothing (all units up to date)",
+   "passed": true,
+   "detail": {
+    "model_agent": {
+     "table": "skipped",
+     "legs": "skipped",
+     "tabletop": "skipped"
+    },
+    "paint_agent": {
+     "background": "skipped",
+     "sky": "skipped"
+    },
+    "code_agent": {
+     "repo": "skipped"
+    }
+   }
+  },
+  {
+   "scenario": "S1 leg source",
+   "check": "impact: only the legs unit of the 3D agent is stale",
+   "passed": true,
+   "detail": {
+    "model_agent": [
+     "legs"
+    ],
+    "paint_agent": [],
+    "code_agent": []
+   }
+  },
+  {
+   "scenario": "S1 leg source",
+   "check": "execution succeeded",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "scenario": "S1 leg source",
+   "check": "only leg components changed in the table",
+   "passed": true,
+   "detail": [
+    "leg_bl",
+    "leg_br",
+    "leg_fl",
+    "leg_fr"
+   ]
+  },
+  {
+   "scenario": "S1 leg source",
+   "check": "tabletop and table root untouched",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S1 leg source",
+   "check": "background not rebuilt (no new revision, unit skipped)",
+   "passed": true,
+   "detail": {
+    "background": "skipped",
+    "sky": "skipped"
+   }
+  },
+  {
+   "scenario": "S1 leg source",
+   "check": "manifest re-ran because an upstream revision changed",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S2 background",
+   "check": "impact: only the sky unit of the 2D agent is stale",
+   "passed": true,
+   "detail": {
+    "model_agent": [],
+    "paint_agent": [
+     "sky"
+    ],
+    "code_agent": []
+   }
+  },
+  {
+   "scenario": "S2 background",
+   "check": "execution succeeded",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "scenario": "S2 background",
+   "check": "table not rebuilt",
+   "passed": true,
+   "detail": {
+    "table": "skipped",
+    "legs": "skipped",
+    "tabletop": "skipped"
+   }
+  },
+  {
+   "scenario": "S2 background",
+   "check": "only the sky layer changed",
+   "passed": true,
+   "detail": [
+    "sky"
+   ]
+  },
+  {
+   "scenario": "S3 global guideline",
+   "check": "impact: table AND background identified as affected",
+   "passed": true,
+   "detail": [
+    "art_4f0672650f88",
+    "art_554f3ed46c8b",
+    "art_78a118df28ec"
+   ]
+  },
+  {
+   "scenario": "S3 global guideline",
+   "check": "execution succeeded",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "scenario": "S3 global guideline",
+   "check": "both artifacts received new revisions",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S4 role change",
+   "check": "impact: only the legs unit is stale",
+   "passed": true,
+   "detail": {
+    "model_agent": [
+     "legs"
+    ],
+    "paint_agent": [],
+    "code_agent": []
+   }
+  },
+  {
+   "scenario": "S4 role change",
+   "check": "execution succeeded",
+   "passed": true,
+   "detail": null
+  },
+  {
+   "scenario": "S4 role change",
+   "check": "source media unchanged",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S4 role change",
+   "check": "interpretation now uses 'reference (drive)'",
+   "passed": true,
+   "detail": "reference (drive, weight 0.9): silhouette top/bottom width 0.46/0.94 -> taper target -0.693, applied -0.623; reference (drive, weight 0.90): dominant foreground colour (measured) #208080 -> base colour #4f6b78 -> #257e7f"
+  },
+  {
+   "scenario": "S4 role change",
+   "check": "only leg components changed",
+   "passed": true,
+   "detail": [
+    "leg_bl",
+    "leg_br",
+    "leg_fl",
+    "leg_fr"
+   ]
+  },
+  {
+   "scenario": "S5 conflict",
+   "check": "3D agent failed with an explicit conflict",
+   "passed": true,
+   "detail": "unresolved hard-constraint conflicts: artifact:art_78a118df28ec#legs: incompatible hard constraints on 'height': preserve None ('Leg inspiration (flared)') vs eq 0.9 ('Leg inspiration (flared)'); neither declaration permits override"
+  },
+  {
+   "scenario": "S5 conflict",
+   "check": "table left untouched",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S5 conflict",
+   "check": "downstream nodes reported as blocked",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S6 failure",
+   "check": "validation fails because tests were not permitted to run",
+   "passed": true,
+   "detail": "validation failed: ['Scene manifest:tests']"
+  },
+  {
+   "scenario": "S7 reproducibility",
+   "check": "initial: re-plan + re-apply reproduce identical states",
+   "passed": true,
+   "detail": [
+    {
+     "node_id": "model_agent",
+     "artifact": "Table",
+     "revision": 2,
+     "reproducible": true,
+     "state_mismatches": [],
+     "operations_match": true,
+     "detail": "component states identical"
+    },
+    {
+     "node_id": "paint_agent",
+     "artifact": "Background",
+     "revision": 2,
+     "reproducible": true,
+     "state_mismatches": [],
+     "operations_match": true,
+     "detail": "component states identical"
+    },
+    {
+     "node_id": "code_agent",
+     "artifact": "Scene manifest",
+     "revision": 2,
+     "reproducible": true,
+     "state_mismatches": [],
+     "operations_match": true,
+     "detail": "component states identical"
+    }
+   ]
+  },
+  {
+   "scenario": "S7 reproducibility",
+   "check": "leg change: re-plan + re-apply reproduce identical states",
+   "passed": true,
+   "detail": [
+    {
+     "node_id": "model_agent",
+     "artifact": "Table",
+     "revision": 3,
+     "reproducible": true,
+     "state_mismatches": [],
+     "operations_match": true,
+     "detail": "component states identical"
+    },
+    {
+     "node_id": "code_agent",
+     "artifact": "Scene manifest",
+     "revision": 3,
+     "reproducible": true,
+     "state_mismatches": [],
+     "operations_match": true,
+     "detail": "component states identical"
+    }
+   ]
+  },
+  {
+   "scenario": "S7 reproducibility",
+   "check": "guideline change: re-plan + re-apply reproduce identical states",
+   "passed": true,
+   "detail": [
+    {
+     "node_id": "model_agent",
+     "artifact": "Table",
+     "revision": 4,
+     "reproducible": true,
+     "state_mismatches": [],
+     "operations_match": true,
+     "detail": "component states identical"
+    },
+    {
+     "node_id": "paint_agent",
+     "artifact": "Background",
+     "revision": 4,
+     "reproducible": true,
+     "state_mismatches": [],
+     "operations_match": true,
+     "detail": "component states identical"
+    },
+    {
+     "node_id": "code_agent",
+     "artifact": "Scene manifest",
+     "revision": 5,
+     "reproducible": true,
+     "state_mismatches": [],
+     "operations_match": true,
+     "detail": "component states identical"
+    }
+   ]
+  },
+  {
+   "scenario": "S8 persistence",
+   "check": "project reopens with sources, bindings and artifacts",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S8 persistence",
+   "check": "workflow export/import is lossless",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S8 persistence",
+   "check": "saving creates a new workflow version",
+   "passed": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S8 persistence",
+   "check": "at least one source carries multiple independent bindings",
+   "passed": true,
+   "detail": [
+    "Table reference photo"
+   ]
+  },
+  {
+   "scenario": "S8 persistence",
+   "check": "editable native file exists for Table",
+   "passed": true,
+   "detail": "/home/user/Daedelus/evidence/demo/workspace/projects/prj_eecd4a3e9b3b/artifacts/art_78a118df28ec/native/model.blend"
+  },
+  {
+   "scenario": "S8 persistence",
+   "check": "editable native file exists for Background",
+   "passed": true,
+   "detail": "/home/user/Daedelus/evidence/demo/workspace/projects/prj_eecd4a3e9b3b/artifacts/art_554f3ed46c8b/native/image.ora"
+  },
+  {
+   "scenario": "S8 persistence",
+   "check": "editable native file exists for Scene manifest",
+   "passed": true,
+   "detail": "/home/user/Daedelus/evidence/demo/workspace/projects/prj_eecd4a3e9b3b/artifacts/art_4f0672650f88/native"
+  }
+ ],
+ "gallery": [
+  {
+   "label": "00_initial",
+   "note": "fixtures as created (revision 1)",
+   "images": [
+    "00_initial_table_r1.png",
+    "00_initial_background_r1.png"
+   ]
+  },
+  {
+   "label": "01_after_initial_run",
+   "note": "after first execution of the workflow",
+   "images": [
+    "01_after_initial_run_table_r2.png",
+    "01_after_initial_run_background_r2.png"
+   ]
+  },
+  {
+   "label": "02_leg_source_changed",
+   "note": "leg inspiration swapped (tapered -> flared teal)",
+   "images": [
+    "02_leg_source_changed_table_r3.png",
+    "02_leg_source_changed_background_r2.png"
+   ]
+  },
+  {
+   "label": "03_background_changed",
+   "note": "sky binding now points at the dawn image",
+   "images": [
+    "03_background_changed_table_r3.png",
+    "03_background_changed_background_r3.png"
+   ]
+  },
+  {
+   "label": "04_guideline_changed",
+   "note": "style guide edited (warm -> cool)",
+   "images": [
+    "04_guideline_changed_table_r4.png",
+    "04_guideline_changed_background_r4.png"
+   ]
+  },
+  {
+   "label": "05_role_changed",
+   "note": "leg binding role inspiration -> reference (stronger influence)",
+   "images": [
+    "05_role_changed_table_r5.png",
+    "05_role_changed_background_r4.png"
+   ]
+  }
+ ],
+ "video_source": {
+  "state": "partial",
+  "warnings": [
+   "video content not analysed (no video download/understanding backend configured)"
+  ],
+  "title": "Bevel Modifier | Blender Tutorial"
+ },
+ "native_files": {
+  "Table": "/home/user/Daedelus/evidence/demo/workspace/projects/prj_eecd4a3e9b3b/artifacts/art_78a118df28ec/native/model.blend",
+  "Background": "/home/user/Daedelus/evidence/demo/workspace/projects/prj_eecd4a3e9b3b/artifacts/art_554f3ed46c8b/native/image.ora",
+  "Scene manifest": "/home/user/Daedelus/evidence/demo/workspace/projects/prj_eecd4a3e9b3b/artifacts/art_4f0672650f88/native"
+ },
+ "executions": [
+  "exe_3b180f21d4bc",
+  "exe_e5839f7c484f",
+  "exe_75d88085dace",
+  "exe_abb7efc477ee",
+  "exe_354a4158e549",
+  "exe_e591abc82bfd",
+  "exe_65af89612fd8"
+ ]
+}

@@ -117,8 +117,5 @@ def restore_revision(store: ProjectStore, artifact_id: str, revision_id: str) ->
         raise ValueError("revision belongs to another artifact")
     native = native_path(store, a)
     restore_tree(store.abs(target.snapshot_dir), native)
-    adapter = get_adapter(a.adapter)
-    res = adapter.apply(native, a.entry, [], {"message": f"Restore revision {target.number}"})
-    if not res.ok:
-        raise RuntimeError(f"restore failed: {res.error}")
+    get_adapter(a.adapter).after_restore(native, a.entry, f"Restore revision {target.number}")
     return record_revision(store, a, message=f"Restored revision {target.number}")

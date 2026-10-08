@@ -60,6 +60,9 @@ class InspectResult(BaseModel):
     states: dict[str, str]  # component id -> deterministic state hash
     measurements: dict[str, dict[str, Any]] = Field(default_factory=dict)  # comp id -> props
     properties: dict[str, dict[str, Any]] = Field(default_factory=dict)  # comp id -> current params
+    # components whose state hash summarises their descendants (e.g. a repository root); a change
+    # to them is implied by changes inside the executed scope and is not a preservation violation
+    aggregates: list[str] = Field(default_factory=list)
 
 
 class AdapterError(RuntimeError):
@@ -95,6 +98,9 @@ class Adapter(ABC):
 
     def diff(self, before_dir: Path, after_dir: Path, entry: str) -> str | None:
         return None
+
+    def after_restore(self, native_dir: Path, entry: str, message: str) -> None:
+        """Called after native files were restored from a snapshot (rollback, restore, replay)."""
 
     def validate(self, native_dir: Path, entry: str, checks: list[str],
                  context: dict[str, Any]) -> ValidationReport:

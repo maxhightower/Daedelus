@@ -1,0 +1,121 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  BLENDER_VERSION: "4.5.14"
+  BLENDER_SERIES: "4.5"
+
+jobs:
+  backend:
+    name: Backend tests (Linux, real Blender)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: System packages
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg libxi6 libxkbcommon0 libxrender1 libxxf86vm1 libxfixes3 libsm6 libgl1 libegl1
+      - name: Cache Blender
+        id: blender-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/blender
+          key: blender-${{ env.BLENDER_VERSION }}-linux-x64
+      - name: Download Blender
+        if: steps.blender-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/blender
+          curl -sSL -o /tmp/blender.tar.xz https://download.blender.org/release/Blender${BLENDER_SERIES}/blender-${BLENDER_VERSION}-linux-x64.tar.xz
+          tar xf /tmp/blender.tar.xz -C ~/blender --strip-components=1
+      - name: Install backend
+        working-directory: backend
+        run: pip install -e ".[dev,anthropic]"
+      - name: Tests
+        working-directory: backend
+        run: |
+          export DAEDELUS_BLENDER=$HOME/blender/blender
+          "$DAEDELUS_BLENDER" --version | head -1
+          pytest -q -rs --junitxml=../evidence-ci/pytest-linux.xml
+      - name: Demonstration scenarios (Section 8)
+        run: |
+          export DAEDELUS_BLENDER=$HOME/blender/blender
+          daedelus demo --out evidence-ci/demo
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-evidence
+          path: |
+            evidence-ci/
+            !evidence-ci/demo/workspace/
+
+  studio:
+    name: Studio (typecheck, unit tests, build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: studio/package-lock.json
+      - working-directory: studio
+        run: |
+          npm ci
+          npm run typecheck
+          npm test
+          npm run build
+
+  e2e:
+    name: Studio end-to-end (browser + backend + Blender)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: studio/package-lock.json
+      - name: System packages
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg libxi6 libxkbcommon0 libxrender1 libxxf86vm1 libxfixes3 libsm6 libgl1 libegl1
+      - name: Cache Blender
+        id: blender-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/blender
+          key: blender-${{ env.BLENDER_VERSION }}-linux-x64
+      - name: Download Blender
+        if: steps.blender-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/blender
+          curl -sSL -o /tmp/blender.tar.xz https://download.blender.org/release/Blender${BLENDER_SERIES}/blender-${BLENDER_VERSION}-linux-x64.tar.xz
+          tar xf /tmp/blender.tar.xz -C ~/blender --strip-components=1
+      - name: Install
+        run: |
+          pip install -e "backend[dev]"
+          cd studio && npm ci && npx playwright install --with-deps chromium && npm run build
+      - name: Walk through the studio
+        run: |
+          export DAEDELUS_BLENDER=$HOME/blender/blender
+          daedelus --workspace /tmp/e2e-ws serve --port 8765 --studio-dist studio/dist > /tmp/server.log 2>&1 &
+          for i in $(seq 1 40); do curl -sf http://127.0.0.1:8765/api/health > /dev/null && break; sleep 1; done
+          cd studio && STUDIO_URL=http://127.0.0.1:8765 OUT=../evidence-ci/screenshots node e2e/studio.e2e.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-screenshots
+          path: evidence-ci/

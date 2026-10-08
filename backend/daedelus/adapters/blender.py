@@ -37,10 +37,13 @@ def find_blender() -> str | None:
     found = shutil.which("blender")
     if found:
         return found
-    for cand in ("/opt/blender/blender", "C:/Program Files/Blender Foundation/Blender 4.5/blender.exe",
-                 "/Applications/Blender.app/Contents/MacOS/Blender"):
-        if Path(cand).exists():
-            return cand
+    cands = [Path("/opt/blender/blender"), Path("/Applications/Blender.app/Contents/MacOS/Blender")]
+    pf = Path("C:/Program Files/Blender Foundation")
+    if pf.is_dir():  # newest installed version first
+        cands = sorted(pf.glob("Blender */blender.exe"), reverse=True) + cands
+    for cand in cands:
+        if cand.exists():
+            return str(cand)
     return None
 
 

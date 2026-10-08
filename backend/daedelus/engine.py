@@ -804,6 +804,7 @@ class Engine:
                 last_error = str(exc)
                 result = None
             restore_tree(ckpt, native)
+            adapter.after_restore(native, art.entry, "Rollback to checkpoint")
             self._log(ex, nr, f"attempt {attempt}/{attempts} failed: {last_error} - rolled back "
                               f"to checkpoint")
             if attempt < attempts and backoff:
@@ -823,13 +824,7 @@ class Engine:
         new_components = [c for c in after.states if c not in before.states]
         scope.update(new_components)
         changed = sorted(c for c in after.states if before.states.get(c) != after.states.get(c))
-        outside = [c for c in changed if c not in scope]
-        root = art.root_id()
-        if root in outside and art.adapter == "code":
-            outside.remove(root)  # repository root hash aggregates file hashes
-        if root in outside and art.adapter == "layered2d" and \
-                before.states.get(root) == after.states.get(root):
-            outside.remove(root)
+        outside = [c for c in changed if c not in scope and c not in after.aggregates]
         rep.add("component_preservation", not outside,
                 f"changed: {changed}; outside executed scope: {outside or 'none'}",
                 changed=changed, outside=outside, scope=sorted(scope),
@@ -846,8 +841,7 @@ class Engine:
                       for r in result.results]
         if not rep.passed:
             restore_tree(ckpt, native)
-            if art.adapter == "code":
-                adapter.apply(native, art.entry, [], {"message": "rollback"})
+            adapter.after_restore(native, art.entry, "Rollback to checkpoint")
             failed = [f"{c.name}: {c.detail}" for c in rep.checks if not c.passed]
             for ui in unit_infos:
                 ur = next(u for u in nr.units if u.unit == ui["unit"])
@@ -1056,8 +1050,7 @@ class Engine:
                 shutil.rmtree(scratch)
             shutil.copytree(native_path(self.store, art), scratch)  # keeps VCS metadata
             restore_tree(self.store.abs(parent.snapshot_dir), scratch)
-            if art.adapter == "code":
-                adapter.apply(scratch, art.entry, [], {"message": "replay base"})
+            adapter.after_restore(scratch, art.entry, "Replay base")
             res = adapter.apply(scratch, art.entry, rev.operations,
                                 {"source_paths": self._source_files(), "message": "replay"})
             if not res.ok:
@@ -1065,8 +1058,7 @@ class Engine:
             else:
                 insp = adapter.inspect(scratch, art.entry)
                 mism = sorted(c for c in set(insp.states) | set(rev.component_states)
-                              if insp.states.get(c) != rev.component_states.get(c)
-                              and not (art.adapter == "code" and c == art.root_id()))
+                              if insp.states.get(c) != rev.component_states.get(c))
                 entry.update(reproducible=not mism and ops_match is not False,
                              state_mismatches=mism, operations_match=ops_match,
                              detail="component states identical" if not mism else

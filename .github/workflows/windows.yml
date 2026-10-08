@@ -1,0 +1,72 @@
+name: Windows desktop build
+
+on:
+  push:
+  workflow_dispatch:
+
+concurrency:
+  group: windows-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    name: Windows (core tests, sidecar, Tauri installer)
+    runs-on: windows-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: studio/package-lock.json
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: studio/src-tauri
+
+      - name: Install backend
+        working-directory: backend
+        run: pip install -e ".[dev,anthropic]" pyinstaller
+
+      - name: Core tests on Windows (Blender tests are skipped - no Blender on the runner)
+        working-directory: backend
+        run: pytest -q -rs --junitxml=../evidence-ci/pytest-windows.xml
+
+      - name: Build backend sidecar (PyInstaller)
+        working-directory: backend
+        run: python packaging/build_sidecar.py
+
+      - name: Smoke-test the frozen sidecar
+        run: |
+          mkdir -p evidence-ci
+          EXE=$(ls studio/src-tauri/binaries/daedelus-server-*.exe)
+          "$EXE" --workspace "$RUNNER_TEMP/ws" serve --port 8799 > "$RUNNER_TEMP/sidecar.log" 2>&1 &
+          for i in $(seq 1 60); do curl -sf http://127.0.0.1:8799/api/health > evidence-ci/health.json && break; sleep 1; done
+          cat evidence-ci/health.json
+          curl -sf -X POST http://127.0.0.1:8799/api/projects -H 'content-type: application/json' -d '{"name":"smoke"}'
+
+      - name: Build desktop app (Tauri, NSIS + MSI)
+        working-directory: studio
+        run: |
+          npm ci
+          npx tauri build --bundles nsis,msi
+
+      - name: Collect installers
+        run: |
+          mkdir -p evidence-ci/installers
+          cp studio/src-tauri/target/release/bundle/nsis/*.exe evidence-ci/installers/ || true
+          cp studio/src-tauri/target/release/bundle/msi/*.msi evidence-ci/installers/ || true
+          ls -la evidence-ci/installers
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: windows-desktop
+          path: evidence-ci/

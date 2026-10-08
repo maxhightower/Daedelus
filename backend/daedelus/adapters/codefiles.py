@@ -79,6 +79,17 @@ def tracked_files(root: Path) -> list[str]:
     return sorted(f for f in out.split("\0") if f)
 
 
+def _python_interpreter() -> str | None:
+    """Interpreter for test commands. A frozen desktop build cannot use sys.executable."""
+    if os.environ.get("DAEDELUS_PYTHON"):
+        return os.environ["DAEDELUS_PYTHON"]
+    if not getattr(sys, "frozen", False):
+        return sys.executable
+    import shutil
+
+    return shutil.which("python3") or shutil.which("python") or shutil.which("py")
+
+
 class CodeAdapter(Adapter):
     name = "code"
     version = "1"
@@ -203,7 +214,13 @@ class CodeAdapter(Adapter):
         meas[ROOT_ID] = {"file_count": total}
         head = _git(root, "rev-parse", "HEAD", check=False).strip()
         props[ROOT_ID] = {"head": head}
-        return InspectResult(components=comps, states=states, measurements=meas, properties=props)
+        return InspectResult(components=comps, states=states, measurements=meas, properties=props,
+                             aggregates=[ROOT_ID])
+
+    def after_restore(self, native_dir: Path, entry: str, message: str) -> None:
+        _git(native_dir, "add", "-A")
+        if _git(native_dir, "status", "--porcelain").strip():
+            _git(native_dir, "commit", "-q", "-m", message)
 
     def apply(self, native_dir: Path, entry: str, operations: list[PlannedOperation],
               context: dict[str, Any]) -> ApplyResult:
@@ -325,9 +342,14 @@ class CodeAdapter(Adapter):
             else:
                 argv = shlex.split(cmd)
                 if argv and argv[0] in ("python", "python3"):
-                    argv[0] = sys.executable
+                    py = _python_interpreter()
+                    if py is None:
+                        rep.add("tests", False, "no Python interpreter found to run the tests "
+                                "(install Python or set DAEDELUS_PYTHON)")
+                        return rep
+                    argv[0] = py
                 env = {**os.environ, "PYTHONDONTWRITEBYTECODE": "1", **context.get("env", {})}
-                if argv[:3] == [sys.executable, "-m", "pytest"]:
+                if argv[1:3] == ["-m", "pytest"]:
                     argv += ["-p", "no:cacheprovider"]
                 try:
                     proc = subprocess.run(argv, cwd=native_dir, capture_output=True, text=True,

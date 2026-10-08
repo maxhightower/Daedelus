@@ -1,0 +1,51 @@
+--- a/scene.json
++++ b/scene.json
+@@ -1,4 +1,46 @@
+ {
+-  "title": "Daedelus demo scene",
+-  "artifacts": {}
++  "artifacts": {
++    "background": {
++      "artifact_id": "art_554f3ed46c8b",
++      "measurements": {
++        "brightness": 0.4559,
++        "height": 400,
++        "layer_count": 3,
++        "width": 640
++      },
++      "name": "Background",
++      "native": "artifacts/art_554f3ed46c8b/native/image.ora",
++      "previews": {
++        "composite": "artifacts/art_554f3ed46c8b/revisions/0002/previews/composite.png",
++        "layer:hills": "artifacts/art_554f3ed46c8b/revisions/0002/previews/layer_hills.png",
++        "layer:sky": "artifacts/art_554f3ed46c8b/revisions/0002/previews/layer_sky.png",
++        "layer:sun": "artifacts/art_554f3ed46c8b/revisions/0002/previews/layer_sun.png"
++      },
++      "revision": 2,
++      "revision_id": "rev_ec638b198d4e",
++      "type": "image2d"
++    },
++    "table": {
++      "artifact_id": "art_78a118df28ec",
++      "measurements": {
++        "depth": 1.035,
++        "height": 0.77,
++        "max_z": 0.77,
++        "min_z": 0.0,
++        "object_count": 7,
++        "vertex_count": 40,
++        "width": 1.7743
++      },
++      "name": "Table",
++      "native": "artifacts/art_78a118df28ec/native/model.blend",
++      "previews": {
++        "glb": "artifacts/art_78a118df28ec/revisions/0002/previews/model.glb",
++        "render": "artifacts/art_78a118df28ec/revisions/0002/previews/preview.png"
++      },
++      "revision": 2,
++      "revision_id": "rev_fd97311e5db4",
++      "type": "model3d"
++    }
++  },
++  "title": "Daedelus demo scene"
+ }

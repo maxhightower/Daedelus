@@ -14,6 +14,41 @@ def _ws(args) -> Path:
                 Path.home() / ".daedelus" / "workspace")
 
 
+def _pid_alive(pid: int) -> bool:
+    if sys.platform == "win32":
+        import ctypes
+
+        k32 = ctypes.windll.kernel32  # type: ignore[attr-defined]
+        handle = k32.OpenProcess(0x1000, False, pid)  # PROCESS_QUERY_LIMITED_INFORMATION
+        if not handle:
+            return False
+        code = ctypes.c_ulong()
+        k32.GetExitCodeProcess(handle, ctypes.byref(code))
+        k32.CloseHandle(handle)
+        return code.value == 259  # STILL_ACTIVE
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    return True
+
+
+def _watch_parent(pid: int) -> None:
+    """Stop the backend when the desktop shell that started it is gone (no orphaned servers)."""
+    import threading
+    import time
+
+    def loop() -> None:
+        while True:
+            time.sleep(1.5)
+            if not _pid_alive(pid):
+                os._exit(0)
+
+    threading.Thread(target=loop, daemon=True, name="parent-watchdog").start()
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="daedelus")
     ap.add_argument("--workspace", help="workspace directory (default ~/.daedelus/workspace)")
@@ -22,6 +57,8 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--host", default="127.0.0.1")
     s.add_argument("--port", type=int, default=8765)
     s.add_argument("--studio-dist", default=None)
+    s.add_argument("--parent-pid", type=int, default=None,
+                   help="exit when this process ends (used by the desktop shell)")
     d = sub.add_parser("demo", help="build the multimodal demo and run all isolation scenarios")
     d.add_argument("--out", default="evidence/demo")
     d.add_argument("--no-video", action="store_true", help="skip the YouTube URL source")
@@ -40,6 +77,8 @@ def main(argv: list[str] | None = None) -> int:
 
         from .api import create_app
 
+        if args.parent_pid:
+            _watch_parent(args.parent_pid)
         app = create_app(_ws(args), args.studio_dist)
         print(f"DAEDELUS_LISTENING http://{args.host}:{args.port}", flush=True)
         uvicorn.run(app, host=args.host, port=args.port, log_level="warning")
