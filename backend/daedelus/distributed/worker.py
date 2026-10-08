@@ -31,6 +31,10 @@ from .cas import BlobStore, materialize, snapshot
 from .models import MUTATING, JobResult, Lease
 
 
+class LeaseRevoked(Exception):
+    pass
+
+
 class Worker:
     def __init__(self, control: str, token: str, *, name: str | None = None,
                  capabilities: list[str] | None = None, adapters: list[str] | None = None,
@@ -82,11 +86,29 @@ class Worker:
                     return
                 continue
             r.raise_for_status()
-            self.handle(Lease.model_validate(r.json()))
+            try:
+                self.handle(Lease.model_validate(r.json()))
+            except Exception as exc:  # one bad job must not take the worker down
+                print(f"job handling failed: {type(exc).__name__}: {exc}", file=sys.stderr,
+                      flush=True)
             self.done += 1
             idle_since = time.time()
             if max_jobs and self.done >= max_jobs:
                 return
+
+    def _call(self, method: str, url: str, *, patience: float = 90.0, **kw) -> httpx.Response:
+        """Control-plane call that rides out transient network failures (partitions,
+        control-plane restarts). HTTP errors are returned to the caller, not retried."""
+        t0 = time.time()
+        delay = 1.0
+        while True:
+            try:
+                return self.http.request(method, url, **kw)
+            except httpx.TransportError:
+                if time.time() - t0 > patience or self._stop.is_set():
+                    raise
+                time.sleep(delay)
+                delay = min(delay * 1.5, 5.0)
 
     def _h(self, lease: Lease) -> dict[str, str]:
         return {"X-Lease-Token": lease.lease_token}
@@ -94,13 +116,18 @@ class Worker:
     def _fetch(self, lease: Lease, sha: str) -> None:
         if self.cache.has(sha):
             return
-        r = self.http.get(f"/api/cluster/jobs/{lease.job.id}/blobs/{sha}", headers=self._h(lease))
+        r = self._call("GET", f"/api/cluster/jobs/{lease.job.id}/blobs/{sha}",
+                       headers=self._h(lease))
+        if r.status_code == 409:
+            raise LeaseRevoked(r.text)
         r.raise_for_status()
         self.cache.put_bytes(r.content, expected=sha)  # verifies the hash
 
     def _upload(self, lease: Lease, store: BlobStore, shas: set[str]) -> None:
-        r = self.http.post(f"/api/cluster/jobs/{lease.job.id}/missing", json={"shas": sorted(shas)},
-                           headers=self._h(lease))
+        r = self._call("POST", f"/api/cluster/jobs/{lease.job.id}/missing",
+                       json={"shas": sorted(shas)}, headers=self._h(lease))
+        if r.status_code == 409:
+            raise LeaseRevoked(r.text)
         r.raise_for_status()
         for sha in r.json()["missing"]:
             data = store.read(sha)
@@ -110,8 +137,10 @@ class Worker:
                                     content=data + b"tamper", headers=self._h(lease))
                 if bad.status_code != 422:
                     raise RuntimeError("control plane accepted a corrupted blob")
-            u = self.http.put(f"/api/cluster/jobs/{lease.job.id}/blobs/{sha}", content=data,
-                              headers=self._h(lease))
+            u = self._call("PUT", f"/api/cluster/jobs/{lease.job.id}/blobs/{sha}", content=data,
+                           headers=self._h(lease))
+            if u.status_code == 409:
+                raise LeaseRevoked(u.text)
             u.raise_for_status()
 
     # ---------------------------------------------------------------- one job
@@ -158,6 +187,8 @@ class Worker:
                 if not (jd / "native").exists():
                     (jd / "native").mkdir()
                 (jd / "job.json").write_text(job.model_dump_json())
+            except LeaseRevoked:
+                return
             except Exception as exc:
                 self._fail(lease, f"input transfer failed: {type(exc).__name__}: {exc}", True)
                 return
@@ -194,16 +225,20 @@ class Worker:
                             worker_id=self.id)
             if out.get("adapter_error"):
                 res.value = {"adapter_error": True}
-            if res.ok:
-                store = BlobStore(self.work / "cache")
-                if job.method in MUTATING:
-                    res.output = snapshot(jd / "native", store)
-                    self._upload(lease, store, res.output.blobs())
-                if job.method in ("preview", "export"):
-                    res.artifacts = snapshot(jd / "out", store)
-                    self._upload(lease, store, res.artifacts.blobs())
-            r = self.http.post(f"/api/cluster/jobs/{job.id}/complete", content=res.model_dump_json(),
-                               headers={**self._h(lease), "Content-Type": "application/json"})
+            try:
+                if res.ok:
+                    store = BlobStore(self.work / "cache")
+                    if job.method in MUTATING:
+                        res.output = snapshot(jd / "native", store)
+                        self._upload(lease, store, res.output.blobs())
+                    if job.method in ("preview", "export"):
+                        res.artifacts = snapshot(jd / "out", store)
+                        self._upload(lease, store, res.artifacts.blobs())
+            except LeaseRevoked:
+                return  # another attempt owns the job now; our result is not wanted
+            r = self._call("POST", f"/api/cluster/jobs/{job.id}/complete",
+                           content=res.model_dump_json(),
+                           headers={**self._h(lease), "Content-Type": "application/json"})
             if r.status_code == 409:
                 return  # lease lost meanwhile: result discarded by the control plane (audited)
             r.raise_for_status()
@@ -224,7 +259,7 @@ class Worker:
 
     def _fail(self, lease: Lease, error: str, retryable: bool, *, cancelled: bool = False) -> None:
         try:
-            self.http.post(f"/api/cluster/jobs/{lease.job.id}/fail", json={
+            self._call("POST", f"/api/cluster/jobs/{lease.job.id}/fail", json={
                 "error": error, "retryable": retryable, "cancelled": cancelled},
                 headers=self._h(lease))
         except httpx.HTTPError:

@@ -129,6 +129,7 @@ jobs:
       - name: Spatial canvas walkthrough (scenarios A-F)
         run: |
           export DAEDELUS_BLENDER=$HOME/blender/blender
+          export DAEDELUS_WORKER_TOKENS=ci-worker-token-$GITHUB_RUN_ID-0123456789
           daedelus --workspace /tmp/e2e-ws serve --port 8765 --studio-dist studio/dist > /tmp/server.log 2>&1 &
           for i in $(seq 1 40); do curl -sf http://127.0.0.1:8765/api/health > /dev/null && break; sleep 1; done
           cd studio && STUDIO_URL=http://127.0.0.1:8765 OUT=../evidence-ci/screenshots node e2e/spatial.e2e.mjs
@@ -138,6 +139,11 @@ jobs:
       - name: V1.2 office walkthrough (grid/document/slides in place, dependency updates)
         if: always()
         run: cd studio && STUDIO_URL=http://127.0.0.1:8765 OUT=../evidence-ci/office node e2e/office.e2e.mjs
+      - name: V2 execution walkthrough (targets, workers, jobs, cancel, SSE instead of polling)
+        if: always()
+        run: |
+          cd studio && STUDIO_URL=http://127.0.0.1:8765 WORKER_TOKEN=ci-worker-token-$GITHUB_RUN_ID-0123456789 \
+            OUT=../evidence-ci/execution node e2e/execution.e2e.mjs
       - name: Board performance measurement (150+ items, 200+ connections)
         if: always()
         run: cd studio && STUDIO_URL=http://127.0.0.1:8765 OUT=../evidence-ci/perf node e2e/perf.e2e.mjs
