@@ -140,10 +140,11 @@ export function StudioProvider({ children }: { children: ReactNode }) {
         return r;
       } catch (e: any) {
         setError(e.message ?? String(e));
+        if (e.status === 409 && projectId) api.artifacts(projectId).then(setArtifacts).catch(() => {}); // stale view: refresh
         return undefined;
       }
     },
-    [notify],
+    [notify, projectId],
   );
 
   const refreshProjects = useCallback(async () => setProjects(await api.projects()), []);
@@ -385,6 +386,21 @@ export function StudioProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (projectId) pollExecutions();
   }, [projectId, pollExecutions]);
+
+  // keep artifact heads in sync with changes made elsewhere (other windows, CLI, workflow runs)
+  useEffect(() => {
+    if (!projectId) return;
+    const t = setInterval(async () => {
+      if (document.hidden) return;
+      const fresh = await api.artifacts(projectId).catch(() => null);
+      if (!fresh) return;
+      setArtifacts((cur) => {
+        const same = cur.length === fresh.length && cur.every((a, i) => a.id === fresh[i].id && a.head_revision_id === fresh[i].head_revision_id);
+        return same ? cur : fresh;
+      });
+    }, 3000);
+    return () => clearInterval(t);
+  }, [projectId]);
 
   const project = useMemo(() => projects.find((p) => p.id === projectId) ?? null, [projects, projectId]);
   useEffect(() => {

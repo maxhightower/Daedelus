@@ -46,7 +46,9 @@ export function Viewer3D({
   onPick,
   onCameraChange,
   onIdsLoaded,
+  automationKey,
 }: {
+  automationKey?: string;
   url: string;
   camera?: CameraState | null;
   preset?: string;
@@ -194,19 +196,12 @@ export function Viewer3D({
           }
         });
         cb.current.onIdsLoaded?.(ids);
-        const box = new THREE.Box3().setFromObject(gltf.scene);
-        const size = box.getSize(new THREE.Vector3()).length() || 1;
-        const center = box.getCenter(new THREE.Vector3());
         const saved = camRef.current;
         if (saved) {
           c.cam.position.fromArray(saved.position);
           c.controls.target.fromArray(saved.target);
-        } else {
-          const dir = PRESETS[preset ?? "perspective"] ?? PRESETS.perspective;
-          c.cam.position.copy(center).add(new THREE.Vector3(...dir).multiplyScalar(size));
-          c.controls.target.copy(center);
-        }
-        c.controls.update();
+          c.controls.update();
+        } else frame(preset ?? "perspective");
         setLoading(false);
         applyHighlight();
         c.render();
@@ -219,6 +214,50 @@ export function Viewer3D({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [url]);
+
+  // Automation hook: project a component's centre to client coordinates so tests can click real
+  // geometry (picking still goes through the same raycast as a user click).
+  useEffect(() => {
+    if (!automationKey) return;
+    const w = window as any;
+    w.__dd3d = w.__dd3d ?? {};
+    w.__dd3d[automationKey] = {
+      project: (id: string) => {
+        const c = ctx.current;
+        const meshes = c?.byId.get(id);
+        if (!c || !meshes?.length) return null;
+        const box = new THREE.Box3();
+        meshes.forEach((m) => box.expandByObject(m));
+        const v = box.getCenter(new THREE.Vector3()).project(c.cam);
+        const r = c.renderer.domElement.getBoundingClientRect();
+        return { x: r.left + ((v.x + 1) / 2) * r.width, y: r.top + ((1 - v.y) / 2) * r.height };
+      },
+      ids: () => [...(ctx.current?.byId.keys() ?? [])],
+      loaded: () => !!ctx.current?.model,
+    };
+    return () => {
+      delete w.__dd3d[automationKey];
+    };
+  }, [automationKey]);
+
+  const frame = (p: string) => {
+    const c = ctx.current;
+    if (!c?.model) return;
+    const box = new THREE.Box3().setFromObject(c.model);
+    const size = box.getSize(new THREE.Vector3()).length() || 1;
+    const center = box.getCenter(new THREE.Vector3());
+    const dir = new THREE.Vector3(...(PRESETS[p] ?? PRESETS.perspective)).normalize();
+    const dist = (size / 2 / Math.tan((c.cam.fov * Math.PI) / 360)) * 1.05;
+    c.cam.position.copy(center).add(dir.multiplyScalar(dist));
+    c.controls.target.copy(center);
+    c.controls.update();
+    c.render();
+  };
+  // a preset request (camera cleared) reframes on the model's real bounds
+  useEffect(() => {
+    if (!camera) frame(preset ?? "perspective");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preset, camera == null]);
 
   const applyHighlight = () => {
     const c = ctx.current;
@@ -271,7 +310,3 @@ export function Viewer3D({
   );
 }
 
-export function presetCamera(preset: string, center: [number, number, number] = [0, 0.4, 0], size = 2.2): CameraState {
-  const dir = PRESETS[preset] ?? PRESETS.perspective;
-  return { position: [center[0] + dir[0] * size, center[1] + dir[1] * size, center[2] + dir[2] * size], target: center };
-}

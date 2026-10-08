@@ -18,7 +18,7 @@ import { EDGE_TYPES, EdgeMarkers, type TypedEdgeData } from "./edges";
 import { NODE_TYPES, type ItemNodeData } from "./nodes";
 import { RelationshipDialog, type PendingRelationship } from "./RelationshipDialog";
 import { CanvasToolbar } from "./Toolbar";
-import { uid } from "./hooks";
+import { freeSpot, itemBounds, uid } from "./hooks";
 
 
 const isFrame = (i: CanvasItem) => i.item_type === "frame" || i.item_type === "workflow";
@@ -52,7 +52,8 @@ export function toNodes(board: CanvasBoard, selected: Set<string>, missing: Set<
       width: it.size.width,
       height: it.size.height,
       style: { width: it.size.width, height: it.size.height },
-      zIndex: isFrame(it) ? -100 + depth(byId, it) : it.z_index,
+      // selected items come to the front so their handles and resizers are reachable
+      zIndex: isFrame(it) ? -100 + depth(byId, it) : selected.has(it.id) ? 500 + it.z_index : it.z_index,
       selected: selected.has(it.id),
       dragHandle: ".cnode-head",
       data: { item: it, missing: missing.has(it.id) },
@@ -91,7 +92,10 @@ export function SpatialCanvas() {
     const v = board.viewport;
     setTimeout(() => {
       if (board.items.length && (v.x !== 0 || v.y !== 0 || v.zoom !== 1)) rf.setViewport(v);
-      else rf.fitView({ padding: 0.15 });
+      else {
+        const b = itemBounds(board.items);
+        if (b) rf.fitBounds(b, { padding: 0.08 });
+      }
     }, 30);
   }, [board, rf]);
 
@@ -106,11 +110,17 @@ export function SpatialCanvas() {
 
   useEffect(() => {
     s.registerLocator((id: string) => {
-      rf.fitView({ nodes: [{ id }], duration: 350, maxZoom: 1.1, padding: 0.35 });
+      const it = s.board?.items.find((i) => i.id === id);
+      const b = it && itemBounds([it]);
+      if (b) {
+        // ~1.1x zoom on the item, centred
+        const pad = Math.max(b.width, b.height) * 0.25;
+        rf.fitBounds({ x: b.x - pad, y: b.y - pad, width: b.width + 2 * pad, height: b.height + 2 * pad }, { duration: 350 });
+      }
       s.select({ kind: "items", itemIds: [id] });
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rf]);
+  }, [rf, s.board]);
 
   const itemById = useCallback((id: string) => board?.items.find((i) => i.id === id), [board]);
 
@@ -137,7 +147,18 @@ export function SpatialCanvas() {
 
   // ----------------------------------------------------------- node changes
   const onNodesChange = useCallback((changes: NodeChange<Node<ItemNodeData>>[]) => {
-    setNodes((ns) => applyNodeChanges(changes.filter((c) => c.type !== "remove"), ns));
+    setNodes((ns) => {
+      const byId = new Map(ns.map((n) => [n.id, n]));
+      const relevant = changes.filter((c) => {
+        if (c.type === "remove") return false;
+        if (c.type === "dimensions" && !c.resizing && c.dimensions) {
+          const n = byId.get(c.id);
+          return !n?.measured || n.measured.width !== c.dimensions.width || n.measured.height !== c.dimensions.height;
+        }
+        return true;
+      });
+      return relevant.length ? applyNodeChanges(relevant, ns) : ns;
+    });
   }, []);
 
   const onNodeDragStop = useCallback(
@@ -349,9 +370,15 @@ export function SpatialCanvas() {
         e.preventDefault();
         deleteSelection();
       }
-      if (e.shiftKey && e.key === "!") rf.fitView({ padding: 0.12, duration: 300 });
-      if (e.shiftKey && e.key === "@" && selectedIds.size) rf.fitView({ nodes: [...selectedIds].map((id) => ({ id })), padding: 0.3, duration: 300 });
-      if (mod && e.key.toLowerCase() === "d" && s.selection.kind === "items") {
+      if (e.shiftKey && e.key === "!") {
+        const b = itemBounds(board!.items);
+        if (b) rf.fitBounds(b, { padding: 0.08, duration: 300 });
+      }
+      if (e.shiftKey && e.key === "@" && selectedIds.size) {
+        const b = itemBounds(board!.items.filter((i) => selectedIds.has(i.id)));
+        if (b) rf.fitBounds(b, { padding: 0.25, duration: 300 });
+      }
+      if (mod && e.key.toLowerCase() === "d") {
         e.preventDefault();
         duplicateView();
       }
@@ -361,14 +388,15 @@ export function SpatialCanvas() {
   });
 
   const duplicateView = () => {
-    if (s.selection.kind !== "items") return;
-    const src = itemById(s.selection.itemIds[0]);
+    const id = s.selection.kind === "items" ? s.selection.itemIds[0] : s.selection.kind === "component" ? s.selection.itemId : null;
+    const src = id ? itemById(id) : undefined;
     if (!src || src.item_type !== "artifact_view") return;
     const views = board!.items.filter((i) => i.resource_ref.id === src.resource_ref.id).length;
     const copy: CanvasItem = {
       ...JSON.parse(JSON.stringify(src)),
       id: uid("item"),
-      position: { x: src.position.x + src.size.width + 40, y: src.position.y },
+      group_id: null,
+      position: freeSpot(board!.items, src.size, src),
       presentation_state: { ...src.presentation_state, label: `view ${views + 1}`, selected_component: null },
     };
     s.updateBoard((b) => ({ ...b, items: [...b.items, copy] }));
@@ -409,6 +437,7 @@ export function SpatialCanvas() {
         nodeTypes={NODE_TYPES as any}
         edgeTypes={EDGE_TYPES}
         onNodesChange={onNodesChange}
+        elevateNodesOnSelect={false}
         onNodeDragStart={() => (dragging.current = true)}
         onNodeDragStop={onNodeDragStop}
         onConnect={onConnect}
@@ -418,7 +447,7 @@ export function SpatialCanvas() {
           if (e.shiftKey || e.metaKey || e.ctrlKey) {
             const cur = s.selection.kind === "items" ? s.selection.itemIds : [];
             s.select({ kind: "items", itemIds: cur.includes(n.id) ? cur.filter((x) => x !== n.id) : [...cur, n.id] });
-          } else if (!(s.selection.kind === "component" && s.selection.itemId === n.id)) s.select({ kind: "items", itemIds: [n.id] });
+          } else s.select({ kind: "items", itemIds: [n.id] });
           if (s.activeItemId && s.activeItemId !== n.id) s.setActive(null);
         }}
         onNodeDoubleClick={(e, n) => {

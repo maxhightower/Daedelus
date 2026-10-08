@@ -8,7 +8,7 @@
 import { lazy, Suspense, useEffect, useMemo, useState, type ComponentType, type ReactNode } from "react";
 import { api, boardApi, fileUrl } from "../api";
 import { Badge, Status } from "../components/common";
-import { acquireGL, presetCamera, releaseGL, Viewer3D, type CameraState } from "../components/Viewer3D";
+import { acquireGL, releaseGL, Viewer3D, type CameraState } from "../components/Viewer3D";
 import { useStudio } from "../state";
 import type { Artifact, CanvasItem, MediaSource, Revision } from "../types";
 import { codeDrafts, draftKey, invalidateRevision, useDrafts, type Lod } from "./hooks";
@@ -82,6 +82,7 @@ function Model3DView({ item, artifact, revision, mode, selectedComponent, onSele
   return (
     <div className="r-3d">
       <Viewer3D
+        automationKey={`${item.id}:${mode === "focus" ? "focus" : "board"}`}
         url={glb}
         camera={item.presentation_state.camera as CameraState | undefined}
         preset={preset}
@@ -94,7 +95,7 @@ function Model3DView({ item, artifact, revision, mode, selectedComponent, onSele
       {interactive && (
         <div className="r-3d-tools nodrag">
           {["perspective", "front", "side", "top"].map((p) => (
-            <button key={p} className="mini-btn" onClick={() => patchState({ preset: p, camera: presetCamera(p) })}>
+            <button key={p} className="mini-btn" onClick={() => patchState({ preset: p, camera: null })}>
               {p}
             </button>
           ))}

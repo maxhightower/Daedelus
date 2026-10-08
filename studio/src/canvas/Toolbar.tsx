@@ -3,7 +3,7 @@ import { useState } from "react";
 import { api } from "../api";
 import { useStudio } from "../state";
 import type { CanvasItem } from "../types";
-import { lodFor, uid } from "./hooks";
+import { freeSpotAt, itemBounds, lodFor, uid } from "./hooks";
 
 
 export function CanvasToolbar({ onDuplicate }: { onDuplicate: () => void }) {
@@ -12,7 +12,7 @@ export function CanvasToolbar({ onDuplicate }: { onDuplicate: () => void }) {
   const zoom = useStore((st) => st.transform[2]);
   const [menu, setMenu] = useState<"" | "op" | "links" | "views">("");
   const board = s.board!;
-  const sel = s.selection.kind === "items" ? s.selection.itemIds : [];
+  const sel = s.selection.kind === "items" ? s.selection.itemIds : s.selection.kind === "component" && s.selection.itemId ? [s.selection.itemId] : [];
   const selItem = sel.length === 1 ? board.items.find((i) => i.id === sel[0]) : undefined;
 
   const center = () => {
@@ -83,7 +83,8 @@ export function CanvasToolbar({ onDuplicate }: { onDuplicate: () => void }) {
     await s.refresh();
     const frame = board.items.find((i) => i.item_type === "workflow" && i.resource_ref.id === wf!.id);
     const c = center();
-    const it = await s.placeResource({ kind: "workflow_node", workflow_id: wf.id, node_id: node.id }, Math.round(c.x), Math.round(c.y));
+    const spot = freeSpotAt(board.items, { width: 230, height: 150 }, c);
+    const it = await s.placeResource({ kind: "workflow_node", workflow_id: wf.id, node_id: node.id }, spot.x, spot.y);
     if (it && frame) s.updateItem(it.id, { group_id: frame.id }, { history: false });
     if (it) s.select({ kind: "items", itemIds: [it.id] });
   };
@@ -100,8 +101,23 @@ export function CanvasToolbar({ onDuplicate }: { onDuplicate: () => void }) {
         {Math.round(zoom * 100)}% · {lodFor(zoom)}
       </span>
       <button onClick={() => rf.zoomIn({ duration: 150 })} title="Zoom in">+</button>
-      <button onClick={() => rf.fitView({ padding: 0.12, duration: 300 })} title="Zoom to fit (Shift+1)">Fit</button>
-      <button disabled={!sel.length} onClick={() => rf.fitView({ nodes: sel.map((id) => ({ id })), padding: 0.3, duration: 300 })} title="Zoom to selection (Shift+2)">
+      <button
+        onClick={() => {
+          const b = itemBounds(board.items);
+          if (b) rf.fitBounds(b, { padding: 0.08, duration: 300 });
+        }}
+        title="Zoom to fit (Shift+1)"
+      >
+        Fit
+      </button>
+      <button
+        disabled={!sel.length}
+        onClick={() => {
+          const b = itemBounds(board.items.filter((i) => sel.includes(i.id)));
+          if (b) rf.fitBounds(b, { padding: 0.25, duration: 300 });
+        }}
+        title="Zoom to selection (Shift+2)"
+      >
         Selection
       </button>
       <span className="tb-sep" />

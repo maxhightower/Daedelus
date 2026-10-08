@@ -235,7 +235,8 @@ table.kv td:first-child { color: var(--muted); white-space: nowrap; }
 .swatches { display: flex; gap: 3px; }
 
 /* operation node */
-.cnode.operation .cnode-head { cursor: grab; }
+.cnode.operation { overflow: visible; }
+.cnode.operation .cnode-head { cursor: grab; border-radius: 7px 7px 0 0; }
 .cnode.operation.cat-input .cnode-head { background: #2a3a2e; }
 .cnode.operation.cat-operation .cnode-head { background: #24344d; }
 .cnode.operation.cat-validation .cnode-head { background: #3a2c47; }
@@ -273,7 +274,7 @@ table.kv td:first-child { color: var(--muted); white-space: nowrap; }
 .viewer3d canvas { cursor: default; }
 .viewer3d[data-interactive="1"] canvas { cursor: crosshair; }
 .viewer-msg { position: absolute; top: 6px; left: 8px; font-size: 11px; color: var(--muted); }
-.r-3d-tools { position: absolute; bottom: 4px; left: 4px; right: 4px; display: flex; gap: 3px; flex-wrap: wrap; align-items: center; background: #000a; padding: 3px; border-radius: 4px; }
+.r-3d-tools { position: absolute; top: 4px; left: 4px; right: 4px; display: flex; gap: 3px; flex-wrap: wrap; align-items: center; background: #000a; padding: 3px; border-radius: 4px; }
 .r-2d { display: flex; flex-direction: column; }
 .r-2d-main { flex: 1; min-height: 0; width: 100%; object-fit: contain; background: repeating-conic-gradient(#3a3a3a 0% 25%, #2a2a2a 0% 50%) 50% / 16px 16px; }
 .r-layers { display: flex; gap: 3px; padding: 3px; flex-wrap: wrap; flex: none; }
