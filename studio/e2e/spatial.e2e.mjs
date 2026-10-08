@@ -64,12 +64,14 @@ const waitSaved = async () => {
   await sleep(900);
   await until(async () => (await page.locator(".save-state").innerText()) === "saved", 20000);
 };
-async function waitExecution(wid, prevId) {
+async function waitExecution(wid, prevId, { pastApproval = false } = {}) {
   return until(async () => {
     const list = await api(`/api/projects/${PID}/executions?workflow_id=${wid}`);
     const e = list[0];
     if (!e || e.id === prevId) return null;
     if (["pending", "running"].includes(e.status)) return null;
+    // after an Approve click the decision is applied asynchronously: keep waiting for the outcome
+    if (pastApproval && e.status === "waiting_approval") return null;
     return api(`/api/projects/${PID}/executions/${e.id}`);
   }, 300000, 1000);
 }
@@ -493,7 +495,7 @@ try {
   await page.locator(".approval").first().waitFor({ timeout: 15000 });
   await shot("v1_13_workflow_awaiting_approval");
   await page.locator(".approval").first().getByRole("button", { name: "Approve" }).click();
-  const exF = await waitExecution(wf.id, prevF);
+  const exF = await waitExecution(wf.id, prevF, { pastApproval: true });
   check("approved execution completed", exF.status === "succeeded", exF.error);
   const uF = units(exF);
   check("incremental: only the sky unit re-ran in the 2D agent; 3D agent up to date", uF["paint_agent:sky"] === "succeeded" && uF["paint_agent:background"] === "skipped" && uF["model_agent:table"] === "skipped", JSON.stringify(uF));

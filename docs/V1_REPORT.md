@@ -15,7 +15,7 @@ Design and data model: [V1_ARCHITECTURE.md](V1_ARCHITECTURE.md). V0 architecture
 | store fix | `56dc3dc` | SQLite rows fetched under the connection lock (real concurrency bug found by the e2e run) |
 | 4–5 studio | `55f8111` | placement, frame stacking, port hit-areas, view framing, revision loading; unit tests; walkthrough + perf scripts |
 | 6 validation | `791861e` | edges-vanishing fix, live smoke test (opt-in), CI switched to the V1 walkthrough + perf, evidence |
-| 7 report | see §9 | keyboard Focus path, this report, final evidence |
+| 7 report | `3e17a7d` + follow-up | keyboard Focus path, this report, final evidence; approval-wait race fixed in the walkthrough |
 
 ## 2. What changed in the product
 
@@ -132,7 +132,16 @@ node box; new operations placed on top of existing nodes; resize handle under th
 
 ## 9. CI and Windows build
 
-CI_SECTION
+All runs: <https://github.com/maxhightower/Daedelus/actions?query=branch%3Aopus%2Fdaedelus-v1-spatial-canvas>.
+
+| Commit | CI (Linux) | Windows desktop build |
+|---|---|---|
+| `791861e` | [success](https://github.com/maxhightower/Daedelus/actions/runs/37816032323): backend pytest with Blender, demo 40/40, studio typecheck/tests/build, spatial walkthrough 58/58, perf run complete | superseded by the next push |
+| `3e17a7d` | [failure](https://github.com/maxhightower/Daedelus/actions/runs/37816630541): walkthrough 58/60 — the test read an execution right after clicking Approve, before the asynchronous decision was applied (CI is faster than the dev container); fixed in the next commit by waiting past `waiting_approval` | [success](https://github.com/maxhightower/Daedelus/actions/runs/37816630490) |
+| head | see the hand-off message for the final head's runs | |
+
+On CI the perf script measured the same shape as locally (152 items / 252 connections; 0 long
+tasks while panning; 1–3 long tasks of ≤ 73 ms in the zoom cycle; release → saved ≈ 595 ms).
 
 The Windows job builds the frozen backend sidecar and the Tauri NSIS/MSI installers and runs
 the core tests on Windows. **The installers were built, not installed**: no manual installation
