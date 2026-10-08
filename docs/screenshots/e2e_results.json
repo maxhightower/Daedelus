@@ -1,0 +1,77 @@
+[
+ {
+  "name": "demo project created from the UI",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "three artifacts created (3D, 2D, code)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "legs context shows inherited style guide and own leg inspiration",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "sunset image has two independent bindings (reference + inspiration)",
+  "ok": true,
+  "detail": "2"
+ },
+ {
+  "name": "workflow canvas shows 9 nodes",
+  "ok": true,
+  "detail": "9"
+ },
+ {
+  "name": "execution started from the UI",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "first execution succeeded",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "table revision shows attribution and validation",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "binding role changed through the UI",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "impact after role change: only legs (+ downstream manifest) stale",
+  "ok": true,
+  "detail": "[\"legs\"]"
+ },
+ {
+  "name": "incremental execution succeeded",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "only the legs unit executed; background unit skipped",
+  "ok": true,
+  "detail": "{\"table\":\"skipped\",\"legs\":\"succeeded\",\"tabletop\":\"skipped\",\"background\":\"skipped\",\"sky\":\"skipped\",\"repo\":\"succeeded\"}"
+ },
+ {
+  "name": "replay from the UI reports reproducible",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "name": "agent reply lists the units that will re-run",
+  "ok": true,
+  "detail": "Daedelus\nRecorded as source 'Instruction: Make the tabletop lighter.\nbase_color: #' with role 'instruction' on artifact:art_484b44cd93ff#tabletop.\nUnderstood directives: base_color=#c8a27a, colour #c8a27a\nUnits that will re-run: ['artifact:art_484b44cd93ff#tabletop']"
+ },
+ {
+  "name": "no uncaught page errors",
+  "ok": true,
+  "detail": ""
+ }
+]
