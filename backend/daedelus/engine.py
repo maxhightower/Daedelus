@@ -206,7 +206,7 @@ class Engine:
     def __init__(self, store: ProjectStore):
         self.store = store
         self._cancel: set[str] = set()
-        self._lock = threading.Lock()
+        self._run_lock = threading.RLock()
 
     # -- public API ---------------------------------------------------------
     def start(self, workflow_id: str, *, version: int | None = None, mode: str = "incremental",
@@ -225,7 +225,13 @@ class Engine:
         return ex
 
     def run(self, execution_id: str) -> Execution:
-        """Run (or resume) an execution synchronously until done or paused."""
+        """Run (or resume) an execution synchronously until done or paused.
+
+        Executions of one project are serialised: they edit the same native files."""
+        with self._run_lock:
+            return self._run(execution_id)
+
+    def _run(self, execution_id: str) -> Execution:
         ex = self.store.get_execution(execution_id)
         if ex.status in (RunStatus.failed, RunStatus.succeeded, RunStatus.cancelled):
             return ex
