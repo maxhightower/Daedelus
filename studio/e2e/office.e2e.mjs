@@ -151,7 +151,11 @@ try {
   const shown = parseFloat(await b9.innerText());
   check("the grid shows the LibreOffice-calculated value (not the formula)", shown > 415 && shown < 430, shown);
   await sheetNode.locator(".layer-chip", { hasText: "SummaryValues" }).click();
-  check("selecting a named range highlights its cells", (await sheetNode.locator("td.hi").count()) >= 27, await sheetNode.locator("td.hi").count());
+  const hiCount = await until(async () => {
+    const n = await sheetNode.locator("td.hi").count();
+    return n >= 27 ? n : null;
+  }, 10000).catch(async () => sheetNode.locator("td.hi").count());
+  check("selecting a named range highlights its cells", hiCount >= 27, hiCount);
   check("charts are listed on their sheet", (await sheetNode.locator(".chart-card").count()) >= 1);
   await shot("v12_02_sheet_in_place");
   // edit a data cell in place: the 2025 value (demonstration edit, not NOAA data)
