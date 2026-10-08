@@ -123,6 +123,32 @@ NODE_TYPES: dict[str, NodeType] = {n.type: n for n in [
         config_schema={"type": "object", "properties": {"message": {"type": "string"}}},
         defaults={"message": "Review before continuing"}),
     NodeType(
+        type="dependencies", title="Dependencies", category="operation",
+        description="Declares component-level links between artifacts (spreadsheet range -> "
+                    "document table, chart -> figure, section -> slide text, ...) and updates "
+                    "only the stale dependents, one checked revision per target artifact.",
+        inputs=[Port(name="after", type="any", multiple=True,
+                     description="run after these nodes (e.g. the agents that built the artifacts)")],
+        outputs=[Port(name="revision", type="revision", multiple=True),
+                 Port(name="report", type="report")],
+        config_schema={"type": "object", "properties": {
+            "links": {"type": "array", "items": {"type": "object", "required": ["source", "target"],
+                      "properties": {
+                          "source": {"type": "object", "required": ["artifact_id", "component_id"],
+                                     "properties": {"artifact_id": {"type": "string"},
+                                                    "component_id": {"type": "string"}}},
+                          "target": {"type": "object", "required": ["artifact_id", "component_id"],
+                                     "properties": {"artifact_id": {"type": "string"},
+                                                    "component_id": {"type": "string"}}},
+                          "target_kind": {"type": "string"},
+                          "options": {"type": "object"},
+                          "note": {"type": "string"}}}},
+            "sync": {"type": "boolean", "description": "update stale dependents"},
+            "scope": {"type": "string", "enum": ["linked", "all"],
+                      "description": "linked = only the links of this node"},
+            "force": {"type": "boolean"}}},
+        defaults={"links": [], "sync": True, "scope": "linked", "force": False}),
+    NodeType(
         type="export", title="Export", category="output",
         description="Exports a revision to interchange formats (e.g. glb, png, obj).",
         inputs=[Port(name="revision", type="revision", required=True, multiple=True)],

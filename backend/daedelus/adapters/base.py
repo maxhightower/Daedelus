@@ -110,6 +110,12 @@ class Adapter(ABC):
     def op_spec(self, name: str) -> OperationSpec | None:
         return next((o for o in self.info().operations if o.name == name), None)
 
+    def side_effect_scope(self, native_dir: Path, entry: str, op: PlannedOperation) -> list[str]:
+        """Components an operation legitimately changes besides its target (e.g. formulas on
+        other sheets rewritten by a sheet rename). They are added to the edit scope and
+        reported; everything else must stay unchanged."""
+        return []
+
     def created_kind(self, op: PlannedOperation) -> str:
         """Component kind created by a ``new`` operation ('*' = unknown/any)."""
         return "*"

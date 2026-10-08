@@ -175,6 +175,20 @@ class EditBody(BaseModel):
     base_revision_id: str | None = None
 
 
+class DependencyCreate(BaseModel):
+    source: dict[str, str]
+    target: dict[str, str]
+    target_kind: str | None = None
+    options: dict[str, Any] = Field(default_factory=dict)
+    note: str = ""
+
+
+class SyncBody(BaseModel):
+    dependency_ids: list[str] | None = None
+    target_artifact_ids: list[str] | None = None
+    force: bool = False
+
+
 class PreviewBody(BaseModel):
     node_id: str
     all_units: bool = False
@@ -800,6 +814,63 @@ def create_app(workspace_root: str | Path | None = None,
         if not path:
             raise HTTPException(404, "this artifact has no 3D representation")
         return {"path": path}
+
+    # -- cross-artifact component dependencies (V1.2) -----------------------------
+    from . import dependencies as dep_mod
+
+    @app.get("/api/projects/{pid}/dependencies")
+    async def list_deps(pid: str, artifact_id: str | None = None):
+        st = store_for(pid)
+        rows = await _in_thread(dep_mod.all_status, st)
+        if artifact_id:
+            rows = [r for r in rows if artifact_id in (r["source"]["artifact_id"],
+                                                       r["target"]["artifact_id"])]
+        return rows
+
+    @app.post("/api/projects/{pid}/dependencies")
+    def create_dep(pid: str, body: DependencyCreate):
+        st = store_for(pid)
+        try:
+            d = dep_mod.add_dependency(st, dep_mod.End(**body.source), dep_mod.End(**body.target),
+                                       options=body.options, target_kind=body.target_kind,
+                                       note=body.note)
+        except (ValueError, LookupError, TypeError) as exc:
+            raise HTTPException(422, str(exc))
+        return dep_mod.status(st, d)
+
+    @app.delete("/api/projects/{pid}/dependencies/{did}")
+    def delete_dep(pid: str, did: str):
+        dep_mod.delete_dependency(store_for(pid), did)
+        return {"deleted": did}
+
+    @app.post("/api/projects/{pid}/dependencies/sync")
+    async def sync_deps(pid: str, body: SyncBody):
+        st = store_for(pid)
+        rep = await _in_thread(dep_mod.sync, st, dependency_ids=body.dependency_ids,
+                               target_artifact_ids=body.target_artifact_ids, force=body.force,
+                               lock=engine_for(pid)._run_lock)
+        rep["status"] = await _in_thread(dep_mod.all_status, st)
+        return rep
+
+    @app.get("/api/projects/{pid}/artifacts/{aid}/office")
+    def office_view(pid: str, aid: str, revision_id: str | None = None):
+        """Structured view of an Office artifact revision (grid / document / slides)."""
+        st = store_for(pid)
+        a = st.get_artifact(aid)
+        if a.adapter not in ("spreadsheet", "document", "presentation"):
+            raise HTTPException(400, f"'{a.name}' is not an Office artifact")
+        rev = st.get_revision(revision_id or a.head_revision_id)
+        key = "grid" if a.adapter == "spreadsheet" else "structure"
+        rel = rev.previews.get(key)
+        if not rel or not st.abs(rel).exists():
+            raise HTTPException(404, f"no {key} preview for revision {rev.number}")
+        pages = list((k, v) for k, v in rev.previews.items()
+                       if k == "render" or k.startswith(("page", "slide")))
+        return {"artifact_id": a.id, "adapter": a.adapter, "revision_id": rev.id,
+                "revision_number": rev.number, "view": json.loads(st.abs(rel).read_text()),
+                "pages": [v for _, v in sorted(pages, key=lambda kv: (
+                    kv[0] != "render", int("".join(ch for ch in kv[0] if ch.isdigit()) or 0)))],
+                "pdf": rev.previews.get("pdf")}
 
     @app.get("/api/projects/{pid}/artifacts/{aid}/operations")
     def artifact_operations(pid: str, aid: str):

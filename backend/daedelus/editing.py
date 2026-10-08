@@ -37,14 +37,19 @@ class EditRejected(Exception):
 
 def apply_manual_edit(store: ProjectStore, artifact_id: str, operations: list[PlannedOperation],
                       *, message: str = "", base_revision_id: str | None = None,
-                      lock: threading.RLock | None = None) -> ArtifactRevision:
+                      lock: threading.RLock | None = None, files: dict[str, str] | None = None,
+                      origin: str = "manual") -> ArtifactRevision:
+    """Apply adapter operations as one checked revision. ``files`` provides extra input files
+    to operations by key (e.g. a rendered chart image); ``origin`` labels the revision."""
     lock = lock or store.lock()
     with lock:
-        return _apply(store, artifact_id, operations, message, base_revision_id)
+        return _apply(store, artifact_id, operations, message, base_revision_id, files or {},
+                      origin)
 
 
 def _apply(store: ProjectStore, artifact_id: str, ops: list[PlannedOperation], message: str,
-           base_revision_id: str | None) -> ArtifactRevision:
+           base_revision_id: str | None, files: dict[str, str] | None = None,
+           origin: str = "manual") -> ArtifactRevision:
     from .engine import Engine  # constraint checking is shared with the engine
 
     art = store.get_artifact(artifact_id)
@@ -63,16 +68,32 @@ def _apply(store: ProjectStore, artifact_id: str, ops: list[PlannedOperation], m
 
     root = art.root_id()
     targets: list[str] = []
+    created: set[str] = set()
+    existing = {c.id for c in art.components}
     for op in ops:
         spec = adapter.op_spec(op.op)
         if spec and spec.target_kinds == ["new"]:
             t = op.params.get("parent") or root
+            if isinstance(op.params.get("id"), str):
+                created.add(op.params["id"])
         else:
             t = op.component_id or root
+        if t in created and t not in existing:
+            continue  # created by this same edit: no prior state, scope added after apply
         if t and t not in targets:
             targets.append(t)
     scope: set[str] = set()
     contexts = []
+    native = native_path(store, art)
+    side: list[str] = []
+    for op in ops:
+        if op.op == "delete_component" and op.component_id:
+            c = art.component(op.component_id)
+            if c and c.parent_id:  # removing a child restructures its container
+                side.append(c.parent_id)
+        side += [c for c in adapter.side_effect_scope(native, art.entry, op) if c not in side]
+    for c in side:
+        scope.update([c] + art.descendants(c))
     for t in targets:
         scope.update([t] + art.descendants(t))
         ctx = binding_mod.resolve(store, TargetSelector(scope="component", artifact_id=art.id,
@@ -83,14 +104,14 @@ def _apply(store: ProjectStore, artifact_id: str, ops: list[PlannedOperation], m
         store.save_context(ctx)
         contexts.append({"unit": ctx.target.key(), "component_id": t, "context_id": ctx.id})
 
-    native = native_path(store, art)
     before = adapter.inspect(native, art.entry)
     ckpt = store.artifact_dir(art.id) / "checkpoints" / new_id("manual")
     snapshot(native, ckpt)
     try:
         try:
             res = adapter.apply(native, art.entry, ops, {"message": message or "Manual edit",
-                                                         "source_paths": _image_paths(store)})
+                                                         "source_paths": _image_paths(store),
+                                                         "files": files or {}})
         except AdapterError as exc:
             res = None
             err = str(exc)
@@ -120,7 +141,7 @@ def _apply(store: ProjectStore, artifact_id: str, ops: list[PlannedOperation], m
         rev = record_revision(
             store, art, insp=after, message=message or f"Manual edit: {', '.join(o.op for o in ops)}",
             operations=ops, units=[c["unit"] for c in contexts], changed_components=changed,
-            validation=rep, origin="manual",
+            validation=rep, origin=origin,
             operation_results=[OperationResult(**{k: r[k] for k in (
                 "index", "op", "component_id", "status", "detail")}) for r in res.results])
         return rev

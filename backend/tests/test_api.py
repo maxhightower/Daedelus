@@ -24,7 +24,8 @@ def _png_bytes(color=(200, 100, 50)):
 def test_full_api_flow(tmp_path):
     c = _client(tmp_path)
     h = c.get("/api/health").json()
-    assert h["ok"] and {a["name"] for a in h["adapters"]} == {"blender", "layered2d", "code"}
+    assert h["ok"] and {a["name"] for a in h["adapters"]} == {"blender", "layered2d", "code",
+        "spreadsheet", "document", "presentation"}
     assert any(p["name"] == "heuristic" and p["available"] for p in h["providers"])
     assert {n["type"] for n in c.get("/api/node-types").json()} >= {"agent", "sources",
                                                                     "validate"}

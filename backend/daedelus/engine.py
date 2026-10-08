@@ -420,6 +420,40 @@ class Engine:
                        "inputs": self._inputs(ex, wf, node.id, "input")}
         raise ExecutionPaused()
 
+    def _node_dependencies(self, ex, wf, node, nr, cfg):
+        from . import dependencies as deps
+
+        ids = []
+        for ln in cfg.get("links", []):
+            try:
+                d = deps.add_dependency(
+                    self.store, deps.End(**ln["source"]), deps.End(**ln["target"]),
+                    options=ln.get("options") or {}, target_kind=ln.get("target_kind"),
+                    note=ln.get("note", ""))
+            except (ValueError, LookupError) as exc:
+                raise NodeFailure(f"dependency {ln['source']} -> {ln['target']}: {exc}")
+            ids.append(d.id)
+            self._log(ex, nr, f"link {d.id}: {ln['source']['component_id']} -> "
+                              f"{ln['target']['component_id']}")
+        before = {s["id"]: s["status"] for s in deps.all_status(self.store)}
+        report: dict[str, Any] = {"links": ids, "status_before": before}
+        if cfg.get("sync", True):
+            scope = None if cfg.get("scope") == "all" else ids
+            rep = deps.sync(self.store, dependency_ids=scope, force=bool(cfg.get("force")),
+                            lock=self._run_lock)
+            report["sync"] = rep
+            for r in rep["revisions"]:
+                self._log(ex, nr, f"updated {r['artifact_id']} r{r['revision_number']}: "
+                                  f"{', '.join(r['changed'])}")
+            if rep["failed"]:
+                nr.outputs = {"revision": [], "report": report}
+                raise NodeFailure("dependency sync failed: " + "; ".join(
+                    f"{f['id']}: {f['error']}" for f in rep["failed"]))
+        report["status_after"] = {s["id"]: s["status"] for s in deps.all_status(self.store)}
+        revs = [{"artifact_id": r["artifact_id"], "revision_id": r["revision_id"]}
+                for r in report.get("sync", {}).get("revisions", [])]
+        nr.outputs = {"revision": revs, "report": report}
+
     def _node_export(self, ex, wf, node, nr, cfg):
         files = []
         for rv in self._inputs(ex, wf, node.id, "revision"):
@@ -695,7 +729,8 @@ class Engine:
                               for c in info["subtree"]},
                     upstream=upstream, source_files=source_files,
                     model=cfg.get("model") or None,
-                    semantic=self._package(info, art, insp, adapter, cfg))
+                    semantic=self._package(info, art, insp, adapter, cfg),
+                    source_extracts=self._source_extracts(info["ctx"], adapter))
                 (self.store.execution_dir(ex.id) / f"plan_request_{node.id}_"
                  f"{_h(info['unit'])[:10]}.json").write_text(req.model_dump_json(indent=1))
                 try:
@@ -755,7 +790,33 @@ class Engine:
             measurements={c: insp.measurements.get(c, {}) for c in subtree},
             baseline={c: art.metadata.get("baseline", {}).get(c, {}) for c in subtree},
             upstream=upstream, source_files=self._source_files(), model=cfg.get("model") or None,
-            semantic=self._package(info, art, insp, adapter, cfg))
+            semantic=self._package(info, art, insp, adapter, cfg),
+            source_extracts=self._source_extracts(ctx, adapter))
+
+    def _source_extracts(self, ctx, adapter) -> dict[str, dict[str, Any]]:
+        """Bounded extracted contents of the bound sources for document-type adapters."""
+        if adapter.info().name not in ("spreadsheet", "document", "presentation"):
+            return {}
+        out: dict[str, dict[str, Any]] = {}
+        for e in ctx.entries:
+            sid = e.binding.source_id
+            if not e.applies or sid in out:
+                continue
+            try:
+                src = self.store.get_source(sid)
+            except Exception:
+                continue
+            ex = src.extracted or {}
+            item: dict[str, Any] = {}
+            if ex.get("text"):
+                item["text"] = ex["text"][:60_000]
+            if ex.get("sheets"):
+                item["sheets"] = [{"name": sh.get("name"), "rows": (sh.get("rows") or [])[:5000],
+                                   "truncated": bool(sh.get("truncated")) or
+                                   len(sh.get("rows") or []) > 5000} for sh in ex["sheets"][:5]]
+            if item:
+                out[sid] = item
+        return out
 
     def _validate_plan(self, adapter, art, ops, scope: set[str], unit: str) -> list[str]:
         errors = adapter.validate_operations(ops, art.components)

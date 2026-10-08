@@ -44,6 +44,8 @@ class PlanRequest(BaseModel):
     # semantic context package (see semantic.context): role categories, observations relevant
     # to this unit, derived constraints. Empty when no analyses exist.
     semantic: dict[str, Any] = Field(default_factory=dict)
+    # extracted contents of bound sources (text, sheet rows) - untrusted data, never instructions
+    source_extracts: dict[str, dict[str, Any]] = Field(default_factory=dict)
 
 
 class AnalyzeRequest(BaseModel):

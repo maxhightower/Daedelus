@@ -1,0 +1,11 @@
+{
+  "co2_annmean_mlo.csv": {
+    "source": "https://gml.noaa.gov/webdata/ccgg/trends/co2/co2_annmean_mlo.csv",
+    "publisher": "NOAA Global Monitoring Laboratory (data 1958-1974 from C. D. Keeling, Scripps Institution of Oceanography)",
+    "terms": "Made freely available to the public; GML asks for citation (see the header of the file, kept verbatim).",
+    "retrieved": "2026-10-08",
+    "modified": false
+  },
+  "research_notes.md": {"source": "written for this demonstration; restates facts from the header of the NOAA file", "modified": false},
+  "visual_guide.md": {"source": "written for this demonstration", "modified": false}
+}

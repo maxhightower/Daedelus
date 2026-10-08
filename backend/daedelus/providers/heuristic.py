@@ -22,7 +22,7 @@ from .. import features
 from ..models import PlannedOperation, ResolvedEntry
 from ..semantic import heuristic as sem_heuristic
 from ..semantic.models import Evaluation, SourceAnalysis
-from . import recipes
+from . import recipes, office_recipes
 from .base import (AnalyzeRequest, EvaluateRequest, Plan, PlanRequest, Provider,
                    ReviseRequest)
 
@@ -237,6 +237,20 @@ class HeuristicProvider(Provider):
 
     # ------------------------------------------------------------------ helpers
     def _recipe(self, req: PlanRequest, ops_avail) -> Plan | None:
+        office = office_recipes.plan_office(req)
+        if office is not None:
+            ops, notes, oname = office
+            ops = [o for o in ops if o.op in ops_avail]
+            used = [e.binding.id for e in req.context.entries if e.applies]
+            for o in ops:
+                o.derived_from = used
+            plan = Plan(provider=self.name, model="heuristic-v1", deterministic=True,
+                        operations=ops, notes=notes)
+            for e in req.context.entries:
+                plan.interpretations[e.binding.id] = (
+                    f"{e.binding.role}: contents used by recipe '{oname}'" if e.applies
+                    else f"{e.binding.role}: not applicable here")
+            return plan
         name = recipes.match(req.instructions)
         if name is None or "add_primitive" not in ops_avail:
             return None

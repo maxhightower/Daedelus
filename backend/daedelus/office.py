@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any
 from xml.etree import ElementTree as ET
 
-MAX_ROWS, MAX_COLS = 60, 30
+MAX_ROWS, MAX_COLS = 5000, 30  # extraction limits; truncation is recorded per sheet
 
 NS = {
     "s": "http://schemas.openxmlformats.org/spreadsheetml/2006/main",
@@ -42,11 +42,14 @@ def read_spreadsheet(path: Path) -> dict[str, Any]:
     sheets: list[dict[str, Any]] = []
     if ext in (".csv", ".tsv"):
         text = path.read_text(encoding="utf-8", errors="replace")
+        comments = [ln for ln in text.splitlines() if ln.startswith("#")]
+        if comments:  # leading '#' metadata blocks (e.g. NOAA exports) are kept as notes
+            text = "\n".join(ln for ln in text.splitlines() if not ln.startswith("#"))
         dialect = csv.excel_tab if ext == ".tsv" else csv.Sniffer().sniff(text[:4096]) \
             if text.strip() else csv.excel
         rows = list(csv.reader(io.StringIO(text), dialect))
         sheets.append({"name": path.stem, "rows": [r[:MAX_COLS] for r in rows[:MAX_ROWS]],
-                       "row_count": len(rows),
+                       "row_count": len(rows), "comment_lines": len(comments),
                        "col_count": max((len(r) for r in rows), default=0)})
     elif ext in (".xlsx", ".xlsm"):
         with zipfile.ZipFile(path) as z:
@@ -108,6 +111,8 @@ def read_spreadsheet(path: Path) -> dict[str, Any]:
     else:
         raise ValueError(f"unsupported spreadsheet format {ext}")
     flat = "\n".join(",".join(r) for s in sheets for r in s["rows"])
+    for sh in sheets:
+        sh["truncated"] = sh.get("row_count", len(sh["rows"])) > len(sh["rows"])
     return {"format": ext[1:], "sheets": sheets, "sheet_names": [s["name"] for s in sheets],
             "text": flat[:50_000]}
 

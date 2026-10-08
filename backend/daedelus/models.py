@@ -333,7 +333,7 @@ class ArtifactRevision(_Model):
     validation: ValidationReport | None = None
     diff: str | None = None  # unified diff for text/code artifacts
     vcs_commit: str | None = None
-    origin: Literal["create", "workflow", "manual", "restore"] | None = None
+    origin: Literal["create", "workflow", "manual", "restore", "dependency"] | None = None
 
 
 class Artifact(_Model):

@@ -12,8 +12,12 @@ def _registry() -> dict[str, Adapter]:
     from .blender import BlenderAdapter
     from .codefiles import CodeAdapter
     from .layered2d import LayeredImageAdapter
+    from .office.document import DocumentAdapter
+    from .office.presentation import PresentationAdapter
+    from .office.spreadsheet import SpreadsheetAdapter
 
-    adapters: list[Adapter] = [BlenderAdapter(), LayeredImageAdapter(), CodeAdapter()]
+    adapters: list[Adapter] = [BlenderAdapter(), LayeredImageAdapter(), CodeAdapter(),
+                               SpreadsheetAdapter(), DocumentAdapter(), PresentationAdapter()]
     return {a.name: a for a in adapters}
 
 
