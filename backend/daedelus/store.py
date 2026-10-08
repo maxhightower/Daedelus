@@ -91,12 +91,22 @@ class ProjectStore:
         with self._lock:
             return self._conn.execute(sql, tuple(args))
 
+    # The connection is shared by API worker threads: rows must be fetched while holding the
+    # lock, otherwise another thread's statement can reset the cursor mid-read.
+    def _fetchone(self, sql: str, args: Iterable[Any] = ()) -> Any:
+        with self._lock:
+            return self._conn.execute(sql, tuple(args)).fetchone()
+
+    def _fetchall(self, sql: str, args: Iterable[Any] = ()) -> list[Any]:
+        with self._lock:
+            return self._conn.execute(sql, tuple(args)).fetchall()
+
     def _one(self, model: type[T], sql: str, args: Iterable[Any] = ()) -> T | None:
-        row = self._exec(sql, args).fetchone()
+        row = self._fetchone(sql, args)
         return model.model_validate_json(row[0]) if row else None
 
     def _many(self, model: type[T], sql: str, args: Iterable[Any] = ()) -> list[T]:
-        return [model.model_validate_json(r[0]) for r in self._exec(sql, args).fetchall()]
+        return [model.model_validate_json(r[0]) for r in self._fetchall(sql, args)]
 
     def lock(self) -> threading.RLock:
         return self._lock
@@ -116,7 +126,7 @@ class ProjectStore:
         self._exec("DELETE FROM docs WHERE kind=? AND id=?", (kind, doc_id))
 
     def get_meta(self, key: str) -> str | None:
-        row = self._exec("SELECT value FROM meta WHERE key=?", (key,)).fetchone()
+        row = self._fetchone("SELECT value FROM meta WHERE key=?", (key,))
         return row[0] if row else None
 
     def set_meta(self, key: str, value: str) -> None:
@@ -242,14 +252,14 @@ class ProjectStore:
                           (artifact_id,))
 
     def next_revision_number(self, artifact_id: str) -> int:
-        row = self._exec("SELECT MAX(number) FROM revisions WHERE artifact_id=?",
-                         (artifact_id,)).fetchone()
+        row = self._fetchone("SELECT MAX(number) FROM revisions WHERE artifact_id=?",
+                         (artifact_id,))
         return int(row[0] or 0) + 1
 
     # -- workflows ---------------------------------------------------------
     def save_workflow(self, wf: Workflow, *, new_version: bool = True) -> Workflow:
         with self._lock:
-            row = self._exec("SELECT MAX(version) FROM workflows WHERE id=?", (wf.id,)).fetchone()
+            row = self._fetchone("SELECT MAX(version) FROM workflows WHERE id=?", (wf.id,))
             latest = int(row[0]) if row and row[0] is not None else 0
             if new_version or latest == 0:
                 wf = wf.model_copy(update={
@@ -314,9 +324,9 @@ class ProjectStore:
 
     # -- incremental execution state ----------------------------------------
     def get_unit_state(self, workflow_id: str, node_id: str, unit: str) -> dict[str, Any] | None:
-        row = self._exec("SELECT fingerprint, revision_id, execution_id, updated_at, detail FROM "
+        row = self._fetchone("SELECT fingerprint, revision_id, execution_id, updated_at, detail FROM "
                          "unit_state WHERE workflow_id=? AND node_id=? AND unit=?",
-                         (workflow_id, node_id, unit)).fetchone()
+                         (workflow_id, node_id, unit))
         if not row:
             return None
         return {"fingerprint": row[0], "revision_id": row[1], "execution_id": row[2],
@@ -341,8 +351,8 @@ class ProjectStore:
         return doc
 
     def list_messages(self, limit: int = 200) -> list[dict[str, Any]]:
-        rows = self._exec("SELECT id, doc FROM messages ORDER BY id DESC LIMIT ?",
-                          (limit,)).fetchall()
+        rows = self._fetchall("SELECT id, doc FROM messages ORDER BY id DESC LIMIT ?",
+                          (limit,))
         out = []
         for rid, doc in reversed(rows):
             d = json.loads(doc)
