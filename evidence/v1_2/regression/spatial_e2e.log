@@ -1,0 +1,62 @@
+PASS [setup] demo project opens directly into the spatial board
+PASS [setup] no separate application modes: explorer, canvas and inspector are all present
+PASS [A spatial composition] table, background and code artifacts are on the board
+PASS [A spatial composition] two new references were uploaded and placed on the board
+PASS [A spatial composition] uploaded image ingested (measured) and spreadsheet ingested as view-only
+PASS [A spatial composition] spreadsheet source renders a table preview on the canvas
+PASS [A spatial composition] dragging the header moved the item (persisted)
+PASS [A spatial composition] resize handle changed the item size (persisted)
+PASS [A spatial composition] fit shows the whole layout at far level of detail
+PASS [A spatial composition] zoom into the table reaches close level of detail
+PASS [A spatial composition] positions and sizes persist across reload
+PASS [A spatial composition] relationships persist (derived connections recomputed identically)
+PASS [A spatial composition] saved board viewport is restored after reopen
+PASS [baseline run] baseline execution of the demo workflow succeeded
+PASS [B component reference] clicking a leg in the 3D viewport selects the persistent component id
+PASS [B component reference] selected component chip appears on the artifact view
+PASS [B component reference] agent dock target follows the selection
+PASS [B component reference] relationship dialog targets the selected component
+PASS [B component reference] a real SourceBinding was created for Table → Leg FL
+PASS [B component reference] the board renders it as a reference connection anchored to the component
+PASS [B component reference] the inspector shows the resolved context of the component
+PASS [B component reference] impact preview: only the new leg unit of the 3D agent is stale
+PASS [B component reference] reference edited in the inspector updates the backend binding
+PASS [B component reference] run succeeded
+PASS [B component reference] only the changed leg unit executed in the 3D agent
+PASS [B component reference] background agent skipped (up to date)
+PASS [B component reference] unrelated artifact unchanged (background head revision)
+PASS [B component reference] only leg_fl changed in the table revision
+PASS [C hybrid editing] orbiting the active viewport changed only this view's camera (no revision)
+PASS [C hybrid editing] orbit did not create a revision
+PASS [C hybrid editing] component selected inside Focus
+PASS [C hybrid editing] pinned references dock is visible in Focus
+PASS [C hybrid editing] in-place edit created a native revision (origin manual)
+PASS [C hybrid editing] the revision's .blend snapshot exists
+PASS [C hybrid editing] revision validation passed (file reopens, scope preserved)
+PASS [C hybrid editing] exiting Focus restores the exact board position and zoom
+PASS [C hybrid editing] the board view shows the updated revision
+PASS [D shared views] two views of the same artifact
+PASS [D shared views] the two views have different camera orientations
+PASS [D shared views] both views display the new revision
+PASS [D shared views] both views keep their independent cameras after the edit
+PASS [E multimodal editing] layer edit created an OpenRaster revision touching only that layer
+PASS [E multimodal editing] OpenRaster file still valid after the edit
+PASS [E multimodal editing] code edit committed as a git revision with a reviewable diff
+PASS [E multimodal editing] only the edited file changed
+PASS [F integrated workflows] an operation added on the board is a real workflow node (new version)
+PASS [F integrated workflows] dragging between ports created a workflow edge (versioned)
+PASS [F integrated workflows] the board renders the execution connection from the workflow model
+PASS [F integrated workflows] node configuration edited in the inspector is saved as a new version
+PASS [F integrated workflows] validation from the board passes
+PASS [F integrated workflows] settle run after manual edits succeeded
+PASS [F integrated workflows] awaiting-approval state is visible on the operation node
+PASS [F integrated workflows] approved execution completed
+PASS [F integrated workflows] incremental: only the sky unit re-ran in the 2D agent; 3D agent up to date
+PASS [F integrated workflows] new validate operation ran
+PASS [F integrated workflows] execution did not rearrange or reset the board
+PASS [undo/redo] Ctrl+Z undoes a board-layout action without touching artifact revisions
+PASS [keyboard] Shift+Enter opens the selected view in Focus
+PASS [keyboard] Escape leaves Focus
+PASS [keyboard] no uncaught page errors
+
+PASS: 60/60

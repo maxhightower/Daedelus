@@ -1,0 +1,21 @@
+PASS [setup] project, sources, bindings and workflow created
+PASS [1 source understanding] live providers are listed but marked unavailable without credentials
+PASS [1 source understanding] analysis card shows provider, status and limitations
+PASS [1 source understanding] observations show how they were obtained (measured)
+PASS [2 context package] context package lists each source with its user-assigned meaning
+PASS [2 context package] the polygon limit is shown as enforced (hard constraint binding)
+PASS [2 context package] region-bound reference is visible
+PASS [2 context package] provider status line shows live providers unavailable
+PASS [3 plan preview] preview shows planned operations without applying them
+PASS [3 plan preview] preview labels the recipe as deterministic (no understanding claimed)
+PASS [3 plan preview] preview created no revision
+PASS [4 run + loop] execution succeeded
+PASS [4 run + loop] loop reached its objective
+PASS [4 run + loop] operation node shows the loop result on the canvas
+PASS [4 run + loop] loop view shows measured findings per iteration
+PASS [4 run + loop] loop view shows the render of each iteration
+PASS [4 run + loop] 3D view of the new model is framed (canopy projects to a finite point)
+PASS [4 run + loop] final revision satisfies the polygon budget (measured)
+PASS [4 run + loop] no uncaught page errors
+
+PASS: 19/19

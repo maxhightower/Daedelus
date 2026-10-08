@@ -17,3 +17,5 @@ result here.
 | N8 | Live cloud document connections (Microsoft Graph / Google Workspace) | no accounts or credentials | V1.2 | blocked |
 | N9 | Hosted remote worker deployment (real cloud host, not containers on one runner) | no hosted infrastructure or credentials | V2 | blocked |
 | N10 | GPU worker execution (Cycles GPU rendering on a remote GPU worker) | no GPU workers | V2 | blocked |
+| N11 | Formula results as calculated by Microsoft Excel (V1.2 verifies LibreOffice recalculation against independently computed values) | no Microsoft Excel | V1.2 | open |
+| N12 | Microsoft Graph / Google Drive publish conflicts against a live account (412 on eTag mismatch; Drive check-then-write race window) | no accounts or credentials; contracts tested with synthetic fixtures only | V1.2 | blocked |

@@ -1,0 +1,84 @@
+{
+ "CO2 analysis": [
+  {
+   "name": "file_reopens",
+   "passed": true,
+   "detail": "workbook reopened (2 sheet(s))",
+   "data": {}
+  },
+  {
+   "name": "formulas_preserved",
+   "passed": true,
+   "detail": "81 formula(s) stored as formulas",
+   "data": {
+    "formula_count": 81
+   }
+  },
+  {
+   "name": "component_identity",
+   "passed": true,
+   "detail": "all components resolved",
+   "data": {}
+  },
+  {
+   "name": "libreoffice_opens",
+   "passed": true,
+   "detail": "LibreOffice rendered a copy to PDF",
+   "data": {}
+  },
+  {
+   "name": "recalculated",
+   "passed": true,
+   "detail": "81 formula value(s) calculated by LibreOffice (headless)",
+   "data": {
+    "errors": {}
+   }
+  }
+ ],
+ "CO2 report": [
+  {
+   "name": "file_reopens",
+   "passed": true,
+   "detail": "document reopened (16 components)",
+   "data": {}
+  },
+  {
+   "name": "component_identity",
+   "passed": true,
+   "detail": "all bookmarks unique",
+   "data": {}
+  },
+  {
+   "name": "libreoffice_opens",
+   "passed": true,
+   "detail": "LibreOffice rendered a copy to PDF",
+   "data": {}
+  }
+ ],
+ "CO2 briefing": [
+  {
+   "name": "file_reopens",
+   "passed": true,
+   "detail": "presentation reopened (4 slide(s))",
+   "data": {}
+  },
+  {
+   "name": "component_identity",
+   "passed": true,
+   "detail": "all ids resolved",
+   "data": {}
+  },
+  {
+   "name": "editable_objects",
+   "passed": true,
+   "detail": "9 editable object(s), 0 picture(s)",
+   "data": {}
+  },
+  {
+   "name": "libreoffice_opens",
+   "passed": true,
+   "detail": "LibreOffice rendered a copy to PDF",
+   "data": {}
+  }
+ ]
+}

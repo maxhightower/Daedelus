@@ -1,0 +1,87 @@
+{
+ "changed": {
+  "CO2 report": [
+   "fig_decades",
+   "results_table",
+   "results_text"
+  ],
+  "CO2 briefing": [
+   "deck_chart"
+  ]
+ },
+ "moved_states": {
+  "CO2 report": [
+   "fig_decades",
+   "results_table",
+   "results_text"
+  ],
+  "CO2 briefing": [
+   "deck_chart"
+  ]
+ },
+ "sync": {
+  "checked": 5,
+  "updated": [
+   {
+    "id": "dep_2a3bd1c525da",
+    "target": {
+     "artifact_id": "art_5d981a6850e4",
+     "component_id": "results_table"
+    },
+    "route": "values -> table rows"
+   },
+   {
+    "id": "dep_61c02739f968",
+    "target": {
+     "artifact_id": "art_5d981a6850e4",
+     "component_id": "fig_decades"
+    },
+    "route": "rendered chart -> figure image"
+   },
+   {
+    "id": "dep_3ee7d48defd7",
+    "target": {
+     "artifact_id": "art_5d981a6850e4",
+     "component_id": "results_text"
+    },
+    "route": "values -> text template"
+   },
+   {
+    "id": "dep_c1545001f7df",
+    "target": {
+     "artifact_id": "art_de5726eae0ab",
+     "component_id": "deck_chart"
+    },
+    "route": "values -> chart categories/series"
+   }
+  ],
+  "skipped": [
+   {
+    "id": "dep_6191be9c1e33",
+    "status": "synced",
+    "reason": "in sync with source revision rev_c4e5c4ac50d1"
+   }
+  ],
+  "failed": [],
+  "revisions": [
+   {
+    "artifact_id": "art_5d981a6850e4",
+    "revision_id": "rev_5439e881dd70",
+    "revision_number": 4,
+    "changed": [
+     "fig_decades",
+     "results_table",
+     "results_text"
+    ]
+   },
+   {
+    "artifact_id": "art_de5726eae0ab",
+    "revision_id": "rev_e228b60dc20d",
+    "revision_number": 4,
+    "changed": [
+     "deck_chart"
+    ]
+   }
+  ]
+ }
+}

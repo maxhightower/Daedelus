@@ -25,6 +25,7 @@ installed package metadata, not recalled.
 | python-pptx | 1.0.2 | MIT | PPTX (V1.2) | depends on lxml, XlsxWriter |
 | lxml | 6.1.3 | BSD-3-Clause | XML | bundles libxml2/libxslt (MIT) |
 | XlsxWriter | 3.2.9 | BSD-2-Clause | pptx charts | |
+| et_xmlfile | 2.0.0 | MIT | openpyxl dependency | |
 | pyinstaller (build only) | 6.22.3 | GPL-2.0+ with bootloader exception | desktop sidecar freezing | the exception permits distributing frozen apps under any licence |
 
 ## Studio (JavaScript)
@@ -43,7 +44,8 @@ installed package metadata, not recalled.
 | Tool | Licence | How it is used | Consideration |
 |---|---|---|---|
 | Blender | GPL-2.0-or-later | `blender --background` subprocess running `blender_worker.py` | Scripts that import `bpy` run inside Blender; if the worker script is distributed it is reasonable to treat *that file* as GPL-compatible. The rest of Daedelus talks to Blender only through files and process I/O. Keep the adapter replaceable. |
-| LibreOffice (V1.2 previews/recalc) | MPL-2.0 | headless `soffice` subprocess | not bundled |
+| LibreOffice 24.2 (V1.2 recalculation, previews, ODF conversion) | MPL-2.0 | headless `soffice` subprocess, always on copies with a throw-away profile | not bundled; installed from distribution packages in CI |
+| poppler `pdftoppm` 24.02 (V1.2 page images) | GPL-2.0-or-later | subprocess converting LibreOffice PDFs to PNG | not bundled; optional (pypdfium2 fallback path exists but is not installed) |
 | ffmpeg | LGPL/GPL depending on build | subprocess for video frames | not bundled |
 | git | GPL-2.0 | subprocess for the code adapter | not bundled |
 
@@ -55,12 +57,18 @@ their terms of service apply to API use. No provider is required for the core pr
 
 ## Bundled media (demonstration inputs)
 
-See `backend/daedelus/demo_assets/v11/ATTRIBUTION.json`.
+See `backend/daedelus/demo_assets/v11/ATTRIBUTION.json` and `demo_assets/v12/ATTRIBUTION.json`.
 
 | File | Licence | Author / source |
 |---|---|---|
 | tree_trunk_photo.jpg | CC BY-SA 2.0 | Evelyn Simak, geograph.org.uk/photo/777464 |
 | *_render.png (6 files) | CC0 1.0 | Poly Haven (polyhaven.com) |
+| co2_annmean_mlo.csv (V1.2) | NOAA GML data policy: freely available, citation requested (header kept verbatim); no formal licence is stated in the file | NOAA Global Monitoring Laboratory; 1958–1974 data C. D. Keeling, Scripps |
+| research_notes.md, visual_guide.md (V1.2) | written for the demonstration (project-owned text) | — |
 
 The CC BY-SA photograph is data used by demonstrations; it must keep its attribution and
 licence if redistributed and is easy to replace with any other photograph.
+
+
+The NOAA file states no SPDX licence; it is redistributed here unmodified with its own usage
+note and citation request, which the owner should confirm is acceptable before publication.

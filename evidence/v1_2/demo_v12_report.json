@@ -1,0 +1,205 @@
+{
+ "seconds": 44.2,
+ "demos": [
+  {
+   "id": "P",
+   "title": "Research analysis and presentation pipeline",
+   "verification": "integration",
+   "status": "passed",
+   "blocked_by": null,
+   "checks": [
+    {
+     "name": "pipeline workflow succeeded",
+     "ok": true,
+     "detail": "None"
+    },
+    {
+     "name": "node build_wb succeeded",
+     "ok": true,
+     "detail": "None"
+    },
+    {
+     "name": "node build_doc succeeded",
+     "ok": true,
+     "detail": "None"
+    },
+    {
+     "name": "node build_deck succeeded",
+     "ok": true,
+     "detail": "None"
+    },
+    {
+     "name": "node deps succeeded",
+     "ok": true,
+     "detail": "None"
+    },
+    {
+     "name": "node validate succeeded",
+     "ok": true,
+     "detail": "None"
+    },
+    {
+     "name": "workbook hierarchy: sheets, table, named ranges, charts",
+     "ok": true,
+     "detail": "{'workbook': 'workbook', 'sheet1': 'sheet', 'summary': 'sheet', 'data_table': 'table', 'dataset': 'range', 'decade_means': 'range', 'summary_values': 'range', 'decade_chart': 'chart', 'trend_chart': 'chart'}"
+    },
+    {
+     "name": "summary values are live formulas in the native file",
+     "ok": true,
+     "detail": "=AVERAGEIFS(Data!$B$2:$B$68,Data!$A$2:$A$68,\">=1950\",Data!$A$2:$A$68,\"<1960\")"
+    },
+    {
+     "name": "formula results (LibreOffice recalculation) match decade means computed independently from the CSV",
+     "ok": true,
+     "detail": "{}"
+    },
+    {
+     "name": "two native Excel charts in the workbook package",
+     "ok": true,
+     "detail": "2"
+    },
+    {
+     "name": "report hierarchy: title, sections, paragraphs, results table, figure, references",
+     "ok": true,
+     "detail": "{'document': 'document', 'title': 'section', 'summary': 'section', 'summary_text': 'paragraph', 'data_method': 'section', 'data_method_text': 'paragraph', 'results': 'section', 'results_text': 'paragraph', 'results_table': 'table', 'fig_decades': 'figure', 'fig_decades_caption': 'paragraph', 'discussion': 'section', 'discussion_p1': 'paragraph', 'discussion_p2': 'paragraph', 'references': 'section', 'ref_1': 'paragraph', 'ref_2': 'paragraph'}"
+    },
+    {
+     "name": "report table carries the workbook's calculated values",
+     "ok": true,
+     "detail": "[['Decade', 'Mean CO2 (ppm)', 'Change vs previous decade'], ['1950s', '315.98', ''], ['1960s', '320.29', '4.31']]"
+    },
+    {
+     "name": "results sentence filled from the named range",
+     "ok": true,
+     "detail": "Decade means rose from 316.0 ppm in the 1950s to 420.4 ppm in the 2020s (computed in the linked workbook)."
+    },
+    {
+     "name": "report body paragraphs are quoted from the research notes (no generated prose)",
+     "ok": true,
+     "detail": "These notes accompany the annual mean carbon dioxide record from Mauna Loa Observatory, Hawaii. The record is the longest continuous series of direct atmospheric CO2 measurements and is widely used as a reference for the background concentration of the Northern Hemisphere."
+    },
+    {
+     "name": "4 slides built from editable objects (text frames, native chart, shapes; no slide is a picture)",
+     "ok": true,
+     "detail": "[['text', 'text', 'text'], ['text', 'chart'], ['text', 'text'], ['text', 'text']]"
+    },
+    {
+     "name": "slide chart data comes from the workbook (data-driven, editable)",
+     "ok": true,
+     "detail": "[315.98, 320.287, 330.858, 345.654, 360.583, 378.772, 400.411, 420.365]"
+    },
+    {
+     "name": "theme from the visual guide applied (title colour and font)",
+     "ok": true,
+     "detail": "('0B3D5C', 'Georgia')"
+    },
+    {
+     "name": "5 component dependencies, all synced after the run",
+     "ok": true,
+     "detail": "[('results_table', 'synced'), ('fig_decades', 'synced'), ('results_text', 'synced'), ('deck_chart', 'synced'), ('findings.body', 'synced')]"
+    },
+    {
+     "name": "native validation of CO2 analysis (workbook.xlsx)",
+     "ok": true,
+     "detail": "[]"
+    },
+    {
+     "name": "native validation of CO2 report (document.docx)",
+     "ok": true,
+     "detail": "[]"
+    },
+    {
+     "name": "native validation of CO2 briefing (presentation.pptx)",
+     "ok": true,
+     "detail": "[]"
+    },
+    {
+     "name": "data range edit is a checked revision of the workbook",
+     "ok": true,
+     "detail": "3"
+    },
+    {
+     "name": "exactly the dependents of the changed range went stale",
+     "ok": true,
+     "detail": "{'results_table': 'stale', 'fig_decades': 'stale', 'results_text': 'stale', 'deck_chart': 'stale', 'findings.body': 'synced'}"
+    },
+    {
+     "name": "update created one revision per dependent artifact",
+     "ok": true,
+     "detail": "{'checked': 5, 'updated': [{'id': 'dep_2a3bd1c525da', 'target': {'artifact_id': 'art_5d981a6850e4', 'component_id': 'results_table'}, 'route': 'values -> table rows'}, {'id': 'dep_61c02739f968', 'target': {'artifact_id': 'art_5d981a6850e4', 'component_id': 'fig_decades'}, 'route': 'rendered chart -> figure image'}, {'id': 'dep_3ee7d48defd7', 'target': {'artifact_id': 'art_5d981a6850e4', 'component_id': 'results_text'}, 'route': 'values -> text template'}, {'id': 'dep_c1545001f7df', 'target': {'a"
+    },
+    {
+     "name": "report: only the table, figure and results sentence changed",
+     "ok": true,
+     "detail": "['fig_decades', 'results_table', 'results_text']"
+    },
+    {
+     "name": "deck: only the data chart changed (findings text untouched)",
+     "ok": true,
+     "detail": "['deck_chart']"
+    },
+    {
+     "name": "updated sentence shows the recalculated 2020s mean",
+     "ok": true,
+     "detail": "Decade means rose from 316.0 ppm in the 1950s to 430.4 ppm in the 2020s (computed in the linked workbook)."
+    },
+    {
+     "name": "all dependencies synced again",
+     "ok": true,
+     "detail": ""
+    }
+   ],
+   "files": {
+    "workbook": "/home/user/Daedelus/evidence/v1_2/before/CO2_analysis.xlsx",
+    "report": "/home/user/Daedelus/evidence/v1_2/before/CO2_report.docx",
+    "deck": "/home/user/Daedelus/evidence/v1_2/before/CO2_briefing.pptx"
+   },
+   "notes": [
+    "deterministic recipe 'analysis workbook' (heuristic provider): cleaning, formulas and charts follow a fixed template parameterised by the bound data",
+    "value column: 'CO2 (ppm)', 67 clean rows, 8 decades",
+    "The data change is a demonstration edit (+10.0 ppm on 2020-2025), not NOAA data; it exists only to show selective dependency updates."
+   ],
+   "metrics": {
+    "build_seconds": 27.7,
+    "decade_means": {
+     "1950s": 315.98,
+     "1960s": 320.287,
+     "1970s": 330.858,
+     "1980s": 345.654,
+     "1990s": 360.583,
+     "2000s": 378.772,
+     "2010s": 400.411,
+     "2020s": 420.365
+    },
+    "update_seconds": 12.2
+   }
+  }
+ ],
+ "connectors": [
+  {
+   "name": "msgraph",
+   "title": "Microsoft 365 (Graph)",
+   "configured": false,
+   "available": false,
+   "reason": "blocked: DAEDELUS_MSGRAPH_TOKEN is not set",
+   "verification": "fixture-tested (no live account)"
+  },
+  {
+   "name": "google",
+   "title": "Google Workspace (Drive)",
+   "configured": false,
+   "available": false,
+   "reason": "blocked: DAEDELUS_GOOGLE_TOKEN is not set",
+   "verification": "fixture-tested (no live account)"
+  },
+  {
+   "name": "libreoffice",
+   "title": "LibreOffice (local conversion)",
+   "configured": true,
+   "available": true,
+   "reason": null,
+   "verification": "integration-tested with LibreOffice"
+  }
+ ],
+ "workspace": "/home/user/Daedelus/evidence/v1_2/workspace/projects/prj_9bb327ed5ebc"
+}

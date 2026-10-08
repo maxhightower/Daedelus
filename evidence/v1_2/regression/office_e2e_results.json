@@ -1,0 +1,140 @@
+[
+ {
+  "scenario": "setup",
+  "name": "pipeline execution succeeded",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "setup",
+  "name": "5 dependencies, all synced",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "1 board",
+  "name": "the three office artifacts are views on the canvas",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "1 board",
+  "name": "component dependencies are drawn as dependency connections",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "2 spreadsheet",
+  "name": "formula bar shows the native AVERAGEIFS formula",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "2 spreadsheet",
+  "name": "the grid shows the LibreOffice-calculated value (not the formula)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "2 spreadsheet",
+  "name": "selecting a named range highlights its cells",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "2 spreadsheet",
+  "name": "charts are listed on their sheet",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "2 spreadsheet",
+  "name": "the cell edit became a new workbook revision",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "2 spreadsheet",
+  "name": "exactly the four dependents of the summary went stale; slide text from the report did not",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "2 spreadsheet",
+  "name": "stale dependency connections are marked on the canvas",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "3 update dependents",
+  "name": "Update dependents synced every dependency",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "3 update dependents",
+  "name": "report: only the table, figure and results sentence changed",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "3 update dependents",
+  "name": "deck: only the data chart changed",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "3 update dependents",
+  "name": "no stale connections remain on the canvas",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "4 document focus",
+  "name": "the updated results sentence is visible in the document view",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "4 document focus",
+  "name": "paragraph edit changed only that paragraph and its section",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "4 document focus",
+  "name": "print preview shows LibreOffice-rendered pages",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "4 document focus",
+  "name": "editing the report section made the slide text dependency stale",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "5 slides",
+  "name": "selecting the slide chart shows its native data",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "5 slides",
+  "name": "slide text edit changed only that text frame",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "5 slides",
+  "name": "native .pptx remains the artifact entry",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "5 slides",
+  "name": "no uncaught page errors",
+  "ok": true,
+  "detail": ""
+ }
+]

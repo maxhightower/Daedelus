@@ -1,0 +1,107 @@
+[
+ {
+  "id": "dep_2a3bd1c525da",
+  "route": "values -> table rows",
+  "source": {
+   "artifact_id": "art_066c0e03113f",
+   "component_id": "summary_values",
+   "artifact_name": "CO2 analysis",
+   "component_name": "SummaryValues",
+   "kind": "range"
+  },
+  "target": {
+   "artifact_id": "art_5d981a6850e4",
+   "component_id": "results_table",
+   "artifact_name": "CO2 report",
+   "component_name": "Table results_table",
+   "kind": "table"
+  },
+  "source_signature": "a54aed04edc710d713ac8b5e017dd0b11a7244dc8fa96e8521759f76b09055e4",
+  "status": "synced",
+  "reason": "in sync with source revision rev_33626a48ee82"
+ },
+ {
+  "id": "dep_61c02739f968",
+  "route": "rendered chart -> figure image",
+  "source": {
+   "artifact_id": "art_066c0e03113f",
+   "component_id": "decade_chart",
+   "artifact_name": "CO2 analysis",
+   "component_name": "Mean CO2 (ppm) by decade",
+   "kind": "chart"
+  },
+  "target": {
+   "artifact_id": "art_5d981a6850e4",
+   "component_id": "fig_decades",
+   "artifact_name": "CO2 report",
+   "component_name": "figure",
+   "kind": "figure"
+  },
+  "source_signature": "7a1104402164f171e9b0b079e4db524ad2588fef65fb21eff10e12a02e227150",
+  "status": "synced",
+  "reason": "in sync with source revision rev_33626a48ee82"
+ },
+ {
+  "id": "dep_3ee7d48defd7",
+  "route": "values -> text template",
+  "source": {
+   "artifact_id": "art_066c0e03113f",
+   "component_id": "summary_values",
+   "artifact_name": "CO2 analysis",
+   "component_name": "SummaryValues",
+   "kind": "range"
+  },
+  "target": {
+   "artifact_id": "art_5d981a6850e4",
+   "component_id": "results_text",
+   "artifact_name": "CO2 report",
+   "component_name": "Decade means rose from 316.0 ppm in the 1950s to",
+   "kind": "paragraph"
+  },
+  "source_signature": "a54aed04edc710d713ac8b5e017dd0b11a7244dc8fa96e8521759f76b09055e4",
+  "status": "synced",
+  "reason": "in sync with source revision rev_33626a48ee82"
+ },
+ {
+  "id": "dep_c1545001f7df",
+  "route": "values -> chart categories/series",
+  "source": {
+   "artifact_id": "art_066c0e03113f",
+   "component_id": "decade_means",
+   "artifact_name": "CO2 analysis",
+   "component_name": "DecadeMeans",
+   "kind": "range"
+  },
+  "target": {
+   "artifact_id": "art_de5726eae0ab",
+   "component_id": "deck_chart",
+   "artifact_name": "CO2 briefing",
+   "component_name": "Mean CO2 by decade (ppm)",
+   "kind": "chart"
+  },
+  "source_signature": "867b8c7975abbbccd490f2f7bdee71afe58538d22ee322036a3b1e7059c701ed",
+  "status": "synced",
+  "reason": "in sync with source revision rev_33626a48ee82"
+ },
+ {
+  "id": "dep_6191be9c1e33",
+  "route": "section paragraphs -> text",
+  "source": {
+   "artifact_id": "art_5d981a6850e4",
+   "component_id": "discussion",
+   "artifact_name": "CO2 report",
+   "component_name": "Discussion",
+   "kind": "section"
+  },
+  "target": {
+   "artifact_id": "art_de5726eae0ab",
+   "component_id": "findings.body",
+   "artifact_name": "CO2 briefing",
+   "component_name": "The analysis in this report is limited t",
+   "kind": "text"
+  },
+  "source_signature": "8b10ecfc124f5ee080b643314f54afa35b2e64ee7b0d47eef4e92bd804558654",
+  "status": "synced",
+  "reason": "in sync with source revision rev_c4e5c4ac50d1"
+ }
+]
