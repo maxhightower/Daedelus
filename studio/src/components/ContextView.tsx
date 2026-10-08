@@ -1,12 +1,21 @@
 import type { Artifact, ResolvedContext } from "../types";
 import { Badge, keyLabel } from "./common";
 
+/** One segment of a scope path: just that level's own name (the path supplies the hierarchy). */
+function segmentLabel(key: string, artifacts: Artifact[]) {
+  const m = key.match(/^artifact:([^#]+)(?:#(.+))?$/);
+  if (!m) return keyLabel(key, artifacts);
+  const a = artifacts.find((x) => x.id === m[1]);
+  if (!a) return keyLabel(key, artifacts);
+  return m[2] ? (a.components.find((c) => c.id === m[2])?.name ?? m[2]) : a.name;
+}
+
 /** Inspectable view of what a target receives from the source library. */
 export function ContextView({ ctx, artifacts }: { ctx: ResolvedContext; artifacts: Artifact[] }) {
   return (
     <div className="context">
       <div className="muted small">
-        Scope path: {ctx.target_path.map((k) => keyLabel(k, artifacts)).join("  ›  ")}
+        Scope path: {ctx.target_path.map((k) => segmentLabel(k, artifacts)).join("  ›  ")}
       </div>
       {ctx.conflicts.length > 0 && (
         <div className="conflicts">

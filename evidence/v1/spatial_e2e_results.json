@@ -1,0 +1,350 @@
+[
+ {
+  "scenario": "setup",
+  "name": "demo project opens directly into the spatial board",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "setup",
+  "name": "no separate application modes: explorer, canvas and inspector are all present",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "A spatial composition",
+  "name": "table, background and code artifacts are on the board",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "A spatial composition",
+  "name": "two new references were uploaded and placed on the board",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "A spatial composition",
+  "name": "uploaded image ingested (measured) and spreadsheet ingested as view-only",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "A spatial composition",
+  "name": "spreadsheet source renders a table preview on the canvas",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "A spatial composition",
+  "name": "dragging the header moved the item (persisted)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "A spatial composition",
+  "name": "resize handle changed the item size (persisted)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "A spatial composition",
+  "name": "fit shows the whole layout at far level of detail",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "A spatial composition",
+  "name": "zoom into the table reaches close level of detail",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "A spatial composition",
+  "name": "positions and sizes persist across reload",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "A spatial composition",
+  "name": "relationships persist (derived connections recomputed identically)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "A spatial composition",
+  "name": "saved board viewport is restored after reopen",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "baseline run",
+  "name": "baseline execution of the demo workflow succeeded",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "B component reference",
+  "name": "clicking a leg in the 3D viewport selects the persistent component id",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "B component reference",
+  "name": "selected component chip appears on the artifact view",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "B component reference",
+  "name": "agent dock target follows the selection",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "B component reference",
+  "name": "relationship dialog targets the selected component",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "B component reference",
+  "name": "a real SourceBinding was created for Table → Leg FL",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "B component reference",
+  "name": "the board renders it as a reference connection anchored to the component",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "B component reference",
+  "name": "the inspector shows the resolved context of the component",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "B component reference",
+  "name": "impact preview: only the new leg unit of the 3D agent is stale",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "B component reference",
+  "name": "reference edited in the inspector updates the backend binding",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "B component reference",
+  "name": "run succeeded",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "B component reference",
+  "name": "only the changed leg unit executed in the 3D agent",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "B component reference",
+  "name": "background agent skipped (up to date)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "B component reference",
+  "name": "unrelated artifact unchanged (background head revision)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "B component reference",
+  "name": "only leg_fl changed in the table revision",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "C hybrid editing",
+  "name": "orbiting the active viewport changed only this view's camera (no revision)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "C hybrid editing",
+  "name": "orbit did not create a revision",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "C hybrid editing",
+  "name": "component selected inside Focus",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "C hybrid editing",
+  "name": "pinned references dock is visible in Focus",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "C hybrid editing",
+  "name": "in-place edit created a native revision (origin manual)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "C hybrid editing",
+  "name": "the revision's .blend snapshot exists",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "C hybrid editing",
+  "name": "revision validation passed (file reopens, scope preserved)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "C hybrid editing",
+  "name": "exiting Focus restores the exact board position and zoom",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "C hybrid editing",
+  "name": "the board view shows the updated revision",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "D shared views",
+  "name": "two views of the same artifact",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "D shared views",
+  "name": "the two views have different camera orientations",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "D shared views",
+  "name": "both views display the new revision",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "D shared views",
+  "name": "both views keep their independent cameras after the edit",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "E multimodal editing",
+  "name": "layer edit created an OpenRaster revision touching only that layer",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "E multimodal editing",
+  "name": "OpenRaster file still valid after the edit",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "E multimodal editing",
+  "name": "code edit committed as a git revision with a reviewable diff",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "E multimodal editing",
+  "name": "only the edited file changed",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "F integrated workflows",
+  "name": "an operation added on the board is a real workflow node (new version)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "F integrated workflows",
+  "name": "dragging between ports created a workflow edge (versioned)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "F integrated workflows",
+  "name": "the board renders the execution connection from the workflow model",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "F integrated workflows",
+  "name": "node configuration edited in the inspector is saved as a new version",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "F integrated workflows",
+  "name": "validation from the board passes",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "F integrated workflows",
+  "name": "settle run after manual edits succeeded",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "F integrated workflows",
+  "name": "awaiting-approval state is visible on the operation node",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "F integrated workflows",
+  "name": "approved execution completed",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "F integrated workflows",
+  "name": "incremental: only the sky unit re-ran in the 2D agent; 3D agent up to date",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "F integrated workflows",
+  "name": "new validate operation ran",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "F integrated workflows",
+  "name": "execution did not rearrange or reset the board",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "undo/redo",
+  "name": "Ctrl+Z undoes a board-layout action without touching artifact revisions",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "undo/redo",
+  "name": "no uncaught page errors",
+  "ok": true,
+  "detail": ""
+ }
+]

@@ -1,0 +1,108 @@
+{
+ "environment": {
+  "browser": "Chromium (Playwright) headless",
+  "gl": "SwiftShader software rendering, no GPU",
+  "viewport": "1680x1000"
+ },
+ "board": {
+  "items": 152,
+  "stored_connections": 200,
+  "derived_connections": 52,
+  "total_connections": 252,
+  "setup_seconds": 1.1
+ },
+ "measurements": {
+  "open_project_to_board_ms": 1428,
+  "fit_all": {
+   "nodes": 152,
+   "edges": 252,
+   "elements": 3467,
+   "heapMB": 34.1,
+   "zoom": "11% · far"
+  },
+  "pan_far": {
+   "long_tasks": {
+    "count": 0,
+    "total_ms": 0,
+    "max_ms": 0
+   },
+   "duration_ms": 2061,
+   "frame_interval_ms": {
+    "n": 123,
+    "mean": 16.67,
+    "p50": 16.7,
+    "p95": 16.8,
+    "max": 16.8
+   },
+   "frames_over_50ms": 0
+  },
+  "zoom_cycle": {
+   "long_tasks": {
+    "count": 1,
+    "total_ms": 59,
+    "max_ms": 59
+   },
+   "duration_ms": 2761,
+   "frame_interval_ms": {
+    "n": 160,
+    "mean": 17.08,
+    "p50": 16.7,
+    "p95": 16.8,
+    "max": 50
+   },
+   "frames_over_50ms": 0,
+   "dom_when_zoomed_in": {
+    "nodes": 2,
+    "edges": 0,
+    "elements": 659,
+    "heapMB": 43.1,
+    "zoom": "400% · close"
+   }
+  },
+  "close_view": {
+   "nodes": 4,
+   "edges": 52,
+   "elements": 1040,
+   "heapMB": 29.5,
+   "zoom": "192% · close"
+  },
+  "pan_close": {
+   "long_tasks": {
+    "count": 0,
+    "total_ms": 0,
+    "max_ms": 0
+   },
+   "duration_ms": 2147,
+   "frame_interval_ms": {
+    "n": 128,
+    "mean": 16.67,
+    "p50": 16.7,
+    "p95": 16.7,
+    "max": 16.8
+   },
+   "frames_over_50ms": 0,
+   "dom_after": {
+    "nodes": 0,
+    "edges": 0,
+    "elements": 684,
+    "heapMB": 32.4,
+    "zoom": "192% · close"
+   }
+  },
+  "drag": {
+   "moved": true,
+   "drag_gesture_ms": 1046,
+   "release_to_saved_ms": 567,
+   "note": "release_to_saved includes the 500 ms autosave debounce"
+  },
+  "save_payload_kb": 111,
+  "final": {
+   "nodes": 1,
+   "edges": 32,
+   "elements": 807,
+   "heapMB": 46.8,
+   "zoom": "337% · close"
+  }
+ },
+ "page_errors": []
+}

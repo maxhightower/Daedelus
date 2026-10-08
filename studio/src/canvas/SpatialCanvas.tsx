@@ -82,7 +82,12 @@ export function SpatialCanvas() {
 
   useEffect(() => {
     if (!board || dragging.current) return;
-    setNodes(toNodes(board, selectedIds, missing));
+    // keep React Flow's measurements: a node object without `measured` loses its handle bounds,
+    // and since its DOM size did not change it is never re-measured (its edges would vanish)
+    setNodes((prev) => {
+      const measured = new Map(prev.map((n) => [n.id, n.measured]));
+      return toNodes(board, selectedIds, missing).map((n) => (measured.get(n.id) ? { ...n, measured: measured.get(n.id) } : n));
+    });
   }, [board, selectedIds, missing]);
 
   // restore the board's saved viewport when a board is opened
@@ -144,6 +149,10 @@ export function SpatialCanvas() {
         data: { conn: c, dim: false },
       }));
   }, [board, s.linkFilter, selectedIds, s.selection]);
+  // automation/diagnostics: what the canvas was asked to draw
+  useEffect(() => {
+    (window as any).__ddCanvas = { connections: board?.connections.length ?? 0, edges: edges.length, nodes: nodes.length };
+  });
 
   // ----------------------------------------------------------- node changes
   const onNodesChange = useCallback((changes: NodeChange<Node<ItemNodeData>>[]) => {

@@ -108,12 +108,15 @@ jobs:
         run: |
           pip install -e "backend[dev]"
           cd studio && npm ci && npx playwright install --with-deps chromium && npm run build
-      - name: Walk through the studio
+      - name: Spatial canvas walkthrough (scenarios A-F)
         run: |
           export DAEDELUS_BLENDER=$HOME/blender/blender
           daedelus --workspace /tmp/e2e-ws serve --port 8765 --studio-dist studio/dist > /tmp/server.log 2>&1 &
           for i in $(seq 1 40); do curl -sf http://127.0.0.1:8765/api/health > /dev/null && break; sleep 1; done
-          cd studio && STUDIO_URL=http://127.0.0.1:8765 OUT=../evidence-ci/screenshots node e2e/studio.e2e.mjs
+          cd studio && STUDIO_URL=http://127.0.0.1:8765 OUT=../evidence-ci/screenshots node e2e/spatial.e2e.mjs
+      - name: Board performance measurement (150+ items, 200+ connections)
+        if: always()
+        run: cd studio && STUDIO_URL=http://127.0.0.1:8765 OUT=../evidence-ci/perf node e2e/perf.e2e.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -35,8 +35,8 @@ const sources = [];
 for (let i = 0; i < 40; i++) sources.push(await post(`/api/projects/${PID}/sources/text`, { name: `note-source-${i}.txt`, text: `Reference ${i}: keep proportions, warm palette, ${"detail ".repeat(i % 7)}` }));
 const artifacts = [];
 for (let i = 0; i < 16; i++)
-  artifacts.push(await post(`/api/projects/${PID}/artifacts`, { name: `Module ${i}`, adapter: "code", template: "files", params: { files: { [`m${i}.py`]: `def f${i}(x):\n    return x * ${i}\n` } } }));
-for (let i = 0; i < 8; i++) artifacts.push(await post(`/api/projects/${PID}/artifacts`, { name: `Layer doc ${i}`, adapter: "layered2d", template: "layers", params: { width: 320, height: 200 } }));
+  artifacts.push((await post(`/api/projects/${PID}/artifacts`, { name: `Module ${i}`, adapter: "code", template: "files", params: { files: { [`m${i}.py`]: `def f${i}(x):\n    return x * ${i}\n` } } })).artifact);
+for (let i = 0; i < 8; i++) artifacts.push((await post(`/api/projects/${PID}/artifacts`, { name: `Layer doc ${i}`, adapter: "layered2d", template: "layers", params: { width: 320, height: 200 } })).artifact);
 for (let i = 0; i < 30; i++) {
   const a = artifacts[i % artifacts.length];
   await post(`/api/projects/${PID}/bindings`, { source_id: sources[i].id, role: "style", aspects: ["style"], target: { scope: "artifact", artifact_id: a.id } });
@@ -106,9 +106,15 @@ const dom = () =>
     heapMB: performance.memory ? +(performance.memory.usedJSHeapSize / 1048576).toFixed(1) : null,
     zoom: document.querySelector("[data-testid=zoom-label]")?.textContent ?? "",
   }));
+// long tasks (>50 ms of main-thread work) are the honest jank signal: headless rAF is vsync-paced
+await page.evaluate(() => {
+  window.__lt = [];
+  new PerformanceObserver((l) => l.getEntries().forEach((e) => window.__lt.push(e.duration))).observe({ type: "longtask", buffered: true });
+});
 const startFrames = () =>
   page.evaluate(() => {
     const w = window;
+    w.__lt = [];
     w.__frames = [];
     let last = performance.now();
     w.__frameStop = false;
@@ -122,9 +128,11 @@ const startFrames = () =>
 const stopFrames = () =>
   page.evaluate(() => {
     window.__frameStop = true;
+    window.__lastLt = window.__lt.slice();
     return window.__frames.slice(1);
   });
 
+const longTasks = () => page.evaluate(() => ({ count: window.__lastLt.length, total_ms: Math.round(window.__lastLt.reduce((a, b) => a + b, 0)), max_ms: Math.round(Math.max(0, ...window.__lastLt)) }));
 const results = { environment: { browser: "Chromium (Playwright) headless", gl: "SwiftShader software rendering, no GPU", viewport: "1680x1000" }, board: { items: saved.items.length, stored_connections: storedCount, derived_connections: derivedCount, total_connections: saved.connections.length, setup_seconds: +setupSec.toFixed(1) }, measurements: {} };
 results.measurements.open_project_to_board_ms = openMs;
 
@@ -144,7 +152,7 @@ for (let r = 0; r < 4; r++) {
   await page.mouse.up();
 }
 const panFrames = await stopFrames();
-results.measurements.pan_far = { duration_ms: Date.now() - tPan, frame_interval_ms: stats(panFrames), frames_over_50ms: panFrames.filter((f) => f > 50).length };
+results.measurements.pan_far = { long_tasks: await longTasks(), duration_ms: Date.now() - tPan, frame_interval_ms: stats(panFrames), frames_over_50ms: panFrames.filter((f) => f > 50).length };
 
 // zoom in/out with the wheel across LOD thresholds
 await page.mouse.move(pane.x + pane.width / 2, pane.y + pane.height / 2);
@@ -160,7 +168,7 @@ for (let i = 0; i < 25; i++) {
   await sleep(16);
 }
 const zoomFrames = await stopFrames();
-results.measurements.zoom_cycle = { duration_ms: Date.now() - tZoom, frame_interval_ms: stats(zoomFrames), frames_over_50ms: zoomFrames.filter((f) => f > 50).length, dom_when_zoomed_in: zoomedIn };
+results.measurements.zoom_cycle = { long_tasks: await longTasks(), duration_ms: Date.now() - tZoom, frame_interval_ms: stats(zoomFrames), frames_over_50ms: zoomFrames.filter((f) => f > 50).length, dom_when_zoomed_in: zoomedIn };
 
 // close-up: zoom to one item and pan around at close LOD (lazy mounting keeps the DOM small)
 await page.locator(".react-flow__node-artifact_view").first().locator(".cnode-head").click({ force: true });
@@ -176,22 +184,29 @@ for (let r = 0; r < 4; r++) {
   await page.mouse.up();
 }
 const closeFrames = await stopFrames();
-results.measurements.pan_close = { duration_ms: Date.now() - tPanClose, frame_interval_ms: stats(closeFrames), frames_over_50ms: closeFrames.filter((f) => f > 50).length, dom_after: await dom() };
+results.measurements.pan_close = { long_tasks: await longTasks(), duration_ms: Date.now() - tPanClose, frame_interval_ms: stats(closeFrames), frames_over_50ms: closeFrames.filter((f) => f > 50).length, dom_after: await dom() };
 await page.screenshot({ path: path.join(OUT, "v1_perf_close.png") });
 
-// drag one node and wait for the layout autosave round trip
+// drag one note (zoomed to it so the header is a real target) and wait for the autosave round trip
+const noteId = notes[0].id;
 await page.getByRole("button", { name: "Fit" }).click();
 await sleep(1000);
-const head = page.locator(".react-flow__node-note .cnode-head").first();
+await page.locator(`[data-testid="item-${noteId}"] .cnode-head`).click({ force: true });
+await page.getByRole("button", { name: "Selection" }).click();
+await sleep(1000);
+const head = page.locator(`[data-testid="item-${noteId}"] .cnode-head`);
 const hb = await head.boundingBox();
+const before = (await api(`/api/projects/${PID}/boards/${board.id}`)).items.find((i) => i.id === noteId).position;
 const tDrag = Date.now();
-await page.mouse.move(hb.x + 5, hb.y + 2);
+await page.mouse.move(hb.x + 20, hb.y + hb.height / 2);
 await page.mouse.down();
-await page.mouse.move(hb.x + 80, hb.y + 60, { steps: 10 });
+await page.mouse.move(hb.x + 140, hb.y + 90, { steps: 10 });
 await page.mouse.up();
-await page.waitForFunction(() => document.querySelector(".save-state")?.textContent !== "saved", null, { timeout: 5000 }).catch(() => {});
+const tUp = Date.now();
+await page.waitForFunction(() => document.querySelector(".save-state")?.textContent !== "saved", null, { timeout: 5000 });
 await page.waitForFunction(() => document.querySelector(".save-state")?.textContent === "saved", null, { timeout: 30000 });
-results.measurements.drag_to_saved_ms = Date.now() - tDrag; // includes the 500 ms autosave debounce
+const after = (await api(`/api/projects/${PID}/boards/${board.id}`)).items.find((i) => i.id === noteId).position;
+results.measurements.drag = { moved: after.x !== before.x || after.y !== before.y, drag_gesture_ms: tUp - tDrag, release_to_saved_ms: Date.now() - tUp, note: "release_to_saved includes the 500 ms autosave debounce" };
 const boardAfter = await api(`/api/projects/${PID}/boards/${board.id}`);
 results.measurements.save_payload_kb = +(JSON.stringify({ ...boardAfter, connections: boardAfter.connections.filter((c) => !c.derived) }).length / 1024).toFixed(1);
 results.measurements.final = await dom();
@@ -199,6 +214,6 @@ results.page_errors = pageErrors;
 await browser.close();
 fs.writeFileSync(path.join(OUT, "perf_results.json"), JSON.stringify(results, null, 1));
 console.log(JSON.stringify(results, null, 1));
-const ok = saved.items.length >= 150 && saved.connections.length >= 200 && pageErrors.length === 0;
+const ok = saved.items.length >= 150 && saved.connections.length >= 200 && pageErrors.length === 0 && results.measurements.drag.moved;
 console.log(ok ? "PERF RUN COMPLETE" : "PERF RUN INCOMPLETE");
 process.exit(ok ? 0 : 1);

@@ -43,7 +43,7 @@ cd ../backend && daedelus serve --port 8765   # serves the API and the built stu
 # open http://127.0.0.1:8765 and click "Create multimodal demo project"
 
 # UI end-to-end walkthrough (needs Playwright + Chromium)
-cd ../studio && STUDIO_URL=http://127.0.0.1:8765 node e2e/studio.e2e.mjs
+cd ../studio && STUDIO_URL=http://127.0.0.1:8765 node e2e/spatial.e2e.mjs   # perf: node e2e/perf.e2e.mjs
 ```
 
 For UI development run `npm run dev` (Vite on :5173, proxies `/api` to :8765).
