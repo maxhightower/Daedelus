@@ -616,7 +616,12 @@ def test_credentials_absent_from_logs_audit_and_artifacts(cluster):
     leaks = []
     for p in root.rglob("*"):
         if p.is_file() and p.stat().st_size < 50_000_000:
-            data = p.read_bytes()
+            try:
+                data = p.read_bytes()
+            except PermissionError:  # Windows locks SQLite's shared-memory index while the
+                if p.name.endswith("-shm"):  # database is open; it holds no row data
+                    continue
+                raise
             leaks += [str(p) for s in secrets_ if s.encode() in data]
     jobs = cluster.c.get(f"/api/projects/{pid}/jobs").json()
     for j in jobs:
