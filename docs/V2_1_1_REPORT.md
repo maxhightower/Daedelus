@@ -30,13 +30,13 @@ Status vocabulary as in V2.1:
 | Working branches | `claude/blissful-clarke-sow429` (session-mandated), mirrored to `opus/daedelus-v2-1-1-live-ai-validation` |
 | Starting point | `opus/daedelus-v2-1-activation-hardening` @ `7011cfd` (V2.1 application code `733c1b6`) |
 | Phase A freeze | `1c23098` |
-| Final | ⟨final SHA⟩ |
+| Final | head of both branches: this report's commit, docs and evidence only after `4f4c5f9` |
 
 No merge into `main`, no pull request.
 
 ## 2. Frozen code SHA
 
-⟨frozen application code SHA⟩. Later commits change only evidence and documentation.
+**`43ce9d6`** (backend, studio, workflows). `4f4c5f9` changes only the hosted test harness (`deploy/hosted/`: a per-run phase channel). Later commits change only evidence and documentation.
 
 ## 3. Phase A outcome: complete
 
@@ -101,7 +101,19 @@ What was built for Phase B (Implemented, Deterministically verified):
 
 ## 5. CI links
 
-⟨CI table⟩
+| Workflow | Run | Commit | Result |
+|---|---|---|---|
+| CI (Linux) | [37912377403](https://github.com/maxhightower/Daedelus/actions/runs/37912377403) | `1c23098` (Phase A freeze) | success |
+| Windows desktop build | [37912376680](https://github.com/maxhightower/Daedelus/actions/runs/37912376680) | `1c23098` | success |
+| CI (Linux) | [37915242125](https://github.com/maxhightower/Daedelus/actions/runs/37915242125) | `43ce9d6` (code freeze) | success |
+| Windows desktop build | [37915242136](https://github.com/maxhightower/Daedelus/actions/runs/37915242136) | `43ce9d6` | success |
+| Hosted two-VM e2e | [37915239671](https://github.com/maxhightower/Daedelus/actions/runs/37915239671) / [37915242161](https://github.com/maxhightower/Daedelus/actions/runs/37915242161) | `43ce9d6` | success / 37/39: collided with each other, not counted |
+| CI (Linux) | [37916450072](https://github.com/maxhightower/Daedelus/actions/runs/37916450072) | `4f4c5f9` | success |
+| Windows desktop build | [37916449085](https://github.com/maxhightower/Daedelus/actions/runs/37916449085) | `4f4c5f9` | success |
+| Hosted two-VM e2e | [37916449105](https://github.com/maxhightower/Daedelus/actions/runs/37916449105) | `4f4c5f9` | **success, 39/39** |
+| Live verification (`live.yml`) | not run | — | **Blocked**: not dispatchable (not on `main`), no secrets verified |
+
+The Windows installer is built, not interactively tested (register N1).
 
 ## 6. Regression results
 
@@ -119,8 +131,8 @@ Run on the final tree (`evidence/v2_1_1/regression/final/`):
 | V2.1 studio walkthrough | 31/31 | **31/31** |
 | Studio typecheck / unit tests | pass / 14 of 14 | **pass / 14 of 14** |
 | Deterministic creative benchmark | A 3/6, B and C pass, D 1/3, E blocked | **identical on the V2.1 checks**; v2.1.1 adds checks (`OLD_VS_NEW.md`) |
-| Hosted two-VM run | 39/39 | ⟨hosted⟩ |
-| Windows installer build | success | see §5 |
+| Hosted two-VM run | 39/39 | **39/39** ([37916449105](https://github.com/maxhightower/Daedelus/actions/runs/37916449105), after fixing a harness collision between two concurrent runs, see `evidence/v2_1_1/regression/hosted/`) |
+| Windows installer build | success | **success** (§5) |
 
 ## 7. Actual provider calls made
 
