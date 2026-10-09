@@ -396,7 +396,7 @@ def _held_out_spec(nat: Path) -> dict[str, Any]:
             "print(json.dumps([r for r in res if r[1]!=r[2]]))")
     try:
         p = subprocess.run([sys.executable, "-I", "-c", code], cwd=nat, capture_output=True,
-                           text=True, timeout=30)
+                           encoding="utf-8", errors="replace", timeout=30)
         bad = json.loads(p.stdout.strip().splitlines()[-1]) if p.returncode == 0 else None
         err = (p.stderr.strip().splitlines() or [""])[-1][:200]
     except (subprocess.TimeoutExpired, ValueError, IndexError) as exc:
@@ -433,9 +433,11 @@ def task_d(st: ProjectStore, out: Path, provider: str, mode: str) -> Run:
     nat = native_path(st, a2)
     import subprocess
     first = subprocess.run(["git", "-C", str(nat), "rev-list", "--max-parents=0", "HEAD"],
-                           capture_output=True, text=True).stdout.strip().splitlines()[:1]
+                           capture_output=True, encoding="utf-8", errors="replace"
+                           ).stdout.strip().splitlines()[:1]
     diff = subprocess.run(["git", "-C", str(nat), "diff", *(first or []), "HEAD"],
-                          capture_output=True, text=True).stdout[-8000:] if first else ""
+                          capture_output=True, encoding="utf-8", errors="replace"
+                          ).stdout[-8000:] if first else ""
     run.record["git_diff"] = diff
     vr = ex.run("validate")
     rep = json.dumps(vr.outputs or {})
@@ -695,7 +697,7 @@ def classify_failure(d: dict[str, Any]) -> dict[str, Any] | None:
 
 
 def _write(out: Path, rep: dict[str, Any]) -> None:
-    (out / "bench_report.json").write_text(json.dumps(rep, indent=1, default=str))
+    (out / "bench_report.json").write_text(json.dumps(rep, indent=1, default=str), encoding="utf-8")
     L = [f"# Creative benchmark v{BENCH_VERSION} — provider `{rep['provider']}`", "",
          f"Status: **{rep.get('status')}**"
          + (f" — {rep['blocked_by']}" if rep.get("blocked_by") else ""), "",
@@ -731,4 +733,4 @@ def _write(out: Path, rep: dict[str, Any]) -> None:
                 L.append(f"- model assessment ({ma.get('independence', '')}; not authoritative):"
                          f" {ma.get('status')}")
             L.append("")
-    (out / "bench_report.md").write_text("\n".join(L) + "\n")
+    (out / "bench_report.md").write_text("\n".join(L) + "\n", encoding="utf-8")

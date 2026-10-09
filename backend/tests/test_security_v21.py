@@ -458,7 +458,10 @@ def test_repository_symlinks_cannot_pull_in_outside_files(tmp_path):
     repo.mkdir()
     (repo / "main.py").write_text("print(1)\n")
     (repo / "inner.txt").write_text("inside")
-    os.symlink(secret, repo / "leak.txt")
+    try:
+        os.symlink(secret, repo / "leak.txt")
+    except OSError as exc:  # Windows without Developer Mode or elevation (WinError 1314)
+        pytest.skip(f"cannot create symlinks here: {exc}")
     os.symlink(repo / "inner.txt", repo / "alias.txt")
     _, st = Workspace(tmp_path / "ws").create_project("p")
     src = register_path(st, repo, ingest_now=False)

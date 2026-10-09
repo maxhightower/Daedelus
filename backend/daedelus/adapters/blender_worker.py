@@ -645,7 +645,7 @@ def create(job):
 def main():
     argv = sys.argv[sys.argv.index("--") + 1:]
     job_path, result_path = argv[0], argv[1]
-    with open(job_path) as f:
+    with open(job_path, encoding="utf-8") as f:
         job = json.load(f)
     try:
         action = job["action"]
@@ -666,7 +666,7 @@ def main():
     except Exception as exc:
         res = {"ok": False, "error": f"{type(exc).__name__}: {exc}",
                "traceback": traceback.format_exc()}
-    with open(result_path, "w") as f:
+    with open(result_path, "w", encoding="utf-8") as f:
         json.dump(res, f)
 
 

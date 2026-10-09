@@ -286,7 +286,8 @@ def _ffprobe(path: Path) -> dict[str, Any] | None:
     if not shutil.which("ffprobe"):
         return None
     out = subprocess.run(["ffprobe", "-v", "error", "-print_format", "json", "-show_format",
-                          "-show_streams", str(path)], capture_output=True, text=True, timeout=60)
+                          "-show_streams", str(path)], capture_output=True, encoding="utf-8",
+                         errors="replace", timeout=60)  # ffprobe JSON is UTF-8
     if out.returncode != 0:
         raise RuntimeError(f"ffprobe failed: {out.stderr.strip()[:400]}")
     return json.loads(out.stdout)
@@ -557,7 +558,7 @@ def _model3d(store: ProjectStore, src: MediaSource) -> ExtractionResult:
     ext = path.suffix.lower()
     if ext == ".obj":
         verts, groups, faces = [], [], 0
-        for line in path.read_text(errors="replace").splitlines():
+        for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
             if line.startswith("v "):
                 parts = line.split()
                 verts.append(tuple(float(x) for x in parts[1:4]))
@@ -658,7 +659,7 @@ def _code(store: ProjectStore, src: MediaSource) -> ExtractionResult:
             return r
         dest = store.source_dir(src.id) / "snapshot"
         proc = subprocess.run(["git", "clone", "--depth", "1", url, str(dest)],
-                              capture_output=True, text=True, timeout=300)
+                              capture_output=True, encoding="utf-8", errors="replace", timeout=300)
         if proc.returncode != 0:
             r.state = ProcessingState.failed
             r.error = f"git clone failed: {proc.stderr.strip()[:400]}"
@@ -676,16 +677,17 @@ def _code(store: ProjectStore, src: MediaSource) -> ExtractionResult:
         langs[ext] = langs.get(ext, 0) + 1
         rel = p.name if root.is_file() else p.relative_to(root).as_posix()
         if p.suffix == ".py" and p.stat().st_size < 500_000:
-            symbols[rel] = _python_symbols(p.read_text(errors="replace"))
+            symbols[rel] = _python_symbols(p.read_text(encoding="utf-8", errors="replace"))
         if p.name.lower().startswith(("readme", "contributing", "architecture", "style")):
-            docs_text.append(p.read_text(errors="replace")[:50_000])
+            docs_text.append(p.read_text(encoding="utf-8", errors="replace")[:50_000])
     r.metadata = {"files": len(files), "languages": langs}
     r.extracted = {
         "files": [p.name if root.is_file() else p.relative_to(root).as_posix()
                   for p in files[:2000]],
         "symbols": symbols,
         **features.text_features("\n".join(docs_text) if docs_text else
-                                 (root.read_text(errors="replace") if root.is_file() else "")),
+                                 (root.read_text(encoding="utf-8", errors="replace")
+                                  if root.is_file() else "")),
     }
     return r
 

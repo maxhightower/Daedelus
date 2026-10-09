@@ -276,4 +276,5 @@ def record(contract: str, provider: str, model: str | None, req: Any, raw: dict[
         "recorded_at": __import__("time").strftime("%Y-%m-%dT%H:%M:%SZ",
                                                    __import__("time").gmtime()),
         "provider": provider, "model": model,
-        "match": m, "response": raw, "usage": usage.model_dump()}, indent=1, default=str))
+        "match": m, "response": raw, "usage": usage.model_dump()}, indent=1, default=str),
+        encoding="utf-8")

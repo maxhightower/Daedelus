@@ -1135,7 +1135,8 @@ def create_app(workspace_root: str | Path | None = None,
         pages = list((k, v) for k, v in rev.previews.items()
                        if k == "render" or k.startswith(("page", "slide")))
         return {"artifact_id": a.id, "adapter": a.adapter, "revision_id": rev.id,
-                "revision_number": rev.number, "view": json.loads(st.abs(rel).read_text()),
+                "revision_number": rev.number,
+                "view": json.loads(st.abs(rel).read_text(encoding="utf-8")),
                 "pages": [v for _, v in sorted(pages, key=lambda kv: (
                     kv[0] != "render", int("".join(ch for ch in kv[0] if ch.isdigit()) or 0)))],
                 "pdf": rev.previews.get("pdf")}

@@ -837,7 +837,8 @@ class Engine:
                     semantic=self._package(info, art, insp, adapter, cfg),
                     source_extracts=self._source_extracts(info["ctx"], adapter))
                 (self.store.execution_dir(ex.id) / f"plan_request_{node.id}_"
-                 f"{_h(info['unit'])[:10]}.json").write_text(req.model_dump_json(indent=1))
+                 f"{_h(info['unit'])[:10]}.json").write_text(req.model_dump_json(indent=1),
+                                                             encoding="utf-8")
                 kept = ((nr.outputs or {}).get("resume_plans") or {}).get(info["unit"])
                 try:
                     if kept and kept["fingerprint"] == info["fingerprint"]:
@@ -1465,7 +1466,7 @@ class Engine:
                 if not ur.plan.get("deterministic") or not pfile.exists():
                     deterministic = False
                     continue
-                req = PlanRequest.model_validate_json(pfile.read_text())
+                req = PlanRequest.model_validate_json(pfile.read_text(encoding="utf-8"))
                 replanned += prov.plan(req).operations
             ops_match = None
             if deterministic:

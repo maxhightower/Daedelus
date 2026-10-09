@@ -25,7 +25,7 @@ def _load(path: str) -> dict[str, Any] | None:
     p = Path(path)
     if not p.is_file():
         return None
-    return json.loads(p.read_text())
+    return json.loads(p.read_text(encoding="utf-8"))
 
 
 def _n(checks, pred=lambda c: True):
@@ -137,8 +137,8 @@ def main(argv: list[str] | None = None) -> int:
     cmp = compare(reps)
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
-    (out / "comparison.json").write_text(json.dumps(cmp, indent=1, default=str))
-    (out / "comparison.md").write_text(to_markdown(cmp))
+    (out / "comparison.json").write_text(json.dumps(cmp, indent=1, default=str), encoding="utf-8")
+    (out / "comparison.md").write_text(to_markdown(cmp), encoding="utf-8")
     print(f"wrote {out / 'comparison.md'}")
     return 0
 

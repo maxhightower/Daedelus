@@ -266,20 +266,21 @@ class BlenderAdapter(Adapter):
             raise AdapterError(exe)
         with tempfile.TemporaryDirectory(prefix="dd_blender_") as tmp:
             jp, rp = Path(tmp) / "job.json", Path(tmp) / "result.json"
-            jp.write_text(json.dumps(job))
+            jp.write_text(json.dumps(job), encoding="utf-8")
             # never run Python embedded in (untrusted) .blend files
             cmd = [exe, "--background", "--factory-startup", "--disable-autoexec"]
             if blend is not None:
                 cmd.append(str(blend))
             cmd += ["--python-exit-code", "3", "--python", str(WORKER), "--", str(jp), str(rp)]
             env = {**os.environ, "PYTHONNOUSERSITE": "1"}
-            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=self.timeout,
+            proc = subprocess.run(cmd, capture_output=True,
+                                  encoding="utf-8", errors="replace", timeout=self.timeout,
                                   env=env)
             if not rp.exists():
                 tail = (proc.stdout + proc.stderr)[-2000:]
                 raise AdapterError(f"Blender worker produced no result (exit {proc.returncode}): "
                                    f"{tail}")
-            res = json.loads(rp.read_text())
+            res = json.loads(rp.read_text(encoding="utf-8"))
             res["_log"] = (proc.stdout[-4000:] if proc.stdout else "")
             if res.get("ok") is False and "error" in res and "results" not in res:
                 raise AdapterError(f"Blender worker error: {res['error']}\n"

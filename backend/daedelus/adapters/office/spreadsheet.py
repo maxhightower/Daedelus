@@ -841,7 +841,7 @@ class SpreadsheetAdapter(Adapter):
         insp = self.inspect(native_dir, entry)
         grid = self._grid(native_dir, entry)
         gp = out_dir / "grid.json"
-        gp.write_text(__import__("json").dumps(grid, default=str))
+        gp.write_text(__import__("json").dumps(grid, default=str), encoding="utf-8")
         out["grid"] = gp
         pdf = oc.lo_convert(native_dir / entry, "pdf", out_dir)
         if pdf is not None:
@@ -915,7 +915,7 @@ class SpreadsheetAdapter(Adapter):
             w = csv.writer(buf)
             for row in ws.iter_rows(values_only=True):
                 w.writerow(["" if v is None else v for v in row])
-            dst.write_text(buf.getvalue())
+            dst.write_text(buf.getvalue(), encoding="utf-8")
             return dst
         if fmt == "pdf":
             pdf = oc.lo_convert(native_dir / entry, "pdf", out_dir)

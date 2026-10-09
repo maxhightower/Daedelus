@@ -145,7 +145,8 @@ def run(connector: str, out: Path) -> dict[str, Any]:
 
 
 def _write(out: Path, rep: dict[str, Any]) -> None:
-    (out / "connector_report.json").write_text(json.dumps(rep, indent=1, default=str))
+    (out / "connector_report.json").write_text(json.dumps(rep, indent=1, default=str),
+                                               encoding="utf-8")
     lines = [f"# Live connector test — {rep['connector']}", "",
              f"Status: **{rep.get('status')}**" + (f" — {rep['blocked_by']}"
                                                    if rep.get("blocked_by") else ""), "",
@@ -153,4 +154,4 @@ def _write(out: Path, rep: dict[str, Any]) -> None:
     lines += [f"- [{'x' if c['ok'] else ' '}] {c['name']}" for c in rep["checks"]]
     if rep.get("cleanup"):
         lines += ["", f"Cleanup: {json.dumps(rep['cleanup'])}"]
-    (out / "connector_report.md").write_text("\n".join(lines) + "\n")
+    (out / "connector_report.md").write_text("\n".join(lines) + "\n", encoding="utf-8")

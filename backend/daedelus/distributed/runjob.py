@@ -51,7 +51,7 @@ def main(jobdir: str) -> int:
     from ..models import PlannedOperation
     from .models import JobRequest
 
-    req = JobRequest.model_validate_json((jd / "job.json").read_text())
+    req = JobRequest.model_validate_json((jd / "job.json").read_text(encoding="utf-8"))
     ad = _adapter(req.adapter)  # the real local adapter (never the remote proxy)
     native, out = jd / "native", jd / "out"
     out.mkdir(exist_ok=True)
@@ -118,7 +118,7 @@ def main(jobdir: str) -> int:
                "trace": traceback.format_exc()[-4000:]}
     res["timings"] = {"startup": round(t_imported - T_START, 4),
                       "method": round(time.perf_counter() - t_imported, 4)}
-    (jd / "result.json").write_text(json.dumps(res, default=str))
+    (jd / "result.json").write_text(json.dumps(res, default=str), encoding="utf-8")
     return 0
 
 

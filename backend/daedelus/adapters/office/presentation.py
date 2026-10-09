@@ -673,7 +673,7 @@ class PresentationAdapter(Adapter):
     def preview(self, native_dir: Path, entry: str, out_dir: Path) -> dict[str, Path]:
         out_dir.mkdir(parents=True, exist_ok=True)
         st = out_dir / "structure.json"
-        st.write_text(json.dumps(self.structure(native_dir, entry), default=str))
+        st.write_text(json.dumps(self.structure(native_dir, entry), default=str), encoding="utf-8")
         out: dict[str, Path] = {"structure": st}
         pdf = oc.lo_convert(native_dir / entry, "pdf", out_dir)
         if pdf is not None:

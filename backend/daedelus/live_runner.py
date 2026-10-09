@@ -590,7 +590,8 @@ def run(req: Request, out: Path, ex: Executors | None = None) -> dict[str, Any]:
 
 def _write(out: Path, manifest: dict[str, Any]) -> None:
     from .redact import scrub_text, scrub_tree
-    (out / "live_results.json").write_text(json.dumps(manifest, indent=1, default=str))
+    (out / "live_results.json").write_text(json.dumps(manifest, indent=1, default=str),
+                                           encoding="utf-8")
     s = manifest["summary"]
     lines = ["# Live verification results", "",
              f"* Infrastructure: **{s['infrastructure']}** (the runner completed; this says "
@@ -607,12 +608,12 @@ def _write(out: Path, manifest: dict[str, Any]) -> None:
     not_run = [g["id"] for g in manifest["gates"] if not g["requested"]]
     if not_run:
         lines += ["", "NOT RUN (not requested): " + ", ".join(not_run)]
-    (out / "live_results.md").write_text("\n".join(lines) + "\n")
+    (out / "live_results.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
     scrub_tree(out)  # nothing secret leaves the run, whichever file it got into
     step = os.environ.get("GITHUB_STEP_SUMMARY")
     if step:
         with open(step, "a", encoding="utf-8") as f:
-            f.write(scrub_text((out / "live_results.md").read_text()) + "\n")
+            f.write(scrub_text((out / "live_results.md").read_text(encoding="utf-8")) + "\n")
 
 
 def main(argv: list[str] | None = None, env: dict[str, str] | None = None,
@@ -635,11 +636,11 @@ def main(argv: list[str] | None = None, env: dict[str, str] | None = None,
         rej = {"schema": SCHEMA, "summary": {"infrastructure": "input_rejected",
                                              "live_evaluation": NOT_RUN, "exit_code": 2},
                "error": scrub_text(str(exc))}
-        (out / "live_results.json").write_text(json.dumps(rej, indent=1))
+        (out / "live_results.json").write_text(json.dumps(rej, indent=1), encoding="utf-8")
         print(f"input rejected: {rej['error']}", file=sys.stderr)
         return 2
     if a.validate_only:
-        (out / "live_request.json").write_text(json.dumps(asdict(req), indent=1))
+        (out / "live_request.json").write_text(json.dumps(asdict(req), indent=1), encoding="utf-8")
         print(json.dumps({"validated": asdict(req), "gates": req.gates()}))
         return 0
     manifest = run(req, out, ex)

@@ -638,7 +638,8 @@ class DocumentAdapter(Adapter):
     def preview(self, native_dir: Path, entry: str, out_dir: Path) -> dict[str, Path]:
         out_dir.mkdir(parents=True, exist_ok=True)
         st = out_dir / "structure.json"
-        st.write_text(json.dumps(self.structure(native_dir, entry, out_dir), default=str))
+        st.write_text(json.dumps(self.structure(native_dir, entry, out_dir), default=str),
+                      encoding="utf-8")
         out: dict[str, Path] = {"structure": st}
         pdf = oc.lo_convert(native_dir / entry, "pdf", out_dir)
         if pdf is not None:
@@ -676,7 +677,7 @@ class DocumentAdapter(Adapter):
                     lines.append(b.get("text", ""))
                 lines.append("")
             dst = out_dir / f"{Path(entry).stem}.md"
-            dst.write_text("\n".join(lines))
+            dst.write_text("\n".join(lines), encoding="utf-8")
             return dst
         raise AdapterError(f"document cannot export {fmt}")
 

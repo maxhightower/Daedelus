@@ -36,7 +36,8 @@ def _git(cwd: Path, *args: str, check: bool = True) -> str:
     env = {**os.environ, **GIT_ENV, "HOME": str(cwd)}
     proc = subprocess.run(["git", "-c", "commit.gpgsign=false", "-c", "core.autocrlf=false",
                            "-c", "init.defaultBranch=main", *args],
-                          cwd=cwd, capture_output=True, text=True, env=env, timeout=120)
+                          cwd=cwd, capture_output=True, encoding="utf-8", errors="replace",
+                          env=env, timeout=120)
     if check and proc.returncode != 0:
         raise AdapterError(f"git {' '.join(args)} failed: {proc.stderr.strip()[:500]}")
     return proc.stdout
@@ -79,15 +80,37 @@ def tracked_files(root: Path) -> list[str]:
     return sorted(f for f in out.split("\0") if f)
 
 
-def _python_interpreter() -> str | None:
+def _probe_python(cmd: list[str]) -> str | None:
+    """Path of the interpreter ``cmd`` starts, or None if it does not run Python. On Windows
+    ``python``/``python3`` on PATH are often App Execution Alias stubs that only point to
+    the Microsoft Store (exit 9009), so being on PATH is not enough."""
+    try:
+        proc = subprocess.run([*cmd, "-c", "import sys; print(sys.executable)"],
+                              capture_output=True, encoding="utf-8", errors="replace", timeout=30)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    lines = proc.stdout.strip().splitlines()
+    if proc.returncode != 0 or not lines or not Path(lines[-1]).is_file():
+        return None
+    return lines[-1]
+
+
+def _python_interpreter(candidates: list[list[str]] | None = None) -> str | None:
     """Interpreter for test commands. A frozen desktop build cannot use sys.executable."""
     if os.environ.get("DAEDELUS_PYTHON"):
         return os.environ["DAEDELUS_PYTHON"]
-    if not getattr(sys, "frozen", False):
-        return sys.executable
-    import shutil
+    if candidates is None:
+        if not getattr(sys, "frozen", False):
+            return sys.executable
+        import shutil
 
-    return shutil.which("python3") or shutil.which("python") or shutil.which("py")
+        candidates = [[p] for p in (shutil.which("python3"), shutil.which("python")) if p]
+        if shutil.which("py"):
+            candidates.append([shutil.which("py"), "-3"])
+    for cmd in candidates:
+        if found := _probe_python(cmd):
+            return found
+    return None
 
 
 class CodeAdapter(Adapter):
@@ -273,7 +296,8 @@ class CodeAdapter(Adapter):
             return f"set {p['pointer']} in {path.relative_to(root).as_posix()}"
         if op.op == "apply_patch":
             proc = subprocess.run(["git", "apply", "--whitespace=nowarn", "-"], cwd=root,
-                                  input=p["patch"], capture_output=True, text=True, timeout=60)
+                                  input=p["patch"], capture_output=True, encoding="utf-8",
+                                  errors="replace", timeout=60)
             if proc.returncode != 0:
                 raise AdapterError(f"git apply failed: {proc.stderr.strip()[:400]}")
             return "patch applied"
@@ -282,7 +306,8 @@ class CodeAdapter(Adapter):
     def preview(self, native_dir: Path, entry: str, out_dir: Path) -> dict[str, Path]:
         out_dir.mkdir(parents=True, exist_ok=True)
         log = out_dir / "git_log.txt"
-        log.write_text(_git(native_dir, "log", "--stat", "-n", "5", "--format=%H %s"))
+        log.write_text(_git(native_dir, "log", "--stat", "-n", "5", "--format=%H %s"),
+                       encoding="utf-8")
         return {"git_log": log}
 
     def export(self, native_dir: Path, entry: str, fmt: str, out_dir: Path) -> Path:
@@ -305,8 +330,10 @@ class CodeAdapter(Adapter):
         out: list[str] = []
         for rel in sorted(set(a) | set(b)):
             pa, pb = a.get(rel), b.get(rel)
-            ta = pa.read_text(errors="replace").splitlines(keepends=True) if pa else []
-            tb = pb.read_text(errors="replace").splitlines(keepends=True) if pb else []
+            ta = (pa.read_text(encoding="utf-8", errors="replace").splitlines(keepends=True)
+                  if pa else [])
+            tb = (pb.read_text(encoding="utf-8", errors="replace").splitlines(keepends=True)
+                  if pb else [])
             if Path(rel).suffix not in TEXT_EXT and (pa and pb) and pa.read_bytes() != pb.read_bytes():
                 out.append(f"Binary file {rel} differs\n")
                 continue
@@ -344,15 +371,18 @@ class CodeAdapter(Adapter):
                 if argv and argv[0] in ("python", "python3"):
                     py = _python_interpreter()
                     if py is None:
-                        rep.add("tests", False, "no Python interpreter found to run the tests "
-                                "(install Python or set DAEDELUS_PYTHON)")
+                        rep.add("tests", False, "no working Python interpreter found to run the "
+                                "tests (python/python3 on PATH may be Microsoft Store aliases; "
+                                "install Python or set DAEDELUS_PYTHON)")
                         return rep
                     argv[0] = py
-                env = {**os.environ, "PYTHONDONTWRITEBYTECODE": "1", **context.get("env", {})}
+                env = {**os.environ, "PYTHONDONTWRITEBYTECODE": "1", "PYTHONIOENCODING": "utf-8",
+                       **context.get("env", {})}
                 if argv[1:3] == ["-m", "pytest"]:
                     argv += ["-p", "no:cacheprovider"]
                 try:
-                    proc = subprocess.run(argv, cwd=native_dir, capture_output=True, text=True,
+                    proc = subprocess.run(argv, cwd=native_dir, capture_output=True,
+                                          encoding="utf-8", errors="replace",
                                           timeout=float(context.get("test_timeout", 180)), env=env)
                     out = (proc.stdout + proc.stderr)[-4000:]
                     rep.add("tests", proc.returncode == 0, f"`{cmd}` exited {proc.returncode}",

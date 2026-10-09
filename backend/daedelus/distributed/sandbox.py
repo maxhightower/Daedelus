@@ -125,7 +125,7 @@ def tool_paths() -> list[Path]:
     for sp in site.getsitepackages() if hasattr(site, "getsitepackages") else []:
         for pth in Path(sp).glob("*.pth"):
             try:
-                for line in pth.read_text().splitlines():
+                for line in pth.read_text(encoding="utf-8").splitlines():
                     if line and not line.startswith(("#", "import")) and Path(line).is_dir():
                         out.add(Path(line).resolve())
             except OSError:
@@ -186,7 +186,7 @@ class Sandbox:
         """Run the probe inside this profile; record which controls really took effect."""
         jd = Path(tempfile.mkdtemp(prefix="probe_", dir=self.work_dir))
         sibling = Path(tempfile.mkdtemp(prefix="other_job_", dir=self.work_dir))
-        (sibling / "secret.txt").write_text("another job's data")
+        (sibling / "secret.txt").write_text("another job's data", encoding="utf-8")
         try:
             p = self.popen([sys.executable, "-I", "-c", PROBE, str(sibling)], jd,
                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)

@@ -42,14 +42,14 @@ def h(obj: Any) -> str:
 def load_ids(native_dir: Path) -> dict[str, Any]:
     p = native_dir / SIDECAR
     if p.exists():
-        return json.loads(p.read_text())
+        return json.loads(p.read_text(encoding="utf-8"))
     return {"version": 1, "components": {}, "specs": {}}
 
 
 def save_ids(native_dir: Path, data: dict[str, Any]) -> None:
     p = native_dir / SIDECAR
     p.parent.mkdir(parents=True, exist_ok=True)
-    p.write_text(json.dumps(data, indent=1, sort_keys=True))
+    p.write_text(json.dumps(data, indent=1, sort_keys=True), encoding="utf-8")
 
 
 def unique_id(existing: dict[str, Any], base: str) -> str:
@@ -86,7 +86,8 @@ def lo_convert(src: Path, fmt: str, out_dir: Path, timeout: int = 180) -> Path |
         cmd = [exe, f"-env:UserInstallation=file://{prof}", "--headless", "--norestore",
                "--convert-to", fmt, "--outdir", str(out_dir), str(copy)]
         try:
-            subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, env=env)
+            subprocess.run(cmd, capture_output=True,
+                           encoding="utf-8", errors="replace", timeout=timeout, env=env)
         except (subprocess.TimeoutExpired, OSError):
             return None
     ext = fmt.split(":")[0]

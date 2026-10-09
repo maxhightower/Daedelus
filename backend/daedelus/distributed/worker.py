@@ -154,7 +154,7 @@ class Worker:
         self.http.headers["Authorization"] = f"Bearer {cred}"
         if self.credential_file is not None:
             tmp = self.credential_file.with_suffix(".tmp")
-            tmp.write_text(cred)
+            tmp.write_text(cred, encoding="utf-8")
             tmp.chmod(0o600)
             os.replace(tmp, self.credential_file)
 
@@ -331,7 +331,7 @@ class Worker:
                     shutil.copyfile(self.cache.path(job.files[k]), jd / "files" / str(i))
                 if not (jd / "native").exists():
                     (jd / "native").mkdir()
-                (jd / "job.json").write_text(job.model_dump_json())
+                (jd / "job.json").write_text(job.model_dump_json(), encoding="utf-8")
             except LeaseRevoked:
                 return
             except Exception as exc:
@@ -372,7 +372,7 @@ class Worker:
                 self._fail(lease, f"job runner exited with {rc}{hint} without a result; "
                                   f"{logs[-500:]}", True)
                 return
-            out = json.loads(rp.read_text())
+            out = json.loads(rp.read_text(encoding="utf-8"))
             state.update(progress=0.9, message="uploading results")
             t_up = time.time()
             res = JobResult(ok=bool(out.get("ok")), value=out.get("value") or {},
@@ -444,7 +444,7 @@ def main(argv: list[str] | None = None) -> int:
     cred_file = os.environ.get("DAEDELUS_WORKER_CREDENTIAL_FILE")
     token = os.environ.get("DAEDELUS_WORKER_CREDENTIAL", "")
     if not token and cred_file and Path(cred_file).is_file():
-        token = Path(cred_file).read_text().strip()
+        token = Path(cred_file).read_text(encoding="utf-8").strip()
     if not token:
         token = os.environ.get("DAEDELUS_WORKER_TOKEN", "")
     if not token:

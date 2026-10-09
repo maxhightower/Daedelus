@@ -108,7 +108,7 @@ def run_scenarios(workspace: Path, out: Path, *, include_video: bool = True) -> 
     man_rev = store.get_revision(store.get_artifact(man).head_revision_id)
     rec.check("S0 initial run", "manifest change has a reviewable diff",
               bool(man_rev.diff) and '"artifacts"' in (man_rev.diff or ""))
-    (out / "manifest_revision2.diff").write_text(man_rev.diff or "")
+    (out / "manifest_revision2.diff").write_text(man_rev.diff or "", encoding="utf-8")
     snap("01_after_initial_run", "after first execution of the workflow")
 
     ex_again = eng.execute(wid)
@@ -163,7 +163,7 @@ def run_scenarios(workspace: Path, out: Path, *, include_video: bool = True) -> 
     heads, t_before, b_before = _heads(store), _states(store, table), _states(store, bg)
     src = store.get_source(S["style"])
     p = store.abs(src.locator.path)
-    p.write_text(STYLE_GUIDE_V2)
+    p.write_text(STYLE_GUIDE_V2, encoding="utf-8")
     import hashlib
     src.content_hash = hashlib.sha256(p.read_bytes()).hexdigest()
     store.save_source(src)
@@ -275,7 +275,8 @@ def run_scenarios(workspace: Path, out: Path, *, include_video: bool = True) -> 
                          for a in store.list_artifacts()},
         "executions": [ex.id for ex in (ex0, ex1, ex2, ex3, ex4, ex5, ex6)],
     }
-    (out / "demo_report.json").write_text(json.dumps(report, indent=1, default=str))
+    (out / "demo_report.json").write_text(json.dumps(report, indent=1, default=str),
+                                          encoding="utf-8")
     _markdown(out, report, store)
     return report
 
@@ -311,4 +312,4 @@ def _markdown(out: Path, report: dict[str, Any], store: ProjectStore) -> None:
         lines += [f"![{img}](images/{img})" for img in g["images"]] + [""]
     lines += ["## Editable native files", ""] + [f"- {k}: `{v}`" for k, v in
                                                   report["native_files"].items()]
-    (out / "demo_report.md").write_text("\n".join(lines) + "\n")
+    (out / "demo_report.md").write_text("\n".join(lines) + "\n", encoding="utf-8")

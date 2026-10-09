@@ -99,7 +99,7 @@ def _copy(st: ProjectStore, rel: str | None, out: Path, name: str, demo: Demo) -
 
 def _dump(path: Path, data: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data, indent=1, default=str))
+    path.write_text(json.dumps(data, indent=1, default=str), encoding="utf-8")
 
 
 def _analyses(st: ProjectStore, out: Path, demo: Demo) -> None:
@@ -187,7 +187,8 @@ def demo_a(st: ProjectStore, out: Path, provider: str) -> tuple[Demo, dict[str, 
     _dump(o / "loop.json", loop)
     pkgs = list(st.execution_dir(ex.id).glob("plan_request_agent_*.json"))
     if pkgs:
-        _dump(o / "context_package.json", json.loads(pkgs[0].read_text()).get("semantic"))
+        _dump(o / "context_package.json",
+              json.loads(pkgs[0].read_text(encoding="utf-8")).get("semantic"))
         d.files["context_package"] = str(o / "context_package.json")
     _analyses(st, o, d)
     for b in bindings:  # creation bindings are retired once the object exists
@@ -363,7 +364,8 @@ def demo_d(st: ProjectStore, out: Path, provider: str, fixtures: Path) -> Demo:
                 o["component_id"] = ""  # a new file: no existing component targeted
         fx.write_text(json.dumps({"contract": "plan", "origin": "synthetic",
                                   "provider": "anthropic", "model": None,
-                                  "match": {"artifact_name": "textutils"}, "response": resp}))
+                                  "match": {"artifact_name": "textutils"}, "response": resp}),
+                     encoding="utf-8")
         d.notes.append("planner response is a SYNTHETIC fixture (no live model available): it "
                        "proves the plan -> git -> tests path, not natural-language understanding")
     wf = _wf(st, "Implement requirements", art.id, {
@@ -389,7 +391,7 @@ def demo_d(st: ProjectStore, out: Path, provider: str, fixtures: Path) -> Demo:
             tests[:1])
     o = out / "D"
     o.mkdir(parents=True, exist_ok=True)
-    (o / "change.diff").write_text(rev.diff or "")
+    (o / "change.diff").write_text(rev.diff or "", encoding="utf-8")
     d.files["diff"] = str(o / "change.diff")
     _dump(o / "validation.json", rep)
     _analyses(st, o, d)
@@ -446,10 +448,11 @@ def _make_video(path: Path) -> Path | None:
            "drawbox=x=110:y=70:w=100:h=100:color=#c8c8c8:t=fill,"
            "drawtext=text='Bevel %{eif\\:t*10\\:d}':x=10:y=10:fontcolor=white:fontsize=18",
            "-pix_fmt", "yuv420p", str(path)]
-    r = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+    r = subprocess.run(cmd, capture_output=True, encoding="utf-8", errors="replace", timeout=120)
     if r.returncode != 0:
         cmd[cmd.index("-vf") + 1] = "drawbox=x=110:y=70:w=100:h=100:color=#c8c8c8:t=fill"
-        r = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+        r = subprocess.run(cmd, capture_output=True,
+                           encoding="utf-8", errors="replace", timeout=120)
     return path if r.returncode == 0 and path.exists() else None
 
 
@@ -507,4 +510,4 @@ def _write_md(path: Path, rep: dict[str, Any]) -> None:
             lines.append(f"- note: {n}")
         if d["metrics"]:
             lines.append(f"- metrics: `{json.dumps(d['metrics'])}`")
-    path.write_text("\n".join(lines) + "\n")
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")

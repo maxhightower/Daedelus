@@ -151,9 +151,9 @@ def make_fixture_media(out: Path) -> dict[str, Path]:
          sun=(250, 250, 236))
 
     files["style_guide"] = out / "style_guide.md"
-    files["style_guide"].write_text(STYLE_GUIDE)
+    files["style_guide"].write_text(STYLE_GUIDE, encoding="utf-8")
     files["code_conventions"] = out / "manifest_conventions.md"
-    files["code_conventions"].write_text(CODE_CONVENTIONS)
+    files["code_conventions"].write_text(CODE_CONVENTIONS, encoding="utf-8")
     return files
 
 

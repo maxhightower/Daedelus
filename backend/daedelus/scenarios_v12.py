@@ -50,7 +50,8 @@ DEMO_SHIFT = 10.0  # ppm added to the 2020s rows by the demonstration edit (synt
 
 def _expected_decades(csv_path: Path, shift_from: int | None = None) -> dict[str, float]:
     """Decade means computed directly from the CSV, independent of Daedelus and LibreOffice."""
-    text = "\n".join(ln for ln in csv_path.read_text().splitlines() if not ln.startswith("#"))
+    text = "\n".join(ln for ln in csv_path.read_text(encoding="utf-8").splitlines()
+                     if not ln.startswith("#"))
     rows = list(csv.DictReader(io.StringIO(text)))
     acc: dict[int, list[float]] = {}
     for r in rows:
@@ -224,7 +225,7 @@ def run(out: Path, workspace: Path | None = None) -> dict[str, Any]:
             tbl[1][0] == "1950s" and abs(float(tbl[1][1]) - expected["1950s"]) < 0.01, tbl[:3])
     d.check("results sentence filled from the named range",
             f"{expected['2020s']:.1f}" in rp["results_text"]["text"], rp["results_text"]["text"])
-    notes_text = (ASSETS / "research_notes.md").read_text()
+    notes_text = (ASSETS / "research_notes.md").read_text(encoding="utf-8")
     d.check("report body paragraphs are quoted from the research notes (no generated prose)",
             rp["summary_text"]["text"] in " ".join(notes_text.split()), rp["summary_text"]["text"])
 
@@ -333,6 +334,6 @@ def run(out: Path, workspace: Path | None = None) -> dict[str, Any]:
     lines += ["", "Notes:"] + [f"- {n}" for n in d.notes] + ["", "Connectors:"]
     lines += [f"- {c['title']}: {'available' if c['available'] else c['reason']} "
               f"({c['verification']})" for c in report["connectors"]]
-    (out / "demo_v12_report.md").write_text("\n".join(lines) + "\n")
+    (out / "demo_v12_report.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
     ws.close()
     return report

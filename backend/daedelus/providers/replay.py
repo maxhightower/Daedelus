@@ -36,7 +36,7 @@ def load_fixtures() -> list[dict[str, Any]]:
         if d.is_dir():
             for f in sorted(d.rglob("*.json")):
                 try:
-                    data = json.loads(f.read_text())
+                    data = json.loads(f.read_text(encoding="utf-8"))
                 except ValueError:
                     continue
                 if isinstance(data, dict) and "contract" in data and "response" in data:
