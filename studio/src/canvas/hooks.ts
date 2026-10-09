@@ -49,7 +49,12 @@ export function invalidateRevision(id: string) {
   revCache.delete(id);
 }
 
-export const useHeadRevision = (a?: Artifact | null) => useRevision(a?.head_revision_id);
+export const useHeadRevision = (a?: Artifact | null) => {
+  // useRevision keeps the previous revision while the next one loads; never hand a view a
+  // revision of a different artifact (a reused node shows another artifact meanwhile)
+  const rev = useRevision(a?.head_revision_id);
+  return rev && a && rev.artifact_id !== a.id ? null : rev;
+};
 
 // ---------------------------------------------------------------- level of detail
 export type Lod = "far" | "medium" | "close";

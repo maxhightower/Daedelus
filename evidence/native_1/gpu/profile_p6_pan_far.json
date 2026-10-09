@@ -1,0 +1,132 @@
+{
+ "board": "P6 large",
+ "zoom": "11% · far",
+ "total_sampled_ms": 6673.2,
+ "top": [
+  {
+   "fn": "(idle) :0",
+   "self_ms": 5569.2,
+   "pct": 83.5
+  },
+  {
+   "fn": "(program) :0",
+   "self_ms": 810.4,
+   "pct": 12.1
+  },
+  {
+   "fn": "(garbage collector) :0",
+   "self_ms": 39.1,
+   "pct": 0.6
+  },
+  {
+   "fn": "KS index-Bnnbt2PV.js:41",
+   "self_ms": 22,
+   "pct": 0.3
+  },
+  {
+   "fn": "l index-Bnnbt2PV.js:57",
+   "self_ms": 20.1,
+   "pct": 0.3
+  },
+  {
+   "fn": "fw index-Bnnbt2PV.js:18",
+   "self_ms": 15.9,
+   "pct": 0.2
+  },
+  {
+   "fn": "Un index-Bnnbt2PV.js:41",
+   "self_ms": 14.4,
+   "pct": 0.2
+  },
+  {
+   "fn": "(anonymous) index-Bnnbt2PV.js:62",
+   "self_ms": 14.2,
+   "pct": 0.2
+  },
+  {
+   "fn": "i index-Bnnbt2PV.js:57",
+   "self_ms": 9.8,
+   "pct": 0.1
+  },
+  {
+   "fn": "Rl index-Bnnbt2PV.js:38",
+   "self_ms": 8.2,
+   "pct": 0.1
+  },
+  {
+   "fn": "Dt index-Bnnbt2PV.js:57",
+   "self_ms": 7.6,
+   "pct": 0.1
+  },
+  {
+   "fn": "(anonymous) index-Bnnbt2PV.js:57",
+   "self_ms": 7.1,
+   "pct": 0.1
+  },
+  {
+   "fn": "(anonymous) index-Bnnbt2PV.js:41",
+   "self_ms": 5.8,
+   "pct": 0.1
+  },
+  {
+   "fn": "_A index-Bnnbt2PV.js:41",
+   "self_ms": 5,
+   "pct": 0.1
+  },
+  {
+   "fn": "(anonymous) :0",
+   "self_ms": 4.9,
+   "pct": 0.1
+  },
+  {
+   "fn": "Sd index-Bnnbt2PV.js:41",
+   "self_ms": 4.8,
+   "pct": 0.1
+  },
+  {
+   "fn": "Pp index-Bnnbt2PV.js:41",
+   "self_ms": 4.4,
+   "pct": 0.1
+  },
+  {
+   "fn": "IS index-Bnnbt2PV.js:39",
+   "self_ms": 4,
+   "pct": 0.1
+  },
+  {
+   "fn": "lI index-Bnnbt2PV.js:62",
+   "self_ms": 3.8,
+   "pct": 0.1
+  },
+  {
+   "fn": "evaluate :284",
+   "self_ms": 3.3,
+   "pct": 0
+  },
+  {
+   "fn": "Ho index-Bnnbt2PV.js:41",
+   "self_ms": 3.3,
+   "pct": 0
+  },
+  {
+   "fn": "Tl index-Bnnbt2PV.js:38",
+   "self_ms": 3.2,
+   "pct": 0
+  },
+  {
+   "fn": "g index-Bnnbt2PV.js:39",
+   "self_ms": 2.7,
+   "pct": 0
+  },
+  {
+   "fn": "removeChild :0",
+   "self_ms": 2.7,
+   "pct": 0
+  },
+  {
+   "fn": "r index-Bnnbt2PV.js:39",
+   "self_ms": 2.6,
+   "pct": 0
+  }
+ ]
+}

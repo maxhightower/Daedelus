@@ -184,7 +184,10 @@ function CodeView({ item, artifact, revision, mode, onSelectComponent, patchStat
   const editing = mode === "active" || mode === "focus";
   useEffect(() => {
     if (!project || !revision || !path) return;
-    api.revisionFile(project.id, revision.id, path).then((r) => setText(r.text ?? "(binary file)"));
+    api
+      .revisionFile(project.id, revision.id, path)
+      .then((r) => setText(r.text ?? "(binary file)"))
+      .catch((e) => setText(`(could not load ${path}: ${e?.message ?? e})`));
   }, [project, revision?.id, path]);
   const dirty = !!draft && draft.text !== draft.original;
   const commit = async () => {

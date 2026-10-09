@@ -1,0 +1,53 @@
+{
+ "project": "prj_83df255c9c94",
+ "boards": {
+  "P1 empty": {
+   "id": "board_cd85b40a8314",
+   "items": 0,
+   "connections": 0
+  },
+  "P2 normal": {
+   "id": "board_2239184fe30e",
+   "items": 7,
+   "connections": 0
+  },
+  "P3 three 3D": {
+   "id": "board_38b5089fb58a",
+   "items": 3,
+   "connections": 0
+  },
+  "P4 six 3D": {
+   "id": "board_dff827f84b3d",
+   "items": 6,
+   "connections": 0
+  },
+  "P5 eight 3D": {
+   "id": "board_bbb089328ca8",
+   "items": 8,
+   "connections": 0
+  },
+  "P6 large": {
+   "id": "board_7cff44e7abaa",
+   "items": 148,
+   "connections": 250
+  },
+  "P7 focus 3D": {
+   "id": "board_77ebbf686c39",
+   "items": 1,
+   "connections": 0
+  },
+  "P8 mixed": {
+   "id": "board_c8fdef9c5c86",
+   "items": 6,
+   "connections": 0
+  }
+ },
+ "artifacts": {
+  "Table": "art_4c4f3457bd4a",
+  "Background": "art_f518ab836457",
+  "Module": "art_148928cda6a7",
+  "Sheet": "art_6043cf856126",
+  "Report": "art_60186e775bf8",
+  "Deck": "art_0861c7fa2e8d"
+ }
+}

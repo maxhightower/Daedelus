@@ -148,6 +148,9 @@ img.checker { background: repeating-conic-gradient(#3a3a3a 0% 25%, #2a2a2a 0% 50
 .center { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
 .canvas-host { position: relative; flex: 1; min-height: 0; }
 .spatial { position: absolute; inset: 0; }
+/* Pan as a composited layer: without this every pan frame re-rasterises the whole board
+   (NATIVE-1: ~60 ms -> ~17 ms p95 on a 148-item board in WebView2 on an RTX 3070). */
+.spatial .react-flow__viewport { will-change: transform; }
 .welcome { padding: 30px 40px; max-width: 900px; }
 
 /* explorer */

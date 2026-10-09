@@ -1,0 +1,188 @@
+{
+ "board": "P6 large",
+ "wall_ms": 4676,
+ "trace_events": 54497,
+ "pipeline_frames": 750,
+ "top": [
+  {
+   "event": "GpuVSyncThread | RunTask",
+   "total_ms": 4034.6,
+   "count": 740,
+   "max_ms": 7.8
+  },
+  {
+   "event": "CrGpuMain | RunTask",
+   "total_ms": 3377.6,
+   "count": 686,
+   "max_ms": 120.3
+  },
+  {
+   "event": "CrGpuMain | Scheduler::RunTask",
+   "total_ms": 3365.3,
+   "count": 165,
+   "max_ms": 120.3
+  },
+  {
+   "event": "CrGpuMain | GpuChannel::ExecuteDeferredRequest",
+   "total_ms": 3354.9,
+   "count": 81,
+   "max_ms": 120.2
+  },
+  {
+   "event": "CrGpuMain | GPUTask",
+   "total_ms": 3354.5,
+   "count": 81,
+   "max_ms": 120.2
+  },
+  {
+   "event": "CrGpuMain | RendererRasterWorker",
+   "total_ms": 3353.7,
+   "count": 81,
+   "max_ms": 120.2
+  },
+  {
+   "event": "CrGpuMain | CommandBuffer::Flush",
+   "total_ms": 3353.6,
+   "count": 81,
+   "max_ms": 120.2
+  },
+  {
+   "event": "CrGpuMain | CommandBufferStub::OnAsyncFlush",
+   "total_ms": 3353.5,
+   "count": 81,
+   "max_ms": 120.2
+  },
+  {
+   "event": "CrGpuMain | CommandBufferService:PutChanged",
+   "total_ms": 3353.1,
+   "count": 81,
+   "max_ms": 120.2
+  },
+  {
+   "event": "CrGpuMain | RasterDecoderImpl::DoEndRasterCHROMIUM",
+   "total_ms": 2242.7,
+   "count": 165,
+   "max_ms": 61
+  },
+  {
+   "event": "CrGpuMain | RasterDecoderImpl::DoEndRasterCHROMIUM::Flush",
+   "total_ms": 2241.1,
+   "count": 165,
+   "max_ms": 61
+  },
+  {
+   "event": "CrGpuMain | RasterDecoderImpl::DoRasterCHROMIUM",
+   "total_ms": 1106.8,
+   "count": 165,
+   "max_ms": 31.4
+  },
+  {
+   "event": "CrGpuMain | RasterDecoderImpl::DoRasterCHROMIUM::Deserializing",
+   "total_ms": 1106.1,
+   "count": 165,
+   "max_ms": 31.4
+  },
+  {
+   "event": "CrRendererMain | RunTask",
+   "total_ms": 1031.3,
+   "count": 833,
+   "max_ms": 31.9
+  },
+  {
+   "event": "CrRendererMain | ProxyMain::BeginMainFrame",
+   "total_ms": 856,
+   "count": 85,
+   "max_ms": 31.9
+  },
+  {
+   "event": "CrRendererMain | EventHandler::handleMouseMoveEvent",
+   "total_ms": 419.2,
+   "count": 124,
+   "max_ms": 12.8
+  },
+  {
+   "event": "CrRendererMain | LatencyInfo.Flow",
+   "total_ms": 397,
+   "count": 175,
+   "max_ms": 13.6
+  },
+  {
+   "event": "CrRendererMain | WidgetBaseInputHandler::OnHandleInputEvent",
+   "total_ms": 396.6,
+   "count": 86,
+   "max_ms": 13.6
+  },
+  {
+   "event": "CrRendererMain | WebFrameWidgetImpl::UpdateLifecycle",
+   "total_ms": 378.7,
+   "count": 85,
+   "max_ms": 15.7
+  },
+  {
+   "event": "CrRendererMain | LocalFrameView::RunPaintLifecyclePhase",
+   "total_ms": 366.3,
+   "count": 85,
+   "max_ms": 15.5
+  },
+  {
+   "event": "CrRendererMain | Paint",
+   "total_ms": 250.3,
+   "count": 1202,
+   "max_ms": 5.9
+  },
+  {
+   "event": "CrRendererMain | LayoutView::HitTest",
+   "total_ms": 223.6,
+   "count": 174,
+   "max_ms": 5.9
+  },
+  {
+   "event": "CrRendererMain | HitTest",
+   "total_ms": 223.2,
+   "count": 184,
+   "max_ms": 3.7
+  },
+  {
+   "event": "CrRendererMain | FunctionCall",
+   "total_ms": 187.4,
+   "count": 1118,
+   "max_ms": 12.2
+  },
+  {
+   "event": "CrRendererMain | LocalFrameView::pushPaintArtifactToCompositor",
+   "total_ms": 184.7,
+   "count": 85,
+   "max_ms": 9.1
+  },
+  {
+   "event": "CrRendererMain | Blink.CompositingCommit.UpdateTime",
+   "total_ms": 184.5,
+   "count": 85,
+   "max_ms": 9.1
+  },
+  {
+   "event": "CrRendererMain | Layerize",
+   "total_ms": 184.3,
+   "count": 85,
+   "max_ms": 9.1
+  },
+  {
+   "event": "CrRendererMain | PaintArtifactCompositor::Update",
+   "total_ms": 183.9,
+   "count": 42,
+   "max_ms": 9.1
+  },
+  {
+   "event": "CrRendererMain | Blink.Paint.UpdateTime",
+   "total_ms": 175.8,
+   "count": 85,
+   "max_ms": 7
+  },
+  {
+   "event": "ThreadPoolForegroundWorker | RasterizerTaskImpl::RunOnWorkerThread",
+   "total_ms": 159.3,
+   "count": 165,
+   "max_ms": 5.4
+  }
+ ]
+}
