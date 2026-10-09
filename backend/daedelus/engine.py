@@ -880,6 +880,42 @@ class Engine:
             self._agent_loop(ex, wf, node, nr, cfg, art.id, adapter, provider, planned,
                              unit_infos, upstream)
 
+    # -- independent assessment (V2.1.1 benchmark) -------------------------------
+    def assess(self, art_id: str, units: list, cfg: dict[str, Any], evaluator: str,
+               criteria: list[str] | None = None) -> list[dict[str, Any]]:
+        """One evaluation pass over the artifact's *current* revision by ``evaluator``, outside
+        the correction loop: nothing is revised, no status changes. The result is a labelled
+        model assessment, never an authoritative check. Runs under the active budget."""
+        art = self.store.get_artifact(art_id)
+        adapter = get_adapter(art.adapter)
+        rev = self.store.get_revision(art.head_revision_id)
+        insp = adapter.inspect(native_path(self.store, art), art.entry)
+        previews = {k: str(self.store.abs(v)) for k, v in rev.previews.items() if k == "render"}
+        prov = get_provider(evaluator)
+        root = next((c.id for c in art.components if not c.parent), None)
+        out = []
+        for ur in units:
+            if not ur.context_id:
+                continue
+            cid = ur.unit.split("#", 1)[1] if "#" in ur.unit else root
+            ctx = self.store.get_context(ur.context_id)
+            pr = self._plan_request(art, {"unit": ur.unit, "component_id": cid}, ctx, adapter,
+                                    cfg, insp, [])
+            det = constraint_findings(pr.semantic, insp.measurements, cid)
+            ereq = EvaluateRequest(plan_request=pr, previews=previews,
+                                   measurements_after={c: insp.measurements.get(c, {})
+                                                       for c in pr.properties},
+                                   deterministic=det, criteria=criteria or [], iteration=0)
+            try:
+                ev = prov.evaluate(ereq)
+                out.append({"unit": ur.unit, "assessor": prov.name, "model": ev.model,
+                            "revision": rev.number, "summary": ev.summary,
+                            "findings": [f.model_dump() for f in ev.findings],
+                            "usage": ev.usage.model_dump() if ev.usage else None})
+            except ProviderError as exc:
+                out.append({"unit": ur.unit, "assessor": prov.name, "error": str(exc)})
+        return out
+
     # -- semantic context ------------------------------------------------------
     def _package(self, info, art, insp, adapter, cfg) -> dict[str, Any]:
         if not cfg.get("understand"):

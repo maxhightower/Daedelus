@@ -314,7 +314,14 @@ def test_bench_gate_classification_through_the_real_benchmark(tmp_path, fakes):
     assert set(modes) == {"single", "iterative"}
     assert all(r["live_calls"] > 0 for r in modes.values())
     assert code == (0 if g["outcome"] == "PASS" else 1)
-    assert (out / "claude" / "bench" / "bench_report.json").is_file()
+    rep = json.loads((out / "claude" / "bench" / "bench_report.json").read_text())
+    for r in rep["runs"]:  # V2.1.1: every live run gets a labelled, non-authoritative assessment
+        ma = r["model_assessment"]
+        assert ma["authoritative"] is False and ma["assessor"] == "anthropic"
+        assert "same provider" in ma["independence"] and ma["status"] in ("complete", "failed")
+        assert "failure_analysis" in r and r["bench_version"] == "2.1.1"
+    # the assessment calls were counted in the campaign
+    assert any("assessment" in x["run"] for x in man["campaign"]["runs"])
 
 
 def test_campaign_budget_exhaustion_blocks_remaining_work(tmp_path, fakes):

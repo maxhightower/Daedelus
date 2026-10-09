@@ -34,6 +34,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import shutil
 import time
 from pathlib import Path
@@ -54,6 +55,7 @@ CUP_REGION = [0.27, 0.03, 0.43, 0.73]
 ROCKET_REGION = [0.46, 0.28, 0.09, 0.66]
 BUDGET = {"max_model_calls": 24, "max_cost_usd": 2.0, "max_tokens": 600_000,
           "max_seconds": 900, "max_iterations": 3, "call_timeout_s": 180, "max_retries": 2}
+BENCH_VERSION = "2.1.1"  # 2.1 checks unchanged; checks added in 2.1.1 are tagged since="2.1.1"
 RUBRIC = ("relevance", "structural_fidelity", "constraint_adherence", "preservation",
           "usability")
 
@@ -68,13 +70,15 @@ class Run:
         self.task, self.mode, self.provider = task, mode, provider
         self.budget = dict(budget or BUDGET)  # this run's limits (capped by the campaign)
         self.campaign = campaign
+        self.assess_ctx: tuple | None = None
         self.checks: list[dict[str, Any]] = []
         self.record: dict[str, Any] = {"task": task, "mode": mode, "provider": provider}
         self.rubric: dict[str, dict[str, Any]] = {k: {"score": None, "basis": "needs review"}
                                                   for k in RUBRIC}
 
-    def check(self, name: str, ok: Any, detail: Any = "") -> bool:
-        self.checks.append({"name": name, "ok": bool(ok), "detail": str(detail)[:600]})
+    def check(self, name: str, ok: Any, detail: Any = "", since: str = "2.1") -> bool:
+        self.checks.append({"name": name, "ok": bool(ok), "detail": str(detail)[:600],
+                            "since": since})
         print(f"  [{'PASS' if ok else 'FAIL'}] {self.task}/{self.mode} {name}"
               + ("" if ok else f" - {str(detail)[:200]}"), flush=True)
         return bool(ok)
@@ -83,8 +87,12 @@ class Run:
         self.rubric[dim] = {"score": score, "basis": basis, "note": note}
 
     def dump(self) -> dict[str, Any]:
+        v21 = [c for c in self.checks if c.get("since", "2.1") == "2.1"]
         return {**self.record, "checks": self.checks, "rubric": self.rubric,
-                "passed": bool(self.checks) and all(c["ok"] for c in self.checks)}
+                "bench_version": BENCH_VERSION,
+                "passed": bool(self.checks) and all(c["ok"] for c in self.checks),
+                # the same verdict restricted to the V2.1 checks, for old-vs-new comparison
+                "passed_v21_checks": bool(v21) and all(c["ok"] for c in v21)}
 
 
 # ---------------------------------------------------------------------------- helpers
@@ -114,6 +122,7 @@ def _execute(st: ProjectStore, run: Run, art_id: str, cfg: dict[str, Any],
     ex = Engine(st).execute(wf.id)
     run.record["seconds"] = round(time.perf_counter() - t0, 2)
     nr = ex.run("agent")
+    run.assess_ctx = (st, art_id, list(nr.units), cfg)  # for the separate assessment pass
     run.record["execution_status"] = ex.status.value
     run.record["error"] = ex.error
     run.record["budget"] = ex.budget
@@ -172,6 +181,27 @@ def _analyses(st: ProjectStore, srcs, run: Run) -> None:
     run.record["model_observation_count"] = len(model_obs)
 
 
+def _glb_meshes(path: Path) -> int:
+    """Number of meshes with at least one primitive in a binary glTF file (0 if invalid)."""
+    import struct
+    try:
+        data = Path(path).read_bytes()
+        if data[:4] != b"glTF":
+            return 0
+        n = struct.unpack_from("<I", data, 12)[0]
+        doc = json.loads(data[20:20 + n])
+        return sum(1 for m in doc.get("meshes", []) if m.get("primitives"))
+    except (OSError, ValueError, struct.error):
+        return 0
+
+
+def _reopens(st: ProjectStore, art_id: str) -> tuple[bool, str]:
+    art = st.get_artifact(art_id)
+    rep = get_adapter(art.adapter).validate(native_path(st, art), art.entry, ["file_reopens"], {})
+    c = next((c for c in rep.checks if c.name == "file_reopens"), None)
+    return bool(c and c.passed), (c.detail if c else "no file_reopens check")
+
+
 def _states(st: ProjectStore, art_id: str) -> dict[str, Any]:
     art = st.get_artifact(art_id)
     return get_adapter(art.adapter).inspect(native_path(st, art), art.entry).states
@@ -225,6 +255,10 @@ def task_a(st: ProjectStore, out: Path, provider: str, mode: str) -> Run:
     ok_h = height is not None and abs(height - 0.1) <= 0.01
     run.check("polygon budget met (measured)", ok_poly, polys)
     run.check("height 0.1 m met (measured)", ok_h, height)
+    glb = head.previews.get("glb")
+    meshes = _glb_meshes(st.abs(glb)) if glb else 0
+    run.check("GLB export produced with mesh geometry", meshes > 0, f"meshes={meshes}",
+              since="2.1.1")
     run.score("constraint_adherence", 2 if ok_poly and ok_h else (1 if ok_poly or ok_h else 0),
               "measured", f"poly_count={polys}, height={height}")
     run.score("preservation", None, "not applicable (new object)")
@@ -274,6 +308,10 @@ def task_b(st: ProjectStore, out: Path, provider: str, mode: str) -> Run:
     run.check("the bound component changed", changed_body)
     run.check("unrelated components preserved exactly (component states)", preserved,
               {c: before.get(c) == after.get(c) for c in others})
+    revs_b = st.list_revisions(art.id)
+    run.check("a new revision was recorded", len(revs_b) >= 2, len(revs_b), since="2.1.1")
+    ok_re, why_re = _reopens(st, art.id)
+    run.check("the native .blend reopens", ok_re, why_re, since="2.1.1")
     run.score("preservation", 2 if preserved else 0, "measured (component state digests)")
     return run
 
@@ -318,6 +356,10 @@ def task_c(st: ProjectStore, out: Path, provider: str, mode: str) -> Run:
     run.check("the OpenRaster file is a valid zip with stack.xml", ora.is_file() and
               __import__("zipfile").is_zipfile(ora) and "stack.xml" in
               __import__("zipfile").ZipFile(ora).namelist())
+    layers_after = [c for c in after if c != "poster"]
+    run.check("the output is still layered (same layers as before)",
+              sorted(layers_after) == sorted(c for c in before if c != "poster"),
+              layers_after, since="2.1.1")
     run.score("preservation", 2 if preserved else 0, "measured (layer state digests)")
     return run
 
@@ -336,6 +378,32 @@ REQUIREMENT = ("# Requirement: URL slugs\n"
                "characters that are not ASCII letters or digits with one hyphen and strip "
                "leading/trailing hyphens. The existing tests must pass. Use only the Python "
                "standard library.\n")
+
+
+# Extra cases derived from the written requirement, never shown to the model: they separate a
+# correct implementation from a patch that only satisfies the two visible tests.
+HELD_OUT = [("Ünïcödé — test_42", "unicode-test-42"), ("---", ""), ("a__b..c", "a-b-c"),
+            ("ÀÉÎÕÜ", "aeiou"), ("Hello   World", "hello-world"), ("Ça va?", "ca-va"),
+            ("ß and ø", "and"), ("123 Go!", "123-go")]
+
+
+def _held_out_spec(nat: Path) -> dict[str, Any]:
+    import subprocess
+    import sys
+    code = ("import json,sys;sys.path.insert(0,'.');from textutil import slugify;"
+            f"cases={json.dumps(HELD_OUT)};"
+            "res=[(i,o,slugify(i)) for i,o in cases];"
+            "print(json.dumps([r for r in res if r[1]!=r[2]]))")
+    try:
+        p = subprocess.run([sys.executable, "-I", "-c", code], cwd=nat, capture_output=True,
+                           text=True, timeout=30)
+        bad = json.loads(p.stdout.strip().splitlines()[-1]) if p.returncode == 0 else None
+    except (subprocess.TimeoutExpired, ValueError, IndexError):
+        bad = None
+    if bad is None:
+        return {"passed": False, "detail": "slugify could not be run on the held-out cases"}
+    return {"passed": not bad, "detail": f"{len(HELD_OUT) - len(bad)}/{len(HELD_OUT)} cases; "
+            f"wrong: {bad[:4]}"}
 
 
 def task_d(st: ProjectStore, out: Path, provider: str, mode: str) -> Run:
@@ -376,6 +444,13 @@ def task_d(st: ProjectStore, out: Path, provider: str, mode: str) -> Run:
     run.check("a real git diff of textutil.py against the starting commit exists",
               "a/textutil.py" in diff, diff[:300])
     run.check("allowlisted tests pass", tests_ok, rep[:400])
+    held = _held_out_spec(nat)
+    run.record["held_out_spec"] = held
+    run.check("held-out specification cases pass (not visible to the model)", held["passed"],
+              held["detail"], since="2.1.1")
+    touched = sorted(set(re.findall(r"^diff --git a/(\S+)", diff, re.M)))
+    run.check("only the permitted file changed", touched == ["textutil.py"], touched,
+              since="2.1.1")
     run.score("constraint_adherence", 2 if tests_ok else 0, "measured (tests)")
     run.score("preservation", 0 if "a/test_textutil.py" in diff else 2,
               "measured (the existing tests were not edited)")
@@ -416,6 +491,8 @@ def task_e(st: ProjectStore, out: Path, provider: str, mode: str, video: str | N
     run.check("the model analysed the video content (not metadata)",
               ana.pathway.startswith("video") and ana.status != "unavailable", ana.pathway)
     run.check("observations carry timestamps from the video", timed, len(timed))
+    steps = [o for o in ana.observations if o.kind in ("step", "operation", "technique")]
+    run.check("procedural steps were identified", len(steps) >= 2, len(steps), since="2.1.1")
     art, _ = create_artifact(st, name="Technique target", adapter="blender",
                              template="components", params={"components": ROCKET[:3]})
     b = SourceBinding(source_id=src.id, role="technique", aspects=["geometry", "style"],
@@ -444,9 +521,41 @@ def _new_run(task: str, mode: str, provider: str) -> Run:
     return r
 
 
+ASSESS_BUDGET = {"max_model_calls": 3, "max_cost_usd": 0.5, "max_tokens": 150_000,
+                 "max_seconds": 300, "max_iterations": 0}
+
+
+def _assess(r: Run, assessor: str, provider: str, campaign: Any) -> None:
+    """Separate model assessment of the final revision (labelled, never authoritative)."""
+    from .budget import ExecutionBudget, use_budget
+    if r.assess_ctx is None or r.record.get("blocked_by"):
+        return
+    st, art_id, units, cfg = r.assess_ctx
+    lim = campaign.run_limits(ASSESS_BUDGET) if campaign is not None else dict(ASSESS_BUDGET)
+    if campaign is not None and campaign.exhausted():
+        r.record["model_assessment"] = {"status": "not run", "reason": campaign.exhausted()}
+        return
+    with use_budget(ExecutionBudget.from_config(lim)) as ab:
+        try:
+            items = Engine(st).assess(art_id, units, cfg, assessor, criteria=[
+                "Does the result visibly reflect the bound references (relevance)?",
+                "Does it follow the target style and the written constraints?",
+                "Is the geometry or composition plausible and complete (missing features)?"])
+            status = "complete"
+        except Exception as exc:  # an assessment failure never changes the run's verdict
+            items, status = [{"error": f"{type(exc).__name__}: {exc}"}], "failed"
+    r.record["model_assessment"] = {
+        "status": status, "assessor": assessor,
+        "independence": ("cross-provider" if assessor != provider else
+                         "same provider, separate call (not independent of the planner's model)"),
+        "authoritative": False, "items": items, "budget": ab.snapshot()}
+    if campaign is not None:
+        campaign.absorb(f"{r.task}/{r.mode} assessment", ab.snapshot())
+
+
 def run(out: Path, provider: str = "heuristic", tasks: str = "ABCDE",
         video: str | None = None, evaluator: str | None = None,
-        campaign: Any = None) -> dict[str, Any]:
+        campaign: Any = None, assessor: str | None = None) -> dict[str, Any]:
     out = Path(out)
     out.mkdir(parents=True, exist_ok=True)
     prov = get_provider(provider)
@@ -470,7 +579,7 @@ def run(out: Path, provider: str = "heuristic", tasks: str = "ABCDE",
     try:
         for t in tasks:
             for mode in ("single", "iterative"):
-                _one(rep, ws, out, provider, t, mode, video, campaign)
+                _one(rep, ws, out, provider, t, mode, video, campaign, assessor)
     finally:
         _CURRENT.pop("campaign", None)
     rep["seconds"] = round(time.time() - rep.pop("started"), 1)
@@ -482,7 +591,7 @@ def run(out: Path, provider: str = "heuristic", tasks: str = "ABCDE",
     return rep
 
 
-def _one(rep, ws, out, provider, t, mode, video, campaign) -> None:
+def _one(rep, ws, out, provider, t, mode, video, campaign, assessor=None) -> None:
     exhausted = campaign.exhausted() if campaign is not None else None
     if exhausted:  # never start a run the approved budget cannot cover
         r = Run(t, mode, provider)
@@ -500,7 +609,10 @@ def _one(rep, ws, out, provider, t, mode, video, campaign) -> None:
             r.record["exception"] = f"{type(exc).__name__}: {exc}"
         if campaign is not None:
             campaign.absorb(f"{t}/{mode}", r.record.get("budget"))
+        if assessor and r.record.get("live_calls"):
+            _assess(r, assessor, provider, campaign)
     d = r.dump()
+    d["failure_analysis"] = classify_failure(d)
     d["verification"] = ("blocked" if d.get("blocked_by") else
                          "live" if d.get("live_calls") else "deterministic")
     if d.get("blocked_by"):
@@ -508,24 +620,92 @@ def _one(rep, ws, out, provider, t, mode, video, campaign) -> None:
     rep["runs"].append(d)
 
 
+# ---------------------------------------------------------------------------- failure analysis
+FAILURE_CATEGORIES = (
+    "source_understanding_failure", "inappropriate_source_interpretation",
+    "wrong_component_selected", "invalid_operation_schema", "insufficient_adapter_capabilities",
+    "incorrect_parameter_selection", "overly_restrictive_constraints",
+    "blender_execution_failure", "native_artifact_validation_failure", "visual_quality_failure",
+    "provider_refusal", "api_timeout_rate_limit", "budget_exhaustion")
+
+
+def classify_failure(d: dict[str, Any]) -> dict[str, Any] | None:
+    """Earliest failing stage of a run, from its recorded evidence (automatic, heuristic: a
+    starting point for review, not a verdict). None for passed or blocked runs."""
+    if d.get("passed") or d.get("blocked_by"):
+        return None
+    err = " ".join(str(x) for x in (d.get("error"), d.get("exception"),
+                                     *[u.get("error") for u in d.get("validation_decisions")
+                                       or []]) if x)
+    low = err.lower()
+    failed = [c["name"] for c in d.get("checks", []) if not c["ok"]]
+    plans = d.get("plans") or []
+    ops = [o for p in plans for o in (p.get("operations") or [])]
+
+    def out(stage, cat, evidence):
+        return {"stage": stage, "category": cat, "evidence": str(evidence)[:400],
+                "basis": "automatic (heuristic) - review before drawing conclusions"}
+    if "budget" in low and ("exhausted" in low or "not called" in low):
+        return out("planning", "budget_exhaustion", err)
+    if "refusal" in low or "declined" in low:
+        return out("planning", "provider_refusal", err)
+    if "429" in low or "rate limit" in low or "timed out" in low or "overloaded" in low:
+        return out("planning", "api_timeout_rate_limit", err)
+    if d.get("live_calls") and d.get("model_observation_count") == 0 and \
+            d.get("observations") is not None and d["task"] != "D":
+        return out("understanding", "source_understanding_failure",
+                   "no model observations recorded for the bound sources")
+    if "invalid plan" in low or "unknown operation" in low or "malformed" in low or \
+            "schema" in low:
+        return out("planning", "invalid_operation_schema", err)
+    if "blender" in low and ("error" in low or "failed" in low):
+        return out("execution", "blender_execution_failure", err)
+    if any("preserved" in n for n in failed):
+        return out("execution", "wrong_component_selected",
+                   "an unrelated component changed: " + ", ".join(failed))
+    if any("reopens" in n or "valid zip" in n or "layered" in n for n in failed):
+        return out("validation", "native_artifact_validation_failure", ", ".join(failed))
+    if any("geometry was created" in n or "GLB" in n for n in failed):
+        return out("planning", "insufficient_adapter_capabilities" if not ops else
+                   "incorrect_parameter_selection",
+                   f"{len(ops)} planned op(s): {[o.get('op') for o in ops][:8]}; failed: "
+                   f"{failed}")
+    if any("changed" in n for n in failed):
+        return out("planning", "incorrect_parameter_selection" if ops else
+                   "inappropriate_source_interpretation",
+                   f"the bound target did not change; {len(ops)} op(s) planned")
+    if any("tests pass" in n or "specification" in n for n in failed):
+        return out("execution", "incorrect_parameter_selection",
+                   "the code change does not meet the specification: " + ", ".join(failed))
+    if any("measured" in n for n in failed):
+        return out("validation", "incorrect_parameter_selection", ", ".join(failed))
+    return out("unknown", "visual_quality_failure" if not failed else "unclassified",
+               ", ".join(failed) or err)
+
+
 def _write(out: Path, rep: dict[str, Any]) -> None:
     (out / "bench_report.json").write_text(json.dumps(rep, indent=1, default=str))
-    L = [f"# V2.1 creative benchmark — provider `{rep['provider']}`", "",
+    L = [f"# Creative benchmark v{BENCH_VERSION} — provider `{rep['provider']}`", "",
          f"Status: **{rep.get('status')}**"
          + (f" — {rep['blocked_by']}" if rep.get("blocked_by") else ""), "",
          "Budget per run: `" + json.dumps(rep["budget_per_run"]) + "`", ""]
     if rep.get("runs"):
-        L += ["| Task | Mode | Verification | Checks | Live calls | Cost | Seconds | Rubric "
-              "(measured) |", "|---|---|---|---|---|---|---|---|"]
+        L += ["| Task | Mode | Verification | Checks (all) | Checks (v2.1 set) | Live calls | "
+              "Cost | Seconds | Rubric (measured) | Failure (automatic) |",
+              "|---|---|---|---|---|---|---|---|---|---|"]
         for r in rep["runs"]:
             used = (r.get("budget") or {}).get("used") or {}
             rub = ", ".join(f"{k}={v['score']}" for k, v in r["rubric"].items()
                             if v["score"] is not None) or "—"
             n_ok = sum(c["ok"] for c in r["checks"])
+            v21 = [c for c in r["checks"] if c.get("since", "2.1") == "2.1"]
+            fa = r.get("failure_analysis") or {}
             L.append(f"| {r['task']} | {r['mode']} | {r['verification']}"
                      + (f" ({r['blocked_by']})" if r.get("blocked_by") else "")
-                     + f" | {n_ok}/{len(r['checks'])} | {r.get('live_calls', 0)} | "
-                     f"{used.get('cost', '—')} | {r.get('seconds', '—')} | {rub} |")
+                     + f" | {n_ok}/{len(r['checks'])} | {sum(c['ok'] for c in v21)}/{len(v21)}"
+                     f" | {r.get('live_calls', 0)} | "
+                     f"{used.get('cost', '—')} | {r.get('seconds', '—')} | {rub} | "
+                     f"{fa.get('category', '—')} |")
         L += ["", "Rubric dimensions not measurable by the harness (relevance, structural "
               "fidelity, usability) are left for human review and are never filled in from a "
               "model's own assessment.", ""]
@@ -533,6 +713,11 @@ def _write(out: Path, rep: dict[str, Any]) -> None:
             L += [f"## {r['task']} / {r['mode']}", ""]
             for c in r["checks"]:
                 L.append(f"- [{'x' if c['ok'] else ' '}] {c['name']}"
+                         + (" *(new in 2.1.1)*" if c.get("since") == "2.1.1" else "")
                          + ("" if c["ok"] else f" — {c['detail'][:200]}"))
+            ma = r.get("model_assessment")
+            if ma:
+                L.append(f"- model assessment ({ma.get('independence', '')}; not authoritative):"
+                         f" {ma.get('status')}")
             L.append("")
     (out / "bench_report.md").write_text("\n".join(L) + "\n")

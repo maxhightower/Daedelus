@@ -401,11 +401,13 @@ def smoke_gate(provider: str, out: Path, campaign) -> tuple[str, str, dict[str, 
 
 
 def bench_gates(provider: str, tasks: str, video: str | None, out: Path,
-                campaign) -> dict[str, tuple[str, str, dict[str, Any], str | None]]:
+                campaign, assessor: str | None = None
+                ) -> dict[str, tuple[str, str, dict[str, Any], str | None]]:
     """Runs the creative benchmark once for all requested tasks; one gate per task."""
     from . import bench_v21
     impl = PROVIDER_IMPL[provider]
-    rep = bench_v21.run(out, provider=impl, tasks=tasks, video=video, campaign=campaign)
+    rep = bench_v21.run(out, provider=impl, tasks=tasks, video=video, campaign=campaign,
+                        assessor=assessor or impl)
     res: dict[str, tuple[str, str, dict[str, Any], str | None]] = {}
     if rep.get("status") == "blocked":
         for t in tasks:
@@ -534,7 +536,10 @@ def run(req: Request, out: Path, ex: Executors | None = None) -> dict[str, Any]:
         tasks = "".join(g.rsplit(".", 1)[1] for g in sorted(bench))
         t0 = time.time()
         try:
-            res = ex.bench(p, tasks, req.video_url, out / p / "bench", campaign)
+            # the other requested provider assesses, when there is one (cross-provider)
+            other = [PROVIDER_IMPL[q] for q in req.providers if q != p]
+            res = ex.bench(p, tasks, req.video_url, out / p / "bench", campaign,
+                           *([other[0]] if other else []))
             for t in tasks:
                 o, r, d, kind = res.get(t, (FAIL, "no result recorded", {}, "infrastructure"))
                 finish(gates[f"{p}.bench.{t}"], o, r, d, kind, t0=t0, evidence=f"{p}/bench")
