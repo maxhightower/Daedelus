@@ -4,7 +4,7 @@ Both "hosts" ran in the same cloud container; a local TLS forwarder (private CA)
 Cloudflare quick tunnel; phases went through `DAEDELUS_HOSTED_PHASE_FILE` instead of a commit
 status. Purpose: debug the harness before spending a GitHub run.
 
-Result: 36/39.
+Result: first attempt 36/39; after the fixes 37/39 (only the two same-host checks fail).
 * 2 expected failures: "worker's network address is not the control host's" and "different
   machine (host name)" - impossible on one container; they are what the real run must show.
 * 1 real defect found (H9): after a refused late result, the manual-edit path rolled the
