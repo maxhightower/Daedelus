@@ -1,0 +1,3995 @@
+{
+ "provider": "heuristic",
+ "provider_live": false,
+ "provider_available": true,
+ "provider_detail": "ok",
+ "budget_per_run": {
+  "max_model_calls": 24,
+  "max_cost_usd": 2.0,
+  "max_tokens": 600000,
+  "max_seconds": 900,
+  "max_iterations": 3,
+  "call_timeout_s": 180,
+  "max_retries": 2
+ },
+ "runs": [
+  {
+   "task": "A",
+   "mode": "single",
+   "provider": "heuristic",
+   "sources": [
+    {
+     "id": "src_7598659694a1",
+     "name": "Cafe photograph",
+     "media_type": "image",
+     "sha256": "1b334876bab6bccddc821520b67fad5bceaaf3c454885b75cdc126b7ebfe9576",
+     "origin": "path"
+    },
+    {
+     "id": "src_9de4cef69623",
+     "name": "Stylized illustration",
+     "media_type": "image",
+     "sha256": "4d671408fa4c57ca1b552851a3ccf0d0a18a9e601e478e7feb561cc20fae472f",
+     "origin": "path"
+    },
+    {
+     "id": "src_365c93951242",
+     "name": "Prop specification",
+     "media_type": "text",
+     "sha256": "fe5aa9bca85f4c76300b073e2bee9503c29ce6a36349779d6e4208271a5c0a1b",
+     "origin": "inline"
+    }
+   ],
+   "bindings": [
+    {
+     "id": "bind_7dea046e8169",
+     "source_id": "src_7598659694a1",
+     "role": "reference",
+     "aspects": [
+      "geometry",
+      "shape",
+      "proportion"
+     ],
+     "scope": "artifact",
+     "component": null,
+     "segment": {
+      "kind": "region",
+      "start": null,
+      "end": null,
+      "page": null,
+      "region": [
+       0.27,
+       0.03,
+       0.43,
+       0.73
+      ],
+      "note": "the cup, without saucer and spoon"
+     },
+     "constraint": "soft"
+    },
+    {
+     "id": "bind_22a99bbfa98e",
+     "source_id": "src_9de4cef69623",
+     "role": "inspiration",
+     "aspects": [
+      "style",
+      "color"
+     ],
+     "scope": "artifact",
+     "component": null,
+     "segment": null,
+     "constraint": "soft"
+    },
+    {
+     "id": "bind_4a44b4c26e39",
+     "source_id": "src_365c93951242",
+     "role": "constraint",
+     "aspects": [
+      "geometry"
+     ],
+     "scope": "artifact",
+     "component": null,
+     "segment": null,
+     "constraint": "hard"
+    }
+   ],
+   "seconds": 4.34,
+   "execution_status": "succeeded",
+   "error": null,
+   "budget": {
+    "limits": {
+     "max_model_calls": 24,
+     "max_cost_usd": 2.0,
+     "max_tokens": 600000,
+     "max_seconds": 900,
+     "max_iterations": 3,
+     "call_timeout_s": 180,
+     "max_retries": 2,
+     "job_timeout_s": 900.0,
+     "job_memory_mb": null,
+     "max_concurrent_jobs": 4
+    },
+    "used": {
+     "model_calls": 0,
+     "input_tokens": 0,
+     "output_tokens": 0,
+     "cost_usd": 0.0,
+     "cost": "$0.0000",
+     "unpriced_calls": 0,
+     "seconds": 4.34
+    },
+    "by_provider": {},
+    "refusals": []
+   },
+   "plans": [
+    {
+     "provider": "heuristic",
+     "model": "heuristic-v1",
+     "recorded": false,
+     "operations": [
+      {
+       "op": "set_taper",
+       "component_id": "mug",
+       "params": {
+        "factor": -0.1823,
+        "axis": "Z"
+       },
+       "derived_from": [
+        "bind_7dea046e8169"
+       ],
+       "rationale": "silhouette taper ratio 0.74"
+      },
+      {
+       "op": "set_material",
+       "component_id": "mug",
+       "params": {
+        "base_color": "#94b1af"
+       },
+       "derived_from": [
+        "bind_22a99bbfa98e"
+       ],
+       "rationale": "colour from 'Stylized illustration'"
+      }
+     ],
+     "interpretations": {
+      "bind_7dea046e8169": "reference (drive, weight 0.6): silhouette top/bottom width 0.56/0.76 -> taper target -0.304, applied -0.182",
+      "bind_22a99bbfa98e": "inspiration (blend, weight 0.30): dominant foreground colour (measured) #2f8f8a -> base colour #bfbfbf -> #94b1af",
+      "bind_4a44b4c26e39": "presented; no allowed operation family of adapter 'blender' expresses aspects ['geometry'] for text measurements at this unit"
+     },
+     "notes": [],
+     "usage": {}
+    }
+   ],
+   "validation_decisions": [
+    {
+     "unit": "artifact:art_9f2a5bf16ef2#mug",
+     "status": "succeeded",
+     "error": null
+    }
+   ],
+   "live_calls": 0,
+   "observations": [
+    {
+     "source": "Cafe photograph",
+     "provider": "heuristic",
+     "model": "heuristic-semantic-v1",
+     "pathway": "measured",
+     "status": "partial",
+     "summary": "measured 11 visual properties of region [0.27, 0.03, 0.43, 0.73]",
+     "observations": [
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #d08341 covers 26% of the region",
+       "confidence": 1.0,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.27,
+         0.03,
+         0.43,
+         0.73
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #a23917 covers 25% of the region",
+       "confidence": 1.0,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.27,
+         0.03,
+         0.43,
+         0.73
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #440e06 covers 24% of the region",
+       "confidence": 1.0,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.27,
+         0.03,
+         0.43,
+         0.73
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #f6eadc covers 13% of the region",
+       "confidence": 1.0,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.27,
+         0.03,
+         0.43,
+         0.73
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #dfb389 covers 12% of the region",
+       "confidence": 1.0,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.27,
+         0.03,
+         0.43,
+         0.73
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "lighting",
+       "basis": "measured",
+       "text": "brightness 0.448, contrast 0.2848, warm cast",
+       "confidence": 1.0,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.27,
+         0.03,
+         0.43,
+         0.73
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "composition",
+       "basis": "measured",
+       "text": "aspect 0.8836; edge energy is balanced (orientation 0.5202); edge density 0.0886",
+       "confidence": 1.0,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.27,
+         0.03,
+         0.43,
+         0.73
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "proportion",
+       "basis": "measured",
+       "text": "foreground silhouette 0.8836:1 (width:height), covers 81%; similar width top and bottom",
+       "confidence": 0.6,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.0,
+         0.0,
+         1.0,
+         1.0
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "foreground colour #d89451 (31% of the silhouette)",
+       "confidence": 0.6,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.0,
+         0.0,
+         1.0,
+         1.0
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "foreground colour #3f0903 (31% of the silhouette)",
+       "confidence": 0.6,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.0,
+         0.0,
+         1.0,
+         1.0
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "foreground colour #efd9c2 (24% of the silhouette)",
+       "confidence": 0.6,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.0,
+         0.0,
+         1.0,
+         1.0
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "uncertainty",
+       "basis": "inferred",
+       "text": "No object recognition: the local analyser measures pixels and cannot tell what the image depicts.",
+       "confidence": null,
+       "location": null
+      }
+     ],
+     "derived_constraints": [],
+     "limitations": [
+      "No object recognition: the local analyser measures pixels and cannot tell what the image depicts.",
+      "silhouette assumes a background distinct from the subject; proportions are 2D image ratios, not 3D sizes"
+     ],
+     "usage": {
+      "calls": 0,
+      "input_tokens": null,
+      "output_tokens": null,
+      "latency_ms": 169.0,
+      "cost_usd": null,
+      "model": null,
+      "request_id": null,
+      "fallback_from": null,
+      "cache_read_tokens": null,
+      "unpriced_calls": 0
+     }
+    },
+    {
+     "source": "Stylized illustration",
+     "provider": "heuristic",
+     "model": "heuristic-semantic-v1",
+     "pathway": "measured",
+     "status": "partial",
+     "summary": "measured 11 visual properties",
+     "observations": [
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #f6efe1 covers 74% of the image",
+       "confidence": 1.0,
+       "location": null
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #2f8f8a covers 15% of the image",
+       "confidence": 1.0,
+       "location": null
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #2b2a33 covers 5% of the image",
+       "confidence": 1.0,
+       "location": null
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #cdcb9f covers 5% of the image",
+       "confidence": 1.0,
+       "location": null
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #5a3a24 covers 1% of the image",
+       "confidence": 1.0,
+       "location": null
+      },
+      {
+       "kind": "lighting",
+       "basis": "measured",
+       "text": "brightness 0.8195, contrast 0.2295, neutral cast",
+       "confidence": 1.0,
+       "location": null
+      },
+      {
+       "kind": "composition",
+       "basis": "measured",
+       "text": "aspect 1.0; edge energy is balanced (orientation 0.5121); edge density 0.0285",
+       "confidence": 1.0,
+       "location": null
+      },
+      {
+       "kind": "proportion",
+       "basis": "measured",
+       "text": "foreground silhouette 0.7887:1 (width:height), covers 26%; wider at the bottom than the top",
+       "confidence": 0.6,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.2148,
+         0.0859,
+         0.627,
+         0.7949
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "foreground colour #2f8f8a (58% of the silhouette)",
+       "confidence": 0.6,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.2148,
+         0.0859,
+         0.627,
+         0.7949
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "foreground colour #2b2a33 (20% of the silhouette)",
+       "confidence": 0.6,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.2148,
+         0.0859,
+         0.627,
+         0.7949
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "foreground colour #cdcb9f (18% of the silhouette)",
+       "confidence": 0.6,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.2148,
+         0.0859,
+         0.627,
+         0.7949
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "uncertainty",
+       "basis": "inferred",
+       "text": "No object recognition: the local analyser measures pixels and cannot tell what the image depicts.",
+       "confidence": null,
+       "location": null
+      }
+     ],
+     "derived_constraints": [],
+     "limitations": [
+      "No object recognition: the local analyser measures pixels and cannot tell what the image depicts.",
+      "silhouette assumes a background distinct from the subject; proportions are 2D image ratios, not 3D sizes"
+     ],
+     "usage": {
+      "calls": 0,
+      "input_tokens": null,
+      "output_tokens": null,
+      "latency_ms": 0.3,
+      "cost_usd": null,
+      "model": null,
+      "request_id": null,
+      "fallback_from": null,
+      "cache_read_tokens": null,
+      "unpriced_calls": 0
+     }
+    },
+    {
+     "source": "Prop specification",
+     "provider": "heuristic",
+     "model": "heuristic-semantic-v1",
+     "pathway": "text_rules",
+     "status": "partial",
+     "summary": "1 requirement(s), 0 instruction(s), 2 measurable limit(s)",
+     "observations": [
+      {
+       "kind": "structure",
+       "basis": "quoted",
+       "text": "Prop specification",
+       "confidence": null,
+       "location": {
+        "page": null,
+        "section": "Prop specification",
+        "paragraph": null,
+        "line": 1,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": null,
+        "frame": null
+       }
+      },
+      {
+       "kind": "requirement",
+       "basis": "quoted",
+       "text": "Height 0.1 m. The model must have no more than 600 polygons.",
+       "confidence": null,
+       "location": {
+        "page": null,
+        "section": "Prop specification",
+        "paragraph": null,
+        "line": 3,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": null,
+        "frame": null
+       }
+      }
+     ],
+     "derived_constraints": [
+      {
+       "property": "poly_count",
+       "op": "lte",
+       "value": 600.0,
+       "text": "Height 0.1 m. The model must have no more than 600 polygons.",
+       "location": {
+        "page": null,
+        "section": "Prop specification",
+        "paragraph": null,
+        "line": 3,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": null,
+        "frame": null
+       }
+      },
+      {
+       "property": "height",
+       "op": "eq",
+       "value": 0.1,
+       "text": "Height 0.1 m. The model must have no more than 600 polygons.",
+       "location": {
+        "page": null,
+        "section": "Prop specification",
+        "paragraph": null,
+        "line": 3,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": null,
+        "frame": null
+       }
+      }
+     ],
+     "limitations": [
+      "rule-based extraction: only explicit sentences and numeric limits are recognised; implied meaning is not understood"
+     ],
+     "usage": {
+      "calls": 0,
+      "input_tokens": null,
+      "output_tokens": null,
+      "latency_ms": 0.3,
+      "cost_usd": null,
+      "model": null,
+      "request_id": null,
+      "fallback_from": null,
+      "cache_read_tokens": null,
+      "unpriced_calls": 0
+     }
+    }
+   ],
+   "model_observation_count": 0,
+   "revisions": [
+    {
+     "id": "rev_d94ac4730927",
+     "number": 1,
+     "message": "Created from template 'empty'",
+     "previews": {
+      "render": "artifacts/art_9f2a5bf16ef2/revisions/0001/previews/preview.png",
+      "glb": "artifacts/art_9f2a5bf16ef2/revisions/0001/previews/model.glb",
+      "glb_ids": "artifacts/art_9f2a5bf16ef2/revisions/0001/previews/model.glb"
+     },
+     "validation": null,
+     "render_file": "A_single_rev1.png"
+    },
+    {
+     "id": "rev_8fff3e1d14f3",
+     "number": 2,
+     "message": "A-single / Agent: mug",
+     "previews": {
+      "render": "artifacts/art_9f2a5bf16ef2/revisions/0002/previews/preview.png",
+      "glb": "artifacts/art_9f2a5bf16ef2/revisions/0002/previews/model.glb",
+      "glb_ids": "artifacts/art_9f2a5bf16ef2/revisions/0002/previews/model.glb"
+     },
+     "validation": {
+      "passed": true,
+      "checks": [
+       {
+        "name": "component_preservation",
+        "passed": true,
+        "detail": "changed: []; outside executed scope: none",
+        "data": {
+         "changed": [],
+         "outside": [],
+         "scope": [
+          "mug"
+         ],
+         "preserved": [
+          "mug"
+         ]
+        }
+       },
+       {
+        "name": "file_reopens",
+        "passed": true,
+        "detail": ".blend reopened with 1 components",
+        "data": {}
+       }
+      ]
+     },
+     "render_file": "A_single_rev2.png"
+    }
+   ],
+   "measurements": {
+    "object_count": 1,
+    "vertex_count": 0,
+    "poly_count": 0
+   },
+   "components": [],
+   "revision_count": 2,
+   "checks": [
+    {
+     "name": "execution finished",
+     "ok": true,
+     "detail": "None"
+    },
+    {
+     "name": "a native Blender object with geometry was created",
+     "ok": false,
+     "detail": "[]"
+    },
+    {
+     "name": "the .blend file reopens",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "name": "render produced",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "name": "polygon budget met (measured)",
+     "ok": true,
+     "detail": "0"
+    },
+    {
+     "name": "height 0.1 m met (measured)",
+     "ok": false,
+     "detail": "None"
+    }
+   ],
+   "rubric": {
+    "relevance": {
+     "score": null,
+     "basis": "needs review"
+    },
+    "structural_fidelity": {
+     "score": null,
+     "basis": "needs review"
+    },
+    "constraint_adherence": {
+     "score": 1,
+     "basis": "measured",
+     "note": "poly_count=0, height=None"
+    },
+    "preservation": {
+     "score": null,
+     "basis": "not applicable (new object)",
+     "note": ""
+    },
+    "usability": {
+     "score": null,
+     "basis": "needs review"
+    }
+   },
+   "passed": false,
+   "verification": "deterministic"
+  },
+  {
+   "task": "A",
+   "mode": "iterative",
+   "provider": "heuristic",
+   "sources": [
+    {
+     "id": "src_a60a08e8628b",
+     "name": "Cafe photograph",
+     "media_type": "image",
+     "sha256": "1b334876bab6bccddc821520b67fad5bceaaf3c454885b75cdc126b7ebfe9576",
+     "origin": "path"
+    },
+    {
+     "id": "src_1df90eef25cd",
+     "name": "Stylized illustration",
+     "media_type": "image",
+     "sha256": "4d671408fa4c57ca1b552851a3ccf0d0a18a9e601e478e7feb561cc20fae472f",
+     "origin": "path"
+    },
+    {
+     "id": "src_32f26af24c6b",
+     "name": "Prop specification",
+     "media_type": "text",
+     "sha256": "fe5aa9bca85f4c76300b073e2bee9503c29ce6a36349779d6e4208271a5c0a1b",
+     "origin": "inline"
+    }
+   ],
+   "bindings": [
+    {
+     "id": "bind_1be229cacc72",
+     "source_id": "src_a60a08e8628b",
+     "role": "reference",
+     "aspects": [
+      "geometry",
+      "shape",
+      "proportion"
+     ],
+     "scope": "artifact",
+     "component": null,
+     "segment": {
+      "kind": "region",
+      "start": null,
+      "end": null,
+      "page": null,
+      "region": [
+       0.27,
+       0.03,
+       0.43,
+       0.73
+      ],
+      "note": "the cup, without saucer and spoon"
+     },
+     "constraint": "soft"
+    },
+    {
+     "id": "bind_561b7ca274d7",
+     "source_id": "src_1df90eef25cd",
+     "role": "inspiration",
+     "aspects": [
+      "style",
+      "color"
+     ],
+     "scope": "artifact",
+     "component": null,
+     "segment": null,
+     "constraint": "soft"
+    },
+    {
+     "id": "bind_a76fac1c0b54",
+     "source_id": "src_32f26af24c6b",
+     "role": "constraint",
+     "aspects": [
+      "geometry"
+     ],
+     "scope": "artifact",
+     "component": null,
+     "segment": null,
+     "constraint": "hard"
+    }
+   ],
+   "seconds": 6.18,
+   "execution_status": "failed",
+   "error": "agent: hard constraint(s) still violated after 1 correction(s) (corrective revision failed validation and was rolled back): height eq 0.1 from 'Prop specification' - measured None; source text: \"Height 0.1 m. The model must have no more than 600 polygons.\". No revision satisfied the hard constraints.",
+   "budget": {
+    "limits": {
+     "max_model_calls": 24,
+     "max_cost_usd": 2.0,
+     "max_tokens": 600000,
+     "max_seconds": 900,
+     "max_iterations": 3,
+     "call_timeout_s": 180,
+     "max_retries": 2,
+     "job_timeout_s": 900.0,
+     "job_memory_mb": null,
+     "max_concurrent_jobs": 4
+    },
+    "used": {
+     "model_calls": 0,
+     "input_tokens": 0,
+     "output_tokens": 0,
+     "cost_usd": 0.0,
+     "cost": "$0.0000",
+     "unpriced_calls": 0,
+     "seconds": 6.17
+    },
+    "by_provider": {},
+    "refusals": []
+   },
+   "plans": [
+    {
+     "provider": "heuristic",
+     "model": "heuristic-v1",
+     "recorded": false,
+     "operations": [
+      {
+       "op": "set_taper",
+       "component_id": "mug",
+       "params": {
+        "factor": -0.1823,
+        "axis": "Z"
+       },
+       "derived_from": [
+        "bind_1be229cacc72"
+       ],
+       "rationale": "silhouette taper ratio 0.74"
+      },
+      {
+       "op": "set_material",
+       "component_id": "mug",
+       "params": {
+        "base_color": "#94b1af"
+       },
+       "derived_from": [
+        "bind_561b7ca274d7"
+       ],
+       "rationale": "colour from 'Stylized illustration'"
+      }
+     ],
+     "interpretations": {
+      "bind_1be229cacc72": "reference (drive, weight 0.6): silhouette top/bottom width 0.56/0.76 -> taper target -0.304, applied -0.182",
+      "bind_561b7ca274d7": "inspiration (blend, weight 0.30): dominant foreground colour (measured) #2f8f8a -> base colour #bfbfbf -> #94b1af",
+      "bind_a76fac1c0b54": "presented; no allowed operation family of adapter 'blender' expresses aspects ['geometry'] for text measurements at this unit"
+     },
+     "notes": [],
+     "usage": {}
+    }
+   ],
+   "validation_decisions": [
+    {
+     "unit": "artifact:art_1a7a553b0434#mug",
+     "status": "failed",
+     "error": "ValueError: component has no geometry to measure"
+    }
+   ],
+   "loop": {
+    "status": "unresolved",
+    "stop_reason": "corrective revision failed validation and was rolled back",
+    "iterations_run": 1,
+    "usage": {
+     "calls": 0,
+     "input_tokens": null,
+     "output_tokens": null,
+     "latency_ms": null,
+     "cost_usd": null,
+     "model": null,
+     "request_id": null,
+     "fallback_from": null,
+     "cache_read_tokens": null,
+     "unpriced_calls": 0
+    },
+    "seconds": 1.7,
+    "unresolved": [
+     {
+      "criterion": "height eq 0.1 from 'Prop specification'",
+      "status": "uncertain",
+      "kind": "constraint",
+      "detail": "measured None; source text: \"Height 0.1 m. The model must have no more than 600 polygons.\"",
+      "component_id": "mug",
+      "binding_id": "bind_a76fac1c0b54",
+      "evidence": {
+       "property": "height",
+       "op": "eq",
+       "value": 0.1,
+       "actual": null,
+       "advisory": false,
+       "origin": "derived from source"
+      },
+      "suggestion": ""
+     }
+    ],
+    "best_valid_revision_id": null,
+    "final_revision_id": "rev_e52ae6aa8664"
+   },
+   "evaluations": [
+    {
+     "iteration": 0,
+     "passed": false,
+     "findings": [
+      {
+       "criterion": "poly_count lte 600.0 from 'Prop specification'",
+       "status": "pass",
+       "kind": "constraint",
+       "detail": "measured 0; source text: \"Height 0.1 m. The model must have no more than 600 polygons.\"",
+       "component_id": "mug",
+       "binding_id": "bind_a76fac1c0b54",
+       "evidence": {
+        "property": "poly_count",
+        "op": "lte",
+        "value": 600.0,
+        "actual": 0,
+        "advisory": false,
+        "origin": "derived from source"
+       },
+       "suggestion": ""
+      },
+      {
+       "criterion": "height eq 0.1 from 'Prop specification'",
+       "status": "uncertain",
+       "kind": "constraint",
+       "detail": "measured None; source text: \"Height 0.1 m. The model must have no more than 600 polygons.\"",
+       "component_id": "mug",
+       "binding_id": "bind_a76fac1c0b54",
+       "evidence": {
+        "property": "height",
+        "op": "eq",
+        "value": 0.1,
+        "actual": null,
+        "advisory": false,
+        "origin": "derived from source"
+       },
+       "suggestion": ""
+      }
+     ],
+     "revisions": [
+      {
+       "unit": "artifact:art_1a7a553b0434#mug",
+       "plan": {
+        "provider": "heuristic",
+        "model": "heuristic-v1",
+        "deterministic": true,
+        "operations": [
+         {
+          "op": "set_dimensions",
+          "component_id": "mug",
+          "params": {
+           "height": 0.1,
+           "keep_ground": true
+          },
+          "derived_from": [],
+          "rationale": "height None violates eq 0.1"
+         }
+        ],
+        "interpretations": {},
+        "notes": [
+         "heuristic revision, iteration 1"
+        ],
+        "warnings": [],
+        "usage": {},
+        "recorded": false
+       },
+       "errors": []
+      }
+     ]
+    }
+   ],
+   "live_calls": 0,
+   "observations": [
+    {
+     "source": "Cafe photograph",
+     "provider": "heuristic",
+     "model": "heuristic-semantic-v1",
+     "pathway": "measured",
+     "status": "partial",
+     "summary": "measured 11 visual properties of region [0.27, 0.03, 0.43, 0.73]",
+     "observations": [
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #d08341 covers 26% of the region",
+       "confidence": 1.0,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.27,
+         0.03,
+         0.43,
+         0.73
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #a23917 covers 25% of the region",
+       "confidence": 1.0,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.27,
+         0.03,
+         0.43,
+         0.73
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #440e06 covers 24% of the region",
+       "confidence": 1.0,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.27,
+         0.03,
+         0.43,
+         0.73
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #f6eadc covers 13% of the region",
+       "confidence": 1.0,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.27,
+         0.03,
+         0.43,
+         0.73
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #dfb389 covers 12% of the region",
+       "confidence": 1.0,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.27,
+         0.03,
+         0.43,
+         0.73
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "lighting",
+       "basis": "measured",
+       "text": "brightness 0.448, contrast 0.2848, warm cast",
+       "confidence": 1.0,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.27,
+         0.03,
+         0.43,
+         0.73
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "composition",
+       "basis": "measured",
+       "text": "aspect 0.8836; edge energy is balanced (orientation 0.5202); edge density 0.0886",
+       "confidence": 1.0,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.27,
+         0.03,
+         0.43,
+         0.73
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "proportion",
+       "basis": "measured",
+       "text": "foreground silhouette 0.8836:1 (width:height), covers 81%; similar width top and bottom",
+       "confidence": 0.6,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.0,
+         0.0,
+         1.0,
+         1.0
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "foreground colour #d89451 (31% of the silhouette)",
+       "confidence": 0.6,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.0,
+         0.0,
+         1.0,
+         1.0
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "foreground colour #3f0903 (31% of the silhouette)",
+       "confidence": 0.6,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.0,
+         0.0,
+         1.0,
+         1.0
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "foreground colour #efd9c2 (24% of the silhouette)",
+       "confidence": 0.6,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.0,
+         0.0,
+         1.0,
+         1.0
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "uncertainty",
+       "basis": "inferred",
+       "text": "No object recognition: the local analyser measures pixels and cannot tell what the image depicts.",
+       "confidence": null,
+       "location": null
+      }
+     ],
+     "derived_constraints": [],
+     "limitations": [
+      "No object recognition: the local analyser measures pixels and cannot tell what the image depicts.",
+      "silhouette assumes a background distinct from the subject; proportions are 2D image ratios, not 3D sizes"
+     ],
+     "usage": {
+      "calls": 0,
+      "input_tokens": null,
+      "output_tokens": null,
+      "latency_ms": 164.5,
+      "cost_usd": null,
+      "model": null,
+      "request_id": null,
+      "fallback_from": null,
+      "cache_read_tokens": null,
+      "unpriced_calls": 0
+     }
+    },
+    {
+     "source": "Stylized illustration",
+     "provider": "heuristic",
+     "model": "heuristic-semantic-v1",
+     "pathway": "measured",
+     "status": "partial",
+     "summary": "measured 11 visual properties",
+     "observations": [
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #f6efe1 covers 74% of the image",
+       "confidence": 1.0,
+       "location": null
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #2f8f8a covers 15% of the image",
+       "confidence": 1.0,
+       "location": null
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #2b2a33 covers 5% of the image",
+       "confidence": 1.0,
+       "location": null
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #cdcb9f covers 5% of the image",
+       "confidence": 1.0,
+       "location": null
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #5a3a24 covers 1% of the image",
+       "confidence": 1.0,
+       "location": null
+      },
+      {
+       "kind": "lighting",
+       "basis": "measured",
+       "text": "brightness 0.8195, contrast 0.2295, neutral cast",
+       "confidence": 1.0,
+       "location": null
+      },
+      {
+       "kind": "composition",
+       "basis": "measured",
+       "text": "aspect 1.0; edge energy is balanced (orientation 0.5121); edge density 0.0285",
+       "confidence": 1.0,
+       "location": null
+      },
+      {
+       "kind": "proportion",
+       "basis": "measured",
+       "text": "foreground silhouette 0.7887:1 (width:height), covers 26%; wider at the bottom than the top",
+       "confidence": 0.6,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.2148,
+         0.0859,
+         0.627,
+         0.7949
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "foreground colour #2f8f8a (58% of the silhouette)",
+       "confidence": 0.6,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.2148,
+         0.0859,
+         0.627,
+         0.7949
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "foreground colour #2b2a33 (20% of the silhouette)",
+       "confidence": 0.6,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.2148,
+         0.0859,
+         0.627,
+         0.7949
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "foreground colour #cdcb9f (18% of the silhouette)",
+       "confidence": 0.6,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.2148,
+         0.0859,
+         0.627,
+         0.7949
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "uncertainty",
+       "basis": "inferred",
+       "text": "No object recognition: the local analyser measures pixels and cannot tell what the image depicts.",
+       "confidence": null,
+       "location": null
+      }
+     ],
+     "derived_constraints": [],
+     "limitations": [
+      "No object recognition: the local analyser measures pixels and cannot tell what the image depicts.",
+      "silhouette assumes a background distinct from the subject; proportions are 2D image ratios, not 3D sizes"
+     ],
+     "usage": {
+      "calls": 0,
+      "input_tokens": null,
+      "output_tokens": null,
+      "latency_ms": 0.2,
+      "cost_usd": null,
+      "model": null,
+      "request_id": null,
+      "fallback_from": null,
+      "cache_read_tokens": null,
+      "unpriced_calls": 0
+     }
+    },
+    {
+     "source": "Prop specification",
+     "provider": "heuristic",
+     "model": "heuristic-semantic-v1",
+     "pathway": "text_rules",
+     "status": "partial",
+     "summary": "1 requirement(s), 0 instruction(s), 2 measurable limit(s)",
+     "observations": [
+      {
+       "kind": "structure",
+       "basis": "quoted",
+       "text": "Prop specification",
+       "confidence": null,
+       "location": {
+        "page": null,
+        "section": "Prop specification",
+        "paragraph": null,
+        "line": 1,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": null,
+        "frame": null
+       }
+      },
+      {
+       "kind": "requirement",
+       "basis": "quoted",
+       "text": "Height 0.1 m. The model must have no more than 600 polygons.",
+       "confidence": null,
+       "location": {
+        "page": null,
+        "section": "Prop specification",
+        "paragraph": null,
+        "line": 3,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": null,
+        "frame": null
+       }
+      }
+     ],
+     "derived_constraints": [
+      {
+       "property": "poly_count",
+       "op": "lte",
+       "value": 600.0,
+       "text": "Height 0.1 m. The model must have no more than 600 polygons.",
+       "location": {
+        "page": null,
+        "section": "Prop specification",
+        "paragraph": null,
+        "line": 3,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": null,
+        "frame": null
+       }
+      },
+      {
+       "property": "height",
+       "op": "eq",
+       "value": 0.1,
+       "text": "Height 0.1 m. The model must have no more than 600 polygons.",
+       "location": {
+        "page": null,
+        "section": "Prop specification",
+        "paragraph": null,
+        "line": 3,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": null,
+        "frame": null
+       }
+      }
+     ],
+     "limitations": [
+      "rule-based extraction: only explicit sentences and numeric limits are recognised; implied meaning is not understood"
+     ],
+     "usage": {
+      "calls": 0,
+      "input_tokens": null,
+      "output_tokens": null,
+      "latency_ms": 0.3,
+      "cost_usd": null,
+      "model": null,
+      "request_id": null,
+      "fallback_from": null,
+      "cache_read_tokens": null,
+      "unpriced_calls": 0
+     }
+    }
+   ],
+   "model_observation_count": 0,
+   "revisions": [
+    {
+     "id": "rev_29d4c94599b5",
+     "number": 1,
+     "message": "Created from template 'empty'",
+     "previews": {
+      "render": "artifacts/art_1a7a553b0434/revisions/0001/previews/preview.png",
+      "glb": "artifacts/art_1a7a553b0434/revisions/0001/previews/model.glb",
+      "glb_ids": "artifacts/art_1a7a553b0434/revisions/0001/previews/model.glb"
+     },
+     "validation": null,
+     "render_file": "A_iterative_rev1.png"
+    },
+    {
+     "id": "rev_e52ae6aa8664",
+     "number": 2,
+     "message": "A-iterative / Agent: mug",
+     "previews": {
+      "render": "artifacts/art_1a7a553b0434/revisions/0002/previews/preview.png",
+      "glb": "artifacts/art_1a7a553b0434/revisions/0002/previews/model.glb",
+      "glb_ids": "artifacts/art_1a7a553b0434/revisions/0002/previews/model.glb"
+     },
+     "validation": {
+      "passed": true,
+      "checks": [
+       {
+        "name": "component_preservation",
+        "passed": true,
+        "detail": "changed: []; outside executed scope: none",
+        "data": {
+         "changed": [],
+         "outside": [],
+         "scope": [
+          "mug"
+         ],
+         "preserved": [
+          "mug"
+         ]
+        }
+       },
+       {
+        "name": "file_reopens",
+        "passed": true,
+        "detail": ".blend reopened with 1 components",
+        "data": {}
+       }
+      ]
+     },
+     "render_file": "A_iterative_rev2.png"
+    }
+   ],
+   "measurements": {
+    "object_count": 1,
+    "vertex_count": 0,
+    "poly_count": 0
+   },
+   "components": [],
+   "revision_count": 2,
+   "checks": [
+    {
+     "name": "execution finished",
+     "ok": true,
+     "detail": "agent: hard constraint(s) still violated after 1 correction(s) (corrective revision failed validation and was rolled back): height eq 0.1 from 'Prop specification' - measured None; source text: \"Height 0.1 m. The model must have no more than 600 polygons.\". No revision satisfied the hard constraints."
+    },
+    {
+     "name": "a native Blender object with geometry was created",
+     "ok": false,
+     "detail": "[]"
+    },
+    {
+     "name": "the .blend file reopens",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "name": "render produced",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "name": "polygon budget met (measured)",
+     "ok": true,
+     "detail": "0"
+    },
+    {
+     "name": "height 0.1 m met (measured)",
+     "ok": false,
+     "detail": "None"
+    }
+   ],
+   "rubric": {
+    "relevance": {
+     "score": null,
+     "basis": "needs review"
+    },
+    "structural_fidelity": {
+     "score": null,
+     "basis": "needs review"
+    },
+    "constraint_adherence": {
+     "score": 1,
+     "basis": "measured",
+     "note": "poly_count=0, height=None"
+    },
+    "preservation": {
+     "score": null,
+     "basis": "not applicable (new object)",
+     "note": ""
+    },
+    "usability": {
+     "score": null,
+     "basis": "needs review"
+    }
+   },
+   "passed": false,
+   "verification": "deterministic"
+  },
+  {
+   "task": "B",
+   "mode": "single",
+   "provider": "heuristic",
+   "sources": [
+    {
+     "id": "src_846117bb4431",
+     "name": "Launch photo",
+     "media_type": "image",
+     "sha256": "96677f79beb3872970f2d3d907e5063b9e42aa5b1fba85fa2d55e7f2ad681ff6",
+     "origin": "path"
+    }
+   ],
+   "bindings": [
+    {
+     "id": "bind_43a8d3aa2bf8",
+     "source_id": "src_846117bb4431",
+     "role": "reference",
+     "aspects": [
+      "color",
+      "material"
+     ],
+     "scope": "component",
+     "component": "body",
+     "segment": {
+      "kind": "region",
+      "start": null,
+      "end": null,
+      "page": null,
+      "region": [
+       0.46,
+       0.28,
+       0.09,
+       0.66
+      ],
+      "note": "the launch vehicle's body"
+     },
+     "constraint": "soft"
+    }
+   ],
+   "seconds": 5.06,
+   "execution_status": "succeeded",
+   "error": null,
+   "budget": {
+    "limits": {
+     "max_model_calls": 24,
+     "max_cost_usd": 2.0,
+     "max_tokens": 600000,
+     "max_seconds": 900,
+     "max_iterations": 3,
+     "call_timeout_s": 180,
+     "max_retries": 2,
+     "job_timeout_s": 900.0,
+     "job_memory_mb": null,
+     "max_concurrent_jobs": 4
+    },
+    "used": {
+     "model_calls": 0,
+     "input_tokens": 0,
+     "output_tokens": 0,
+     "cost_usd": 0.0,
+     "cost": "$0.0000",
+     "unpriced_calls": 0,
+     "seconds": 5.06
+    },
+    "by_provider": {},
+    "refusals": []
+   },
+   "plans": [
+    {
+     "provider": "heuristic",
+     "model": "heuristic-v1",
+     "recorded": false,
+     "operations": [],
+     "interpretations": {},
+     "notes": [],
+     "usage": {}
+    },
+    {
+     "provider": "heuristic",
+     "model": "heuristic-v1",
+     "recorded": false,
+     "operations": [
+      {
+       "op": "set_material",
+       "component_id": "body",
+       "params": {
+        "base_color": "#9a9285"
+       },
+       "derived_from": [
+        "bind_43a8d3aa2bf8"
+       ],
+       "rationale": "colour from 'Launch photo'"
+      }
+     ],
+     "interpretations": {
+      "bind_43a8d3aa2bf8": "reference (drive, weight 0.60): dominant foreground colour of region [0.46, 0.28, 0.09, 0.66] (measured) #82745f -> base colour #bfbfbf -> #9a9285"
+     },
+     "notes": [],
+     "usage": {}
+    }
+   ],
+   "validation_decisions": [
+    {
+     "unit": "artifact:art_f7a84d8eaa27#rocket",
+     "status": "succeeded",
+     "error": null
+    },
+    {
+     "unit": "artifact:art_f7a84d8eaa27#body",
+     "status": "succeeded",
+     "error": null
+    }
+   ],
+   "live_calls": 0,
+   "observations": [
+    {
+     "source": "Launch photo",
+     "provider": "heuristic",
+     "model": "heuristic-semantic-v1",
+     "pathway": "measured",
+     "status": "partial",
+     "summary": "measured 11 visual properties of region [0.46, 0.28, 0.09, 0.66]",
+     "observations": [
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #414a60 covers 30% of the region",
+       "confidence": 1.0,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.46,
+         0.28,
+         0.09,
+         0.66
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #303850 covers 24% of the region",
+       "confidence": 1.0,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.46,
+         0.28,
+         0.09,
+         0.66
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #605e62 covers 20% of the region",
+       "confidence": 1.0,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.46,
+         0.28,
+         0.09,
+         0.66
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #a09074 covers 14% of the region",
+       "confidence": 1.0,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.46,
+         0.28,
+         0.09,
+         0.66
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #d7c29e covers 13% of the region",
+       "confidence": 1.0,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.46,
+         0.28,
+         0.09,
+         0.66
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "lighting",
+       "basis": "measured",
+       "text": "brightness 0.3927, contrast 0.1851, neutral cast",
+       "confidence": 1.0,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.46,
+         0.28,
+         0.09,
+         0.66
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "composition",
+       "basis": "measured",
+       "text": "aspect 0.2057; edge energy is mostly vertical (orientation 0.3095); edge density 0.1543",
+       "confidence": 1.0,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.46,
+         0.28,
+         0.09,
+         0.66
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "proportion",
+       "basis": "measured",
+       "text": "foreground silhouette 0.2117:1 (width:height), covers 43%; wider at the bottom than the top",
+       "confidence": 0.6,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.0,
+         0.0284,
+         1.0,
+         0.9716
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "foreground colour #82745f (31% of the silhouette)",
+       "confidence": 0.6,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.0,
+         0.0284,
+         1.0,
+         0.9716
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "foreground colour #dbc7a3 (25% of the silhouette)",
+       "confidence": 0.6,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.0,
+         0.0284,
+         1.0,
+         0.9716
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "foreground colour #ae9c7c (25% of the silhouette)",
+       "confidence": 0.6,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.0,
+         0.0284,
+         1.0,
+         0.9716
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "uncertainty",
+       "basis": "inferred",
+       "text": "No object recognition: the local analyser measures pixels and cannot tell what the image depicts.",
+       "confidence": null,
+       "location": null
+      }
+     ],
+     "derived_constraints": [],
+     "limitations": [
+      "No object recognition: the local analyser measures pixels and cannot tell what the image depicts.",
+      "silhouette assumes a background distinct from the subject; proportions are 2D image ratios, not 3D sizes"
+     ],
+     "usage": {
+      "calls": 0,
+      "input_tokens": null,
+      "output_tokens": null,
+      "latency_ms": 24.9,
+      "cost_usd": null,
+      "model": null,
+      "request_id": null,
+      "fallback_from": null,
+      "cache_read_tokens": null,
+      "unpriced_calls": 0
+     }
+    }
+   ],
+   "model_observation_count": 0,
+   "revisions": [
+    {
+     "id": "rev_b5f863304276",
+     "number": 1,
+     "message": "Created from template 'components'",
+     "previews": {
+      "render": "artifacts/art_f7a84d8eaa27/revisions/0001/previews/preview.png",
+      "glb": "artifacts/art_f7a84d8eaa27/revisions/0001/previews/model.glb",
+      "glb_ids": "artifacts/art_f7a84d8eaa27/revisions/0001/previews/model.glb"
+     },
+     "validation": null,
+     "render_file": "B_single_rev1.png"
+    },
+    {
+     "id": "rev_be3cefa71024",
+     "number": 2,
+     "message": "B-single / Agent: rocket, body",
+     "previews": {
+      "render": "artifacts/art_f7a84d8eaa27/revisions/0002/previews/preview.png",
+      "glb": "artifacts/art_f7a84d8eaa27/revisions/0002/previews/model.glb",
+      "glb_ids": "artifacts/art_f7a84d8eaa27/revisions/0002/previews/model.glb"
+     },
+     "validation": {
+      "passed": true,
+      "checks": [
+       {
+        "name": "component_preservation",
+        "passed": true,
+        "detail": "changed: ['body']; outside executed scope: none",
+        "data": {
+         "changed": [
+          "body"
+         ],
+         "outside": [],
+         "scope": [
+          "body",
+          "fins",
+          "nose",
+          "rocket",
+          "tower"
+         ],
+         "preserved": [
+          "fins",
+          "nose",
+          "rocket",
+          "tower"
+         ]
+        }
+       },
+       {
+        "name": "file_reopens",
+        "passed": true,
+        "detail": ".blend reopened with 5 components",
+        "data": {}
+       }
+      ]
+     },
+     "render_file": "B_single_rev2.png"
+    }
+   ],
+   "checks": [
+    {
+     "name": "execution finished",
+     "ok": true,
+     "detail": "None"
+    },
+    {
+     "name": "the bound component changed",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "name": "unrelated components preserved exactly (component states)",
+     "ok": true,
+     "detail": "{'nose': True, 'fins': True, 'tower': True}"
+    }
+   ],
+   "rubric": {
+    "relevance": {
+     "score": null,
+     "basis": "needs review"
+    },
+    "structural_fidelity": {
+     "score": null,
+     "basis": "needs review"
+    },
+    "constraint_adherence": {
+     "score": null,
+     "basis": "needs review"
+    },
+    "preservation": {
+     "score": 2,
+     "basis": "measured (component state digests)",
+     "note": ""
+    },
+    "usability": {
+     "score": null,
+     "basis": "needs review"
+    }
+   },
+   "passed": true,
+   "verification": "deterministic"
+  },
+  {
+   "task": "B",
+   "mode": "iterative",
+   "provider": "heuristic",
+   "sources": [
+    {
+     "id": "src_d13318850920",
+     "name": "Launch photo",
+     "media_type": "image",
+     "sha256": "96677f79beb3872970f2d3d907e5063b9e42aa5b1fba85fa2d55e7f2ad681ff6",
+     "origin": "path"
+    }
+   ],
+   "bindings": [
+    {
+     "id": "bind_1ae37dc65709",
+     "source_id": "src_d13318850920",
+     "role": "reference",
+     "aspects": [
+      "color",
+      "material"
+     ],
+     "scope": "component",
+     "component": "body",
+     "segment": {
+      "kind": "region",
+      "start": null,
+      "end": null,
+      "page": null,
+      "region": [
+       0.46,
+       0.28,
+       0.09,
+       0.66
+      ],
+      "note": "the launch vehicle's body"
+     },
+     "constraint": "soft"
+    }
+   ],
+   "seconds": 5.87,
+   "execution_status": "succeeded",
+   "error": null,
+   "budget": {
+    "limits": {
+     "max_model_calls": 24,
+     "max_cost_usd": 2.0,
+     "max_tokens": 600000,
+     "max_seconds": 900,
+     "max_iterations": 3,
+     "call_timeout_s": 180,
+     "max_retries": 2,
+     "job_timeout_s": 900.0,
+     "job_memory_mb": null,
+     "max_concurrent_jobs": 4
+    },
+    "used": {
+     "model_calls": 0,
+     "input_tokens": 0,
+     "output_tokens": 0,
+     "cost_usd": 0.0,
+     "cost": "$0.0000",
+     "unpriced_calls": 0,
+     "seconds": 5.87
+    },
+    "by_provider": {},
+    "refusals": []
+   },
+   "plans": [
+    {
+     "provider": "heuristic",
+     "model": "heuristic-v1",
+     "recorded": false,
+     "operations": [],
+     "interpretations": {},
+     "notes": [],
+     "usage": {}
+    },
+    {
+     "provider": "heuristic",
+     "model": "heuristic-v1",
+     "recorded": false,
+     "operations": [
+      {
+       "op": "set_material",
+       "component_id": "body",
+       "params": {
+        "base_color": "#9a9285"
+       },
+       "derived_from": [
+        "bind_1ae37dc65709"
+       ],
+       "rationale": "colour from 'Launch photo'"
+      }
+     ],
+     "interpretations": {
+      "bind_1ae37dc65709": "reference (drive, weight 0.60): dominant foreground colour of region [0.46, 0.28, 0.09, 0.66] (measured) #82745f -> base colour #bfbfbf -> #9a9285"
+     },
+     "notes": [],
+     "usage": {}
+    }
+   ],
+   "validation_decisions": [
+    {
+     "unit": "artifact:art_88931aebe73f#rocket",
+     "status": "succeeded",
+     "error": null
+    },
+    {
+     "unit": "artifact:art_88931aebe73f#body",
+     "status": "succeeded",
+     "error": null
+    }
+   ],
+   "loop": {
+    "status": "achieved",
+    "stop_reason": "achieved",
+    "iterations_run": 0,
+    "usage": {
+     "calls": 0,
+     "input_tokens": null,
+     "output_tokens": null,
+     "latency_ms": null,
+     "cost_usd": null,
+     "model": null,
+     "request_id": null,
+     "fallback_from": null,
+     "cache_read_tokens": null,
+     "unpriced_calls": 0
+    },
+    "seconds": 0.53,
+    "unresolved": [],
+    "best_valid_revision_id": "rev_f5a3f8f16b9a",
+    "final_revision_id": "rev_f5a3f8f16b9a"
+   },
+   "evaluations": [
+    {
+     "iteration": 0,
+     "passed": true,
+     "findings": [
+      {
+       "criterion": "material colour close to Launch photo (#82745f)",
+       "status": "pass",
+       "kind": "deterministic",
+       "detail": "#9a9285 vs #82745f: distance 0.122 (limit 0.25)",
+       "component_id": "body",
+       "binding_id": "bind_1ae37dc65709",
+       "evidence": {
+        "distance": 0.1223,
+        "limit": 0.25,
+        "current": "#9a9285",
+        "reference": "#82745f"
+       },
+       "suggestion": "set base colour of body toward #82745f"
+      }
+     ],
+     "revisions": null
+    }
+   ],
+   "live_calls": 0,
+   "observations": [
+    {
+     "source": "Launch photo",
+     "provider": "heuristic",
+     "model": "heuristic-semantic-v1",
+     "pathway": "measured",
+     "status": "partial",
+     "summary": "measured 11 visual properties of region [0.46, 0.28, 0.09, 0.66]",
+     "observations": [
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #414a60 covers 30% of the region",
+       "confidence": 1.0,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.46,
+         0.28,
+         0.09,
+         0.66
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #303850 covers 24% of the region",
+       "confidence": 1.0,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.46,
+         0.28,
+         0.09,
+         0.66
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #605e62 covers 20% of the region",
+       "confidence": 1.0,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.46,
+         0.28,
+         0.09,
+         0.66
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #a09074 covers 14% of the region",
+       "confidence": 1.0,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.46,
+         0.28,
+         0.09,
+         0.66
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #d7c29e covers 13% of the region",
+       "confidence": 1.0,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.46,
+         0.28,
+         0.09,
+         0.66
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "lighting",
+       "basis": "measured",
+       "text": "brightness 0.3927, contrast 0.1851, neutral cast",
+       "confidence": 1.0,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.46,
+         0.28,
+         0.09,
+         0.66
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "composition",
+       "basis": "measured",
+       "text": "aspect 0.2057; edge energy is mostly vertical (orientation 0.3095); edge density 0.1543",
+       "confidence": 1.0,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.46,
+         0.28,
+         0.09,
+         0.66
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "proportion",
+       "basis": "measured",
+       "text": "foreground silhouette 0.2117:1 (width:height), covers 43%; wider at the bottom than the top",
+       "confidence": 0.6,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.0,
+         0.0284,
+         1.0,
+         0.9716
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "foreground colour #82745f (31% of the silhouette)",
+       "confidence": 0.6,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.0,
+         0.0284,
+         1.0,
+         0.9716
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "foreground colour #dbc7a3 (25% of the silhouette)",
+       "confidence": 0.6,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.0,
+         0.0284,
+         1.0,
+         0.9716
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "foreground colour #ae9c7c (25% of the silhouette)",
+       "confidence": 0.6,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.0,
+         0.0284,
+         1.0,
+         0.9716
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "uncertainty",
+       "basis": "inferred",
+       "text": "No object recognition: the local analyser measures pixels and cannot tell what the image depicts.",
+       "confidence": null,
+       "location": null
+      }
+     ],
+     "derived_constraints": [],
+     "limitations": [
+      "No object recognition: the local analyser measures pixels and cannot tell what the image depicts.",
+      "silhouette assumes a background distinct from the subject; proportions are 2D image ratios, not 3D sizes"
+     ],
+     "usage": {
+      "calls": 0,
+      "input_tokens": null,
+      "output_tokens": null,
+      "latency_ms": 24.1,
+      "cost_usd": null,
+      "model": null,
+      "request_id": null,
+      "fallback_from": null,
+      "cache_read_tokens": null,
+      "unpriced_calls": 0
+     }
+    }
+   ],
+   "model_observation_count": 0,
+   "revisions": [
+    {
+     "id": "rev_fc003a67bee0",
+     "number": 1,
+     "message": "Created from template 'components'",
+     "previews": {
+      "render": "artifacts/art_88931aebe73f/revisions/0001/previews/preview.png",
+      "glb": "artifacts/art_88931aebe73f/revisions/0001/previews/model.glb",
+      "glb_ids": "artifacts/art_88931aebe73f/revisions/0001/previews/model.glb"
+     },
+     "validation": null,
+     "render_file": "B_iterative_rev1.png"
+    },
+    {
+     "id": "rev_f5a3f8f16b9a",
+     "number": 2,
+     "message": "B-iterative / Agent: rocket, body",
+     "previews": {
+      "render": "artifacts/art_88931aebe73f/revisions/0002/previews/preview.png",
+      "glb": "artifacts/art_88931aebe73f/revisions/0002/previews/model.glb",
+      "glb_ids": "artifacts/art_88931aebe73f/revisions/0002/previews/model.glb"
+     },
+     "validation": {
+      "passed": true,
+      "checks": [
+       {
+        "name": "component_preservation",
+        "passed": true,
+        "detail": "changed: ['body']; outside executed scope: none",
+        "data": {
+         "changed": [
+          "body"
+         ],
+         "outside": [],
+         "scope": [
+          "body",
+          "fins",
+          "nose",
+          "rocket",
+          "tower"
+         ],
+         "preserved": [
+          "fins",
+          "nose",
+          "rocket",
+          "tower"
+         ]
+        }
+       },
+       {
+        "name": "file_reopens",
+        "passed": true,
+        "detail": ".blend reopened with 5 components",
+        "data": {}
+       }
+      ]
+     },
+     "render_file": "B_iterative_rev2.png"
+    }
+   ],
+   "checks": [
+    {
+     "name": "execution finished",
+     "ok": true,
+     "detail": "None"
+    },
+    {
+     "name": "the bound component changed",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "name": "unrelated components preserved exactly (component states)",
+     "ok": true,
+     "detail": "{'nose': True, 'fins': True, 'tower': True}"
+    }
+   ],
+   "rubric": {
+    "relevance": {
+     "score": null,
+     "basis": "needs review"
+    },
+    "structural_fidelity": {
+     "score": null,
+     "basis": "needs review"
+    },
+    "constraint_adherence": {
+     "score": null,
+     "basis": "needs review"
+    },
+    "preservation": {
+     "score": 2,
+     "basis": "measured (component state digests)",
+     "note": ""
+    },
+    "usability": {
+     "score": null,
+     "basis": "needs review"
+    }
+   },
+   "passed": true,
+   "verification": "deterministic"
+  },
+  {
+   "task": "C",
+   "mode": "single",
+   "provider": "heuristic",
+   "sources": [
+    {
+     "id": "src_b4fb5c49b096",
+     "name": "Cat photograph",
+     "media_type": "image",
+     "sha256": "9540e8d656047041ae92c8c19f8aeb2baa4ede5a17030470e8a1cfc7bb26182a",
+     "origin": "path"
+    }
+   ],
+   "bindings": [
+    {
+     "id": "bind_4edb87c708f7",
+     "source_id": "src_b4fb5c49b096",
+     "role": "reference",
+     "aspects": [
+      "color",
+      "palette",
+      "content"
+     ],
+     "scope": "component",
+     "component": "subject",
+     "segment": null,
+     "constraint": "soft"
+    }
+   ],
+   "seconds": 0.41,
+   "execution_status": "succeeded",
+   "error": null,
+   "budget": {
+    "limits": {
+     "max_model_calls": 24,
+     "max_cost_usd": 2.0,
+     "max_tokens": 600000,
+     "max_seconds": 900,
+     "max_iterations": 3,
+     "call_timeout_s": 180,
+     "max_retries": 2,
+     "job_timeout_s": 900.0,
+     "job_memory_mb": null,
+     "max_concurrent_jobs": 4
+    },
+    "used": {
+     "model_calls": 0,
+     "input_tokens": 0,
+     "output_tokens": 0,
+     "cost_usd": 0.0,
+     "cost": "$0.0000",
+     "unpriced_calls": 0,
+     "seconds": 0.41
+    },
+    "by_provider": {},
+    "refusals": []
+   },
+   "plans": [
+    {
+     "provider": "heuristic",
+     "model": "heuristic-v1",
+     "recorded": false,
+     "operations": [],
+     "interpretations": {},
+     "notes": [],
+     "usage": {}
+    },
+    {
+     "provider": "heuristic",
+     "model": "heuristic-v1",
+     "recorded": false,
+     "operations": [
+      {
+       "op": "paint_reference",
+       "component_id": "subject",
+       "params": {
+        "source_id": "src_b4fb5c49b096",
+        "fit": "cover",
+        "mix": 0.6,
+        "blur": 0
+       },
+       "derived_from": [
+        "bind_4edb87c708f7"
+       ],
+       "rationale": "paint reference 'Cat photograph' into layer"
+      }
+     ],
+     "interpretations": {
+      "bind_4edb87c708f7": "reference pixels painted into layer at mix 0.6"
+     },
+     "notes": [],
+     "usage": {}
+    }
+   ],
+   "validation_decisions": [
+    {
+     "unit": "artifact:art_582a0f7cca65#poster",
+     "status": "succeeded",
+     "error": null
+    },
+    {
+     "unit": "artifact:art_582a0f7cca65#subject",
+     "status": "succeeded",
+     "error": null
+    }
+   ],
+   "live_calls": 0,
+   "observations": [
+    {
+     "source": "Cat photograph",
+     "provider": "heuristic",
+     "model": "heuristic-semantic-v1",
+     "pathway": "measured",
+     "status": "partial",
+     "summary": "measured 11 visual properties",
+     "observations": [
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #8d674b covers 30% of the image",
+       "confidence": 1.0,
+       "location": null
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #a07b5f covers 22% of the image",
+       "confidence": 1.0,
+       "location": null
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #6b442b covers 19% of the image",
+       "confidence": 1.0,
+       "location": null
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #ae8b74 covers 17% of the image",
+       "confidence": 1.0,
+       "location": null
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #bb9f93 covers 12% of the image",
+       "confidence": 1.0,
+       "location": null
+      },
+      {
+       "kind": "lighting",
+       "basis": "measured",
+       "text": "brightness 0.4603, contrast 0.126, warm cast",
+       "confidence": 1.0,
+       "location": null
+      },
+      {
+       "kind": "composition",
+       "basis": "measured",
+       "text": "aspect 1.5033; edge energy is balanced (orientation 0.5094); edge density 0.0501",
+       "confidence": 1.0,
+       "location": null
+      },
+      {
+       "kind": "proportion",
+       "basis": "measured",
+       "text": "foreground silhouette 1.5033:1 (width:height), covers 46%; similar width top and bottom",
+       "confidence": 0.6,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.0,
+         0.0,
+         1.0,
+         1.0
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "foreground colour #7b5236 (42% of the silhouette)",
+       "confidence": 0.6,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.0,
+         0.0,
+         1.0,
+         1.0
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "foreground colour #bca196 (31% of the silhouette)",
+       "confidence": 0.6,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.0,
+         0.0,
+         1.0,
+         1.0
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "foreground colour #57331c (19% of the silhouette)",
+       "confidence": 0.6,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.0,
+         0.0,
+         1.0,
+         1.0
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "uncertainty",
+       "basis": "inferred",
+       "text": "No object recognition: the local analyser measures pixels and cannot tell what the image depicts.",
+       "confidence": null,
+       "location": null
+      }
+     ],
+     "derived_constraints": [],
+     "limitations": [
+      "No object recognition: the local analyser measures pixels and cannot tell what the image depicts.",
+      "silhouette assumes a background distinct from the subject; proportions are 2D image ratios, not 3D sizes"
+     ],
+     "usage": {
+      "calls": 0,
+      "input_tokens": null,
+      "output_tokens": null,
+      "latency_ms": 0.2,
+      "cost_usd": null,
+      "model": null,
+      "request_id": null,
+      "fallback_from": null,
+      "cache_read_tokens": null,
+      "unpriced_calls": 0
+     }
+    }
+   ],
+   "model_observation_count": 0,
+   "revisions": [
+    {
+     "id": "rev_73e5a0528ac6",
+     "number": 1,
+     "message": "Created from template 'layers'",
+     "previews": {
+      "composite": "artifacts/art_582a0f7cca65/revisions/0001/previews/composite.png",
+      "layer:background": "artifacts/art_582a0f7cca65/revisions/0001/previews/layer_background.png",
+      "layer:subject": "artifacts/art_582a0f7cca65/revisions/0001/previews/layer_subject.png",
+      "layer:frame": "artifacts/art_582a0f7cca65/revisions/0001/previews/layer_frame.png"
+     },
+     "validation": null
+    },
+    {
+     "id": "rev_a0097cd078ee",
+     "number": 2,
+     "message": "C-single / Agent: poster, subject",
+     "previews": {
+      "composite": "artifacts/art_582a0f7cca65/revisions/0002/previews/composite.png",
+      "layer:background": "artifacts/art_582a0f7cca65/revisions/0002/previews/layer_background.png",
+      "layer:subject": "artifacts/art_582a0f7cca65/revisions/0002/previews/layer_subject.png",
+      "layer:frame": "artifacts/art_582a0f7cca65/revisions/0002/previews/layer_frame.png"
+     },
+     "validation": {
+      "passed": true,
+      "checks": [
+       {
+        "name": "component_preservation",
+        "passed": true,
+        "detail": "changed: ['subject']; outside executed scope: none",
+        "data": {
+         "changed": [
+          "subject"
+         ],
+         "outside": [],
+         "scope": [
+          "background",
+          "frame",
+          "poster",
+          "subject"
+         ],
+         "preserved": [
+          "background",
+          "frame",
+          "poster"
+         ]
+        }
+       },
+       {
+        "name": "file_reopens",
+        "passed": true,
+        "detail": "OpenRaster valid: mimetype first/stored, 3 layer PNGs, mergedimage present",
+        "data": {}
+       }
+      ]
+     }
+    }
+   ],
+   "checks": [
+    {
+     "name": "execution finished",
+     "ok": true,
+     "detail": "None"
+    },
+    {
+     "name": "the bound layer changed",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "name": "unrelated layers preserved exactly",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "name": "the OpenRaster file is a valid zip with stack.xml",
+     "ok": true,
+     "detail": ""
+    }
+   ],
+   "rubric": {
+    "relevance": {
+     "score": null,
+     "basis": "needs review"
+    },
+    "structural_fidelity": {
+     "score": null,
+     "basis": "needs review"
+    },
+    "constraint_adherence": {
+     "score": null,
+     "basis": "needs review"
+    },
+    "preservation": {
+     "score": 2,
+     "basis": "measured (layer state digests)",
+     "note": ""
+    },
+    "usability": {
+     "score": null,
+     "basis": "needs review"
+    }
+   },
+   "passed": true,
+   "verification": "deterministic"
+  },
+  {
+   "task": "C",
+   "mode": "iterative",
+   "provider": "heuristic",
+   "sources": [
+    {
+     "id": "src_a5eaeee12d9d",
+     "name": "Cat photograph",
+     "media_type": "image",
+     "sha256": "9540e8d656047041ae92c8c19f8aeb2baa4ede5a17030470e8a1cfc7bb26182a",
+     "origin": "path"
+    }
+   ],
+   "bindings": [
+    {
+     "id": "bind_821d9eed2a0f",
+     "source_id": "src_a5eaeee12d9d",
+     "role": "reference",
+     "aspects": [
+      "color",
+      "palette",
+      "content"
+     ],
+     "scope": "component",
+     "component": "subject",
+     "segment": null,
+     "constraint": "soft"
+    }
+   ],
+   "seconds": 0.45,
+   "execution_status": "succeeded",
+   "error": null,
+   "budget": {
+    "limits": {
+     "max_model_calls": 24,
+     "max_cost_usd": 2.0,
+     "max_tokens": 600000,
+     "max_seconds": 900,
+     "max_iterations": 3,
+     "call_timeout_s": 180,
+     "max_retries": 2,
+     "job_timeout_s": 900.0,
+     "job_memory_mb": null,
+     "max_concurrent_jobs": 4
+    },
+    "used": {
+     "model_calls": 0,
+     "input_tokens": 0,
+     "output_tokens": 0,
+     "cost_usd": 0.0,
+     "cost": "$0.0000",
+     "unpriced_calls": 0,
+     "seconds": 0.45
+    },
+    "by_provider": {},
+    "refusals": []
+   },
+   "plans": [
+    {
+     "provider": "heuristic",
+     "model": "heuristic-v1",
+     "recorded": false,
+     "operations": [],
+     "interpretations": {},
+     "notes": [],
+     "usage": {}
+    },
+    {
+     "provider": "heuristic",
+     "model": "heuristic-v1",
+     "recorded": false,
+     "operations": [
+      {
+       "op": "paint_reference",
+       "component_id": "subject",
+       "params": {
+        "source_id": "src_a5eaeee12d9d",
+        "fit": "cover",
+        "mix": 0.6,
+        "blur": 0
+       },
+       "derived_from": [
+        "bind_821d9eed2a0f"
+       ],
+       "rationale": "paint reference 'Cat photograph' into layer"
+      }
+     ],
+     "interpretations": {
+      "bind_821d9eed2a0f": "reference pixels painted into layer at mix 0.6"
+     },
+     "notes": [],
+     "usage": {}
+    }
+   ],
+   "validation_decisions": [
+    {
+     "unit": "artifact:art_6cc7f0bd6dc3#poster",
+     "status": "succeeded",
+     "error": null
+    },
+    {
+     "unit": "artifact:art_6cc7f0bd6dc3#subject",
+     "status": "succeeded",
+     "error": null
+    }
+   ],
+   "loop": {
+    "status": "achieved",
+    "stop_reason": "achieved",
+    "iterations_run": 0,
+    "usage": {
+     "calls": 0,
+     "input_tokens": null,
+     "output_tokens": null,
+     "latency_ms": null,
+     "cost_usd": null,
+     "model": null,
+     "request_id": null,
+     "fallback_from": null,
+     "cache_read_tokens": null,
+     "unpriced_calls": 0
+    },
+    "seconds": 0.04,
+    "unresolved": [],
+    "best_valid_revision_id": "rev_6e13e247e4ee",
+    "final_revision_id": "rev_6e13e247e4ee"
+   },
+   "evaluations": [
+    {
+     "iteration": 0,
+     "passed": true,
+     "findings": [],
+     "revisions": null
+    }
+   ],
+   "live_calls": 0,
+   "observations": [
+    {
+     "source": "Cat photograph",
+     "provider": "heuristic",
+     "model": "heuristic-semantic-v1",
+     "pathway": "measured",
+     "status": "partial",
+     "summary": "measured 11 visual properties",
+     "observations": [
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #8d674b covers 30% of the image",
+       "confidence": 1.0,
+       "location": null
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #a07b5f covers 22% of the image",
+       "confidence": 1.0,
+       "location": null
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #6b442b covers 19% of the image",
+       "confidence": 1.0,
+       "location": null
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #ae8b74 covers 17% of the image",
+       "confidence": 1.0,
+       "location": null
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "colour #bb9f93 covers 12% of the image",
+       "confidence": 1.0,
+       "location": null
+      },
+      {
+       "kind": "lighting",
+       "basis": "measured",
+       "text": "brightness 0.4603, contrast 0.126, warm cast",
+       "confidence": 1.0,
+       "location": null
+      },
+      {
+       "kind": "composition",
+       "basis": "measured",
+       "text": "aspect 1.5033; edge energy is balanced (orientation 0.5094); edge density 0.0501",
+       "confidence": 1.0,
+       "location": null
+      },
+      {
+       "kind": "proportion",
+       "basis": "measured",
+       "text": "foreground silhouette 1.5033:1 (width:height), covers 46%; similar width top and bottom",
+       "confidence": 0.6,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.0,
+         0.0,
+         1.0,
+         1.0
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "foreground colour #7b5236 (42% of the silhouette)",
+       "confidence": 0.6,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.0,
+         0.0,
+         1.0,
+         1.0
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "foreground colour #bca196 (31% of the silhouette)",
+       "confidence": 0.6,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.0,
+         0.0,
+         1.0,
+         1.0
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "color",
+       "basis": "measured",
+       "text": "foreground colour #57331c (19% of the silhouette)",
+       "confidence": 0.6,
+       "location": {
+        "page": null,
+        "section": null,
+        "paragraph": null,
+        "line": null,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": [
+         0.0,
+         0.0,
+         1.0,
+         1.0
+        ],
+        "frame": null
+       }
+      },
+      {
+       "kind": "uncertainty",
+       "basis": "inferred",
+       "text": "No object recognition: the local analyser measures pixels and cannot tell what the image depicts.",
+       "confidence": null,
+       "location": null
+      }
+     ],
+     "derived_constraints": [],
+     "limitations": [
+      "No object recognition: the local analyser measures pixels and cannot tell what the image depicts.",
+      "silhouette assumes a background distinct from the subject; proportions are 2D image ratios, not 3D sizes"
+     ],
+     "usage": {
+      "calls": 0,
+      "input_tokens": null,
+      "output_tokens": null,
+      "latency_ms": 0.2,
+      "cost_usd": null,
+      "model": null,
+      "request_id": null,
+      "fallback_from": null,
+      "cache_read_tokens": null,
+      "unpriced_calls": 0
+     }
+    }
+   ],
+   "model_observation_count": 0,
+   "revisions": [
+    {
+     "id": "rev_ac08f62d9bd4",
+     "number": 1,
+     "message": "Created from template 'layers'",
+     "previews": {
+      "composite": "artifacts/art_6cc7f0bd6dc3/revisions/0001/previews/composite.png",
+      "layer:background": "artifacts/art_6cc7f0bd6dc3/revisions/0001/previews/layer_background.png",
+      "layer:subject": "artifacts/art_6cc7f0bd6dc3/revisions/0001/previews/layer_subject.png",
+      "layer:frame": "artifacts/art_6cc7f0bd6dc3/revisions/0001/previews/layer_frame.png"
+     },
+     "validation": null
+    },
+    {
+     "id": "rev_6e13e247e4ee",
+     "number": 2,
+     "message": "C-iterative / Agent: poster, subject",
+     "previews": {
+      "composite": "artifacts/art_6cc7f0bd6dc3/revisions/0002/previews/composite.png",
+      "layer:background": "artifacts/art_6cc7f0bd6dc3/revisions/0002/previews/layer_background.png",
+      "layer:subject": "artifacts/art_6cc7f0bd6dc3/revisions/0002/previews/layer_subject.png",
+      "layer:frame": "artifacts/art_6cc7f0bd6dc3/revisions/0002/previews/layer_frame.png"
+     },
+     "validation": {
+      "passed": true,
+      "checks": [
+       {
+        "name": "component_preservation",
+        "passed": true,
+        "detail": "changed: ['subject']; outside executed scope: none",
+        "data": {
+         "changed": [
+          "subject"
+         ],
+         "outside": [],
+         "scope": [
+          "background",
+          "frame",
+          "poster",
+          "subject"
+         ],
+         "preserved": [
+          "background",
+          "frame",
+          "poster"
+         ]
+        }
+       },
+       {
+        "name": "file_reopens",
+        "passed": true,
+        "detail": "OpenRaster valid: mimetype first/stored, 3 layer PNGs, mergedimage present",
+        "data": {}
+       }
+      ]
+     }
+    }
+   ],
+   "checks": [
+    {
+     "name": "execution finished",
+     "ok": true,
+     "detail": "None"
+    },
+    {
+     "name": "the bound layer changed",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "name": "unrelated layers preserved exactly",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "name": "the OpenRaster file is a valid zip with stack.xml",
+     "ok": true,
+     "detail": ""
+    }
+   ],
+   "rubric": {
+    "relevance": {
+     "score": null,
+     "basis": "needs review"
+    },
+    "structural_fidelity": {
+     "score": null,
+     "basis": "needs review"
+    },
+    "constraint_adherence": {
+     "score": null,
+     "basis": "needs review"
+    },
+    "preservation": {
+     "score": 2,
+     "basis": "measured (layer state digests)",
+     "note": ""
+    },
+    "usability": {
+     "score": null,
+     "basis": "needs review"
+    }
+   },
+   "passed": true,
+   "verification": "deterministic"
+  },
+  {
+   "task": "D",
+   "mode": "single",
+   "provider": "heuristic",
+   "sources": [
+    {
+     "id": "src_69de840a249a",
+     "name": "Requirement",
+     "media_type": "text",
+     "sha256": "7099a4077b40796f7bb77b0a3065399f4c887a6e5878ea0275d182509a87ec4e",
+     "origin": "inline"
+    }
+   ],
+   "bindings": [
+    {
+     "id": "bind_e44d2408917a",
+     "source_id": "src_69de840a249a",
+     "role": "constraint",
+     "aspects": [
+      "behavior",
+      "code"
+     ],
+     "scope": "artifact",
+     "component": null,
+     "segment": null,
+     "constraint": "hard"
+    }
+   ],
+   "seconds": 0.41,
+   "execution_status": "failed",
+   "error": "validate: validation failed: ['textutil:tests']",
+   "budget": {
+    "limits": {
+     "max_model_calls": 24,
+     "max_cost_usd": 2.0,
+     "max_tokens": 600000,
+     "max_seconds": 900,
+     "max_iterations": 3,
+     "call_timeout_s": 180,
+     "max_retries": 2,
+     "job_timeout_s": 900.0,
+     "job_memory_mb": null,
+     "max_concurrent_jobs": 4
+    },
+    "used": {
+     "model_calls": 0,
+     "input_tokens": 0,
+     "output_tokens": 0,
+     "cost_usd": 0.0,
+     "cost": "$0.0000",
+     "unpriced_calls": 0,
+     "seconds": 0.4
+    },
+    "by_provider": {},
+    "refusals": []
+   },
+   "plans": [
+    {
+     "provider": "heuristic",
+     "model": "heuristic-v1",
+     "recorded": false,
+     "operations": [],
+     "interpretations": {
+      "bind_e44d2408917a": "presented; no allowed operation family of adapter 'code' expresses aspects ['behavior', 'code'] for text measurements at this unit"
+     },
+     "notes": [],
+     "usage": {}
+    }
+   ],
+   "validation_decisions": [
+    {
+     "unit": "artifact:art_afae0af5f211#repo",
+     "status": "succeeded",
+     "error": null
+    }
+   ],
+   "live_calls": 0,
+   "observations": [
+    {
+     "source": "Requirement",
+     "provider": "heuristic",
+     "model": "heuristic-semantic-v1",
+     "pathway": "text_rules",
+     "status": "partial",
+     "summary": "1 requirement(s), 0 instruction(s), 0 measurable limit(s)",
+     "observations": [
+      {
+       "kind": "structure",
+       "basis": "quoted",
+       "text": "Requirement: URL slugs",
+       "confidence": null,
+       "location": {
+        "page": null,
+        "section": "Requirement: URL slugs",
+        "paragraph": null,
+        "line": 1,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": null,
+        "frame": null
+       }
+      },
+      {
+       "kind": "requirement",
+       "basis": "quoted",
+       "text": "Implement `slugify(text)` in textutil.py. It must lowercase the text, remove accents (NFKD normalisation, drop combining marks), replace every run of characters that are not ASCII letters or digits with one hyphen and strip leading/trailing hyphens. The existing tests must pass. Use only the Python standard library.",
+       "confidence": null,
+       "location": {
+        "page": null,
+        "section": "Requirement: URL slugs",
+        "paragraph": null,
+        "line": 2,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": null,
+        "frame": null
+       }
+      }
+     ],
+     "derived_constraints": [],
+     "limitations": [
+      "rule-based extraction: only explicit sentences and numeric limits are recognised; implied meaning is not understood"
+     ],
+     "usage": {
+      "calls": 0,
+      "input_tokens": null,
+      "output_tokens": null,
+      "latency_ms": 0.3,
+      "cost_usd": null,
+      "model": null,
+      "request_id": null,
+      "fallback_from": null,
+      "cache_read_tokens": null,
+      "unpriced_calls": 0
+     }
+    }
+   ],
+   "model_observation_count": 0,
+   "git_diff_tail": "1210bb7 Initial artifact state\n\ndiff --git a/.gitignore b/.gitignore\nnew file mode 100644\nindex 0000000..75c6182\n--- /dev/null\n+++ b/.gitignore\n@@ -0,0 +1,3 @@\n+__pycache__/\n+*.pyc\n+.pytest_cache/\ndiff --git a/test_textutil.py b/test_textutil.py\nnew file mode 100644\nindex 0000000..ef68dc0\n--- /dev/null\n+++ b/test_textutil.py\n@@ -0,0 +1,9 @@\n+from textutil import slugify\n+\n+\n+def test_basic():\n+    assert slugify('Hello, World!') == 'hello-world'\n+\n+\n+def test_accents_and_spaces():\n+    assert slugify('  Cr\u00e8me br\u00fbl\u00e9e  recipes ') == 'creme-brulee-recipes'\ndiff --git a/textutil.py b/textutil.py\nnew file mode 100644\nindex 0000000..ca1a85a\n--- /dev/null\n+++ b/textutil.py\n@@ -0,0 +1,2 @@\n+def slugify(text):\n+    raise NotImplementedError\n",
+   "checks": [
+    {
+     "name": "a schema-valid plan was produced",
+     "ok": true,
+     "detail": "[{'unit': 'artifact:art_afae0af5f211#repo', 'status': 'succeeded', 'error': None}]"
+    },
+    {
+     "name": "a real git diff of textutil.py exists",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "name": "allowlisted tests pass",
+     "ok": false,
+     "detail": "{\"report\": {\"passed\": false, \"artifacts\": [{\"artifact_id\": \"art_afae0af5f211\", \"artifact\": \"textutil\", \"revision_id\": \"rev_cb826516fa1e\", \"report\": {\"passed\": false, \"checks\": [{\"name\": \"tests\", \"passed\": false, \"detail\": \"`python -m pytest -q` exited 1\", \"data\": {\"output\": \"FF                                                                       [100%]\\n=================================== FAILURE"
+    }
+   ],
+   "rubric": {
+    "relevance": {
+     "score": null,
+     "basis": "needs review"
+    },
+    "structural_fidelity": {
+     "score": null,
+     "basis": "needs review"
+    },
+    "constraint_adherence": {
+     "score": 0,
+     "basis": "measured (tests)",
+     "note": ""
+    },
+    "preservation": {
+     "score": 2,
+     "basis": "measured (diff)",
+     "note": ""
+    },
+    "usability": {
+     "score": null,
+     "basis": "needs review"
+    }
+   },
+   "passed": false,
+   "verification": "deterministic"
+  },
+  {
+   "task": "D",
+   "mode": "iterative",
+   "provider": "heuristic",
+   "sources": [
+    {
+     "id": "src_a5a0ea863d39",
+     "name": "Requirement",
+     "media_type": "text",
+     "sha256": "7099a4077b40796f7bb77b0a3065399f4c887a6e5878ea0275d182509a87ec4e",
+     "origin": "inline"
+    }
+   ],
+   "bindings": [
+    {
+     "id": "bind_c67f307aa7c1",
+     "source_id": "src_a5a0ea863d39",
+     "role": "constraint",
+     "aspects": [
+      "behavior",
+      "code"
+     ],
+     "scope": "artifact",
+     "component": null,
+     "segment": null,
+     "constraint": "hard"
+    }
+   ],
+   "seconds": 0.43,
+   "execution_status": "failed",
+   "error": "validate: validation failed: ['textutil:tests']",
+   "budget": {
+    "limits": {
+     "max_model_calls": 24,
+     "max_cost_usd": 2.0,
+     "max_tokens": 600000,
+     "max_seconds": 900,
+     "max_iterations": 3,
+     "call_timeout_s": 180,
+     "max_retries": 2,
+     "job_timeout_s": 900.0,
+     "job_memory_mb": null,
+     "max_concurrent_jobs": 4
+    },
+    "used": {
+     "model_calls": 0,
+     "input_tokens": 0,
+     "output_tokens": 0,
+     "cost_usd": 0.0,
+     "cost": "$0.0000",
+     "unpriced_calls": 0,
+     "seconds": 0.42
+    },
+    "by_provider": {},
+    "refusals": []
+   },
+   "plans": [
+    {
+     "provider": "heuristic",
+     "model": "heuristic-v1",
+     "recorded": false,
+     "operations": [],
+     "interpretations": {
+      "bind_c67f307aa7c1": "presented; no allowed operation family of adapter 'code' expresses aspects ['behavior', 'code'] for text measurements at this unit"
+     },
+     "notes": [],
+     "usage": {}
+    }
+   ],
+   "validation_decisions": [
+    {
+     "unit": "artifact:art_fdcd6c915b3f#repo",
+     "status": "succeeded",
+     "error": null
+    }
+   ],
+   "loop": {
+    "status": "achieved",
+    "stop_reason": "achieved",
+    "iterations_run": 0,
+    "usage": {
+     "calls": 0,
+     "input_tokens": null,
+     "output_tokens": null,
+     "latency_ms": null,
+     "cost_usd": null,
+     "model": null,
+     "request_id": null,
+     "fallback_from": null,
+     "cache_read_tokens": null,
+     "unpriced_calls": 0
+    },
+    "seconds": 0.02,
+    "unresolved": [],
+    "best_valid_revision_id": "rev_3034f349296a",
+    "final_revision_id": "rev_3034f349296a"
+   },
+   "evaluations": [
+    {
+     "iteration": 0,
+     "passed": true,
+     "findings": [],
+     "revisions": null
+    }
+   ],
+   "live_calls": 0,
+   "observations": [
+    {
+     "source": "Requirement",
+     "provider": "heuristic",
+     "model": "heuristic-semantic-v1",
+     "pathway": "text_rules",
+     "status": "partial",
+     "summary": "1 requirement(s), 0 instruction(s), 0 measurable limit(s)",
+     "observations": [
+      {
+       "kind": "structure",
+       "basis": "quoted",
+       "text": "Requirement: URL slugs",
+       "confidence": null,
+       "location": {
+        "page": null,
+        "section": "Requirement: URL slugs",
+        "paragraph": null,
+        "line": 1,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": null,
+        "frame": null
+       }
+      },
+      {
+       "kind": "requirement",
+       "basis": "quoted",
+       "text": "Implement `slugify(text)` in textutil.py. It must lowercase the text, remove accents (NFKD normalisation, drop combining marks), replace every run of characters that are not ASCII letters or digits with one hyphen and strip leading/trailing hyphens. The existing tests must pass. Use only the Python standard library.",
+       "confidence": null,
+       "location": {
+        "page": null,
+        "section": "Requirement: URL slugs",
+        "paragraph": null,
+        "line": 2,
+        "start_seconds": null,
+        "end_seconds": null,
+        "region": null,
+        "frame": null
+       }
+      }
+     ],
+     "derived_constraints": [],
+     "limitations": [
+      "rule-based extraction: only explicit sentences and numeric limits are recognised; implied meaning is not understood"
+     ],
+     "usage": {
+      "calls": 0,
+      "input_tokens": null,
+      "output_tokens": null,
+      "latency_ms": 0.2,
+      "cost_usd": null,
+      "model": null,
+      "request_id": null,
+      "fallback_from": null,
+      "cache_read_tokens": null,
+      "unpriced_calls": 0
+     }
+    }
+   ],
+   "model_observation_count": 0,
+   "git_diff_tail": "1210bb7 Initial artifact state\n\ndiff --git a/.gitignore b/.gitignore\nnew file mode 100644\nindex 0000000..75c6182\n--- /dev/null\n+++ b/.gitignore\n@@ -0,0 +1,3 @@\n+__pycache__/\n+*.pyc\n+.pytest_cache/\ndiff --git a/test_textutil.py b/test_textutil.py\nnew file mode 100644\nindex 0000000..ef68dc0\n--- /dev/null\n+++ b/test_textutil.py\n@@ -0,0 +1,9 @@\n+from textutil import slugify\n+\n+\n+def test_basic():\n+    assert slugify('Hello, World!') == 'hello-world'\n+\n+\n+def test_accents_and_spaces():\n+    assert slugify('  Cr\u00e8me br\u00fbl\u00e9e  recipes ') == 'creme-brulee-recipes'\ndiff --git a/textutil.py b/textutil.py\nnew file mode 100644\nindex 0000000..ca1a85a\n--- /dev/null\n+++ b/textutil.py\n@@ -0,0 +1,2 @@\n+def slugify(text):\n+    raise NotImplementedError\n",
+   "checks": [
+    {
+     "name": "a schema-valid plan was produced",
+     "ok": true,
+     "detail": "[{'unit': 'artifact:art_fdcd6c915b3f#repo', 'status': 'succeeded', 'error': None}]"
+    },
+    {
+     "name": "a real git diff of textutil.py exists",
+     "ok": true,
+     "detail": ""
+    },
+    {
+     "name": "allowlisted tests pass",
+     "ok": false,
+     "detail": "{\"report\": {\"passed\": false, \"artifacts\": [{\"artifact_id\": \"art_fdcd6c915b3f\", \"artifact\": \"textutil\", \"revision_id\": \"rev_3034f349296a\", \"report\": {\"passed\": false, \"checks\": [{\"name\": \"tests\", \"passed\": false, \"detail\": \"`python -m pytest -q` exited 1\", \"data\": {\"output\": \"FF                                                                       [100%]\\n=================================== FAILURE"
+    }
+   ],
+   "rubric": {
+    "relevance": {
+     "score": null,
+     "basis": "needs review"
+    },
+    "structural_fidelity": {
+     "score": null,
+     "basis": "needs review"
+    },
+    "constraint_adherence": {
+     "score": 0,
+     "basis": "measured (tests)",
+     "note": ""
+    },
+    "preservation": {
+     "score": 2,
+     "basis": "measured (diff)",
+     "note": ""
+    },
+    "usability": {
+     "score": null,
+     "basis": "needs review"
+    }
+   },
+   "passed": false,
+   "verification": "deterministic"
+  },
+  {
+   "task": "E",
+   "mode": "single",
+   "provider": "heuristic",
+   "blocked_by": "no video input: pass --video-file or --video-url (a real, appropriately licensed video demonstrating a technique)",
+   "checks": [],
+   "rubric": {
+    "relevance": {
+     "score": null,
+     "basis": "needs review"
+    },
+    "structural_fidelity": {
+     "score": null,
+     "basis": "needs review"
+    },
+    "constraint_adherence": {
+     "score": null,
+     "basis": "needs review"
+    },
+    "preservation": {
+     "score": null,
+     "basis": "needs review"
+    },
+    "usability": {
+     "score": null,
+     "basis": "needs review"
+    }
+   },
+   "passed": null,
+   "verification": "blocked"
+  },
+  {
+   "task": "E",
+   "mode": "iterative",
+   "provider": "heuristic",
+   "blocked_by": "no video input: pass --video-file or --video-url (a real, appropriately licensed video demonstrating a technique)",
+   "checks": [],
+   "rubric": {
+    "relevance": {
+     "score": null,
+     "basis": "needs review"
+    },
+    "structural_fidelity": {
+     "score": null,
+     "basis": "needs review"
+    },
+    "constraint_adherence": {
+     "score": null,
+     "basis": "needs review"
+    },
+    "preservation": {
+     "score": null,
+     "basis": "needs review"
+    },
+    "usability": {
+     "score": null,
+     "basis": "needs review"
+    }
+   },
+   "passed": null,
+   "verification": "blocked"
+  }
+ ],
+ "seconds": 43.0,
+ "status": "deterministic"
+}

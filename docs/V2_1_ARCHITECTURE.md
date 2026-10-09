@@ -76,7 +76,9 @@ artifact.
 **Execution budgets** (`budget.py`). A workflow's `parameters.budget` bounds:
 * model calls, cost, tokens and wall time;
 * corrective iterations, per-call timeout and retries;
-* remote job timeout and memory, and concurrent jobs.
+* remote jobs: `job_timeout_s` becomes each job's deadline, `job_memory_mb` lowers the
+  worker's address-space limit for that job (a job can never raise it), and
+  `max_concurrent_jobs` bounds the execution's jobs in flight at once.
 
 `get_provider()` returns a `BudgetedProvider` during an execution: a call is **refused
 before it is made** when a limit is reached. Usage is charged after each call and recorded
