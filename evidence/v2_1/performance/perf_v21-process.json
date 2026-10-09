@@ -1,0 +1,269 @@
+{
+ "label": "v21-process",
+ "pythonpath": "(installed)",
+ "isolation": "process",
+ "repeat": 3,
+ "workloads": {
+  "W1_blender": {
+   "runs": [
+    {
+     "wall_s": 11.01,
+     "cache": "cold",
+     "jobs": 7,
+     "by_method": {
+      "apply": 1,
+      "create": 1,
+      "diff": 1,
+      "preview": 2,
+      "side_effect_scope": 1,
+      "validate": 1
+     },
+     "queue_wait_s": 0.778,
+     "worker_time_s": 10.072,
+     "worker_phases_s": {},
+     "bytes_in": 0,
+     "bytes_out": 0
+    },
+    {
+     "wall_s": 10.56,
+     "cache": "warm",
+     "jobs": 7,
+     "by_method": {
+      "apply": 1,
+      "create": 1,
+      "diff": 1,
+      "preview": 2,
+      "side_effect_scope": 1,
+      "validate": 1
+     },
+     "queue_wait_s": 0.015,
+     "worker_time_s": 10.389,
+     "worker_phases_s": {},
+     "bytes_in": 0,
+     "bytes_out": 0
+    },
+    {
+     "wall_s": 9.87,
+     "cache": "warm",
+     "jobs": 7,
+     "by_method": {
+      "apply": 1,
+      "create": 1,
+      "diff": 1,
+      "preview": 2,
+      "side_effect_scope": 1,
+      "validate": 1
+     },
+     "queue_wait_s": 0.013,
+     "worker_time_s": 9.713,
+     "worker_phases_s": {},
+     "bytes_in": 0,
+     "bytes_out": 0
+    }
+   ],
+   "wall_mean_s": 10.48,
+   "wall_stdev_s": 0.57,
+   "cold_s": 11.01,
+   "warm_mean_s": 10.21,
+   "jobs": 7
+  },
+  "W2_office": {
+   "runs": [
+    {
+     "wall_s": 39.99,
+     "cache": "cold",
+     "jobs": 28,
+     "by_method": {
+      "apply": 5,
+      "create": 3,
+      "diff": 5,
+      "preview": 8,
+      "side_effect_scope": 2,
+      "validate": 5
+     },
+     "queue_wait_s": 0.75,
+     "worker_time_s": 38.512,
+     "worker_phases_s": {},
+     "bytes_in": 0,
+     "bytes_out": 0
+    },
+    {
+     "wall_s": 39.51,
+     "cache": "warm",
+     "jobs": 28,
+     "by_method": {
+      "apply": 5,
+      "create": 3,
+      "diff": 5,
+      "preview": 8,
+      "side_effect_scope": 2,
+      "validate": 5
+     },
+     "queue_wait_s": 0.04,
+     "worker_time_s": 38.712,
+     "worker_phases_s": {},
+     "bytes_in": 0,
+     "bytes_out": 0
+    },
+    {
+     "wall_s": 40.53,
+     "cache": "warm",
+     "jobs": 28,
+     "by_method": {
+      "apply": 5,
+      "create": 3,
+      "diff": 5,
+      "preview": 8,
+      "side_effect_scope": 2,
+      "validate": 5
+     },
+     "queue_wait_s": 0.051,
+     "worker_time_s": 39.726,
+     "worker_phases_s": {},
+     "bytes_in": 0,
+     "bytes_out": 0
+    }
+   ],
+   "wall_mean_s": 40.01,
+   "wall_stdev_s": 0.51,
+   "cold_s": 39.99,
+   "warm_mean_s": 40.02,
+   "jobs": 28
+  },
+  "W3_code": {
+   "runs": [
+    {
+     "wall_s": 4.2,
+     "cache": "cold",
+     "jobs": 8,
+     "by_method": {
+      "apply": 1,
+      "create": 1,
+      "diff": 1,
+      "preview": 2,
+      "side_effect_scope": 1,
+      "validate": 2
+     },
+     "queue_wait_s": 0.621,
+     "worker_time_s": 3.154,
+     "worker_phases_s": {},
+     "bytes_in": 0,
+     "bytes_out": 0
+    },
+    {
+     "wall_s": 3.59,
+     "cache": "warm",
+     "jobs": 8,
+     "by_method": {
+      "apply": 1,
+      "create": 1,
+      "diff": 1,
+      "preview": 2,
+      "side_effect_scope": 1,
+      "validate": 2
+     },
+     "queue_wait_s": 0.019,
+     "worker_time_s": 3.206,
+     "worker_phases_s": {},
+     "bytes_in": 0,
+     "bytes_out": 0
+    },
+    {
+     "wall_s": 3.45,
+     "cache": "warm",
+     "jobs": 8,
+     "by_method": {
+      "apply": 1,
+      "create": 1,
+      "diff": 1,
+      "preview": 2,
+      "side_effect_scope": 1,
+      "validate": 2
+     },
+     "queue_wait_s": 0.021,
+     "worker_time_s": 3.074,
+     "worker_phases_s": {},
+     "bytes_in": 0,
+     "bytes_out": 0
+    }
+   ],
+   "wall_mean_s": 3.75,
+   "wall_stdev_s": 0.4,
+   "cold_s": 4.2,
+   "warm_mean_s": 3.52,
+   "jobs": 8
+  },
+  "W4_mixed": {
+   "runs": [
+    {
+     "wall_s": 13.96,
+     "cache": "cold",
+     "jobs": 14,
+     "by_method": {
+      "apply": 2,
+      "create": 2,
+      "diff": 2,
+      "preview": 4,
+      "side_effect_scope": 2,
+      "validate": 2
+     },
+     "queue_wait_s": 0.695,
+     "worker_time_s": 13.058,
+     "worker_phases_s": {},
+     "bytes_in": 0,
+     "bytes_out": 0
+    },
+    {
+     "wall_s": 13.95,
+     "cache": "warm",
+     "jobs": 14,
+     "by_method": {
+      "apply": 2,
+      "create": 2,
+      "diff": 2,
+      "preview": 4,
+      "side_effect_scope": 2,
+      "validate": 2
+     },
+     "queue_wait_s": 0.032,
+     "worker_time_s": 13.714,
+     "worker_phases_s": {},
+     "bytes_in": 0,
+     "bytes_out": 0
+    },
+    {
+     "wall_s": 14.86,
+     "cache": "warm",
+     "jobs": 14,
+     "by_method": {
+      "apply": 2,
+      "create": 2,
+      "diff": 2,
+      "preview": 4,
+      "side_effect_scope": 2,
+      "validate": 2
+     },
+     "queue_wait_s": 0.03,
+     "worker_time_s": 14.615,
+     "worker_phases_s": {},
+     "bytes_in": 0,
+     "bytes_out": 0
+    }
+   ],
+   "wall_mean_s": 14.26,
+   "wall_stdev_s": 0.52,
+   "cold_s": 13.96,
+   "warm_mean_s": 14.4,
+   "jobs": 14
+  },
+  "W5_cancel_retry": {
+   "time_to_cancel_seconds": 21.45,
+   "recovery_after_crash_seconds": 20.03,
+   "recovered": true
+  }
+ },
+ "host": {
+  "cpus": 4,
+  "kernel": "6.18.44-fc-v80"
+ }
+}

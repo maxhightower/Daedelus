@@ -1,0 +1,13 @@
+v21-process W1_blender run 1: 11.0s, 7 jobs, queue 0.778s
+v21-process W1_blender run 2: 10.6s, 7 jobs, queue 0.015s
+v21-process W1_blender run 3: 9.9s, 7 jobs, queue 0.013s
+v21-process W2_office run 1: 40.0s, 28 jobs, queue 0.75s
+v21-process W2_office run 2: 39.5s, 28 jobs, queue 0.04s
+v21-process W2_office run 3: 40.5s, 28 jobs, queue 0.051s
+v21-process W3_code run 1: 4.2s, 8 jobs, queue 0.621s
+v21-process W3_code run 2: 3.6s, 8 jobs, queue 0.019s
+v21-process W3_code run 3: 3.5s, 8 jobs, queue 0.021s
+v21-process W4_mixed run 1: 14.0s, 14 jobs, queue 0.695s
+v21-process W4_mixed run 2: 13.9s, 14 jobs, queue 0.032s
+v21-process W4_mixed run 3: 14.9s, 14 jobs, queue 0.03s
+{"W1_blender": [10.48, 7], "W2_office": [40.01, 28], "W3_code": [3.75, 8], "W4_mixed": [14.26, 14], "W5_cancel_retry": {"time_to_cancel_seconds": 21.45, "recovery_after_crash_seconds": 20.03, "recovered": true}}

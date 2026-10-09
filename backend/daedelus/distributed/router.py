@@ -363,6 +363,10 @@ def build_router() -> APIRouter:
             "result": None if res is None else {"ok": res.ok, "error": res.error,
                                                 "seconds": res.seconds,
                                                 "worker_id": res.worker_id,
+                                                "timings": res.timings,
+                                                "bytes_in": res.bytes_in,
+                                                "bytes_out": res.bytes_out,
+                                                "isolation": res.isolation,
                                                 "logs": res.logs[-2000:]},
             "publication": cl.queue.publication(job_id),
             "events": cl.queue.events(job_id=job_id)}

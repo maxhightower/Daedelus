@@ -1,0 +1,13 @@
+v21 W1_blender run 1: 10.6s, 7 jobs, queue 0.645s
+v21 W1_blender run 2: 10.5s, 7 jobs, queue 0.01s
+v21 W1_blender run 3: 10.5s, 7 jobs, queue 0.015s
+v21 W2_office run 1: 38.5s, 28 jobs, queue 0.702s
+v21 W2_office run 2: 37.8s, 28 jobs, queue 0.04s
+v21 W2_office run 3: 38.1s, 28 jobs, queue 0.043s
+v21 W3_code run 1: 4.6s, 8 jobs, queue 0.735s
+v21 W3_code run 2: 3.7s, 8 jobs, queue 0.014s
+v21 W3_code run 3: 3.6s, 8 jobs, queue 0.022s
+v21 W4_mixed run 1: 13.9s, 14 jobs, queue 0.718s
+v21 W4_mixed run 2: 13.8s, 14 jobs, queue 0.034s
+v21 W4_mixed run 3: 14.3s, 14 jobs, queue 0.029s
+{"W1_blender": [10.55, 7], "W2_office": [38.15, 28], "W3_code": [3.97, 8], "W4_mixed": [14.03, 14], "W5_cancel_retry": {"time_to_cancel_seconds": 20.53, "recovery_after_crash_seconds": 19.6, "recovered": true}}
