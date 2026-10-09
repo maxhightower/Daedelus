@@ -408,6 +408,7 @@ def build_router() -> APIRouter:
                     await asyncio.sleep(0.25)
 
         return StreamingResponse(gen(), media_type="text/event-stream",
-                                 headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+                                 headers={"Cache-Control": "no-cache, no-transform",  # no proxy compression
+                                          "X-Accel-Buffering": "no"})
 
     return r

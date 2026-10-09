@@ -129,6 +129,10 @@ class Pool:
 
 
 def main() -> int:
+    if len(sys.argv) == 3 and sys.argv[1] == "host-evidence":
+        # published next to the handoff key so the control host can compare machine identities
+        Path(sys.argv[2]).write_text(json.dumps(host_evidence(), indent=1))
+        return 0
     ap = argparse.ArgumentParser()
     ap.add_argument("--key", required=True)
     ap.add_argument("--handoff", required=True)

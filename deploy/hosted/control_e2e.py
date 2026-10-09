@@ -145,6 +145,8 @@ def prepare(a) -> int:
           "machine_id_sha256": __import__("hashlib").sha256(
               Path("/etc/machine-id").read_text().strip().encode()).hexdigest()[:16]
           if Path("/etc/machine-id").exists() else ""}
+    ev["boot_id_sha256"] = __import__("hashlib").sha256(
+        Path("/proc/sys/kernel/random/boot_id").read_text().strip().encode()).hexdigest()[:16]
     vm = sh("curl", "-s", "-m", "5", "-H", "Metadata:true",
             "http://169.254.169.254/metadata/instance/compute?api-version=2021-02-01")
     try:
@@ -154,6 +156,8 @@ def prepare(a) -> int:
     except (ValueError, KeyError):
         pass
     c.state["control_host"] = ev
+    wh = Path(a.pub).parent / "host.json"  # published by the worker host with its key
+    c.state["worker_host"] = json.loads(wh.read_text()) if wh.exists() else {}
     c.save()
     print("CONTROL_HOST_EVIDENCE " + json.dumps(ev), flush=True)
     return 0
@@ -251,8 +255,17 @@ def h1_h6(r: Run):
     r.check("the worker's network address is not the control host's",
             w.get("peer") and w["peer"] not in ("127.0.0.1", "::1", ctl.get("public_ip")),
             (w.get("peer"), ctl.get("public_ip")))
-    r.check("the worker runs on a different machine (host name)",
-            w.get("host") and w["host"] != ctl["hostname"], (w.get("host"), ctl["hostname"]))
+    # GitHub runner VMs share an image hostname, so compare per-boot and per-VM identifiers
+    # (each side publishes sha256 prefixes; the raw ids are never printed)
+    wh = r.state.get("worker_host") or {}
+    ids = {k: (ctl.get(k), wh.get(k)) for k in ("boot_id_sha256", "cloud_vm_id_sha256")}
+    r.check("the worker runs on a different machine (kernel boot id and cloud VM id differ)",
+            ids["boot_id_sha256"][1] and ids["boot_id_sha256"][0] != ids["boot_id_sha256"][1]
+            and (not (ids["cloud_vm_id_sha256"][0] and ids["cloud_vm_id_sha256"][1])
+                 or ids["cloud_vm_id_sha256"][0] != ids["cloud_vm_id_sha256"][1]),
+            {**ids, "hostnames": (ctl.get("hostname"), w.get("host"))})
+    r.metrics["machine_identity"] = {**ids, "worker_public_ip_differs": bool(
+        wh.get("public_ip") and wh.get("public_ip") != ctl.get("public_ip"))}
     iso = w.get("isolation") or {}
     r.check("the worker reports a verified bubblewrap job sandbox", iso.get("profile") == "bwrap"
             and iso.get("verified") and (iso.get("controls") or {}).get("network_isolated"), iso)
@@ -264,13 +277,21 @@ def h1_h6(r: Run):
     r.scenario = "H2-H6 remote Blender"
     pid = r.project("hosted-blender")
     got: list = []
+    diag: dict = {"lines": 0}
     t0 = time.time()
 
     def listen():
         try:
             with httpx.stream("GET", f"{r.url}/api/projects/{pid}/events?since=0", timeout=300,
-                              headers={"Authorization": f"Bearer {r.state['api_token']}"}) as s:
+                              headers={"Authorization": f"Bearer {r.state['api_token']}",
+                                       "Accept-Encoding": "identity"}) as s:
+                diag.update(status=s.status_code, headers={
+                    k: v for k, v in s.headers.items() if k.lower() in (
+                        "content-type", "content-encoding", "cache-control",
+                        "transfer-encoding", "cf-cache-status", "server")})
                 for line in s.iter_lines():
+                    diag["lines"] += 1
+                    diag.setdefault("first_line_s", round(time.time() - t0, 2))
                     if line.startswith("event: "):
                         got.append((round(time.time() - t0, 2), line[7:]))
                     if sum(1 for _, k in got if k == "published") >= 2:
@@ -326,6 +347,7 @@ def h1_h6(r: Run):
             first is not None and {"leased", "succeeded", "published"} <= {k for _, k in got},
             got[:20])
     r.metrics["sse_first_event_seconds"] = first
+    r.metrics["sse_diagnostics"] = diag
     r.metrics["job_seconds"] = [round(d["result"]["seconds"], 2) for d in detail if d["result"]]
     r.dump("hosted_blender_jobs.json", detail)
     return pid, aid

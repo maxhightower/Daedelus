@@ -112,6 +112,7 @@ jobs:
         run: |
           mkdir -p pub
           python deploy/hosted/handoff.py keygen "$RUNNER_TEMP/worker-key.json" pub/pub.txt
+          python deploy/hosted/worker_supervisor.py host-evidence pub/host.json
       - uses: actions/upload-artifact@v4
         with: {name: worker-pubkey, path: pub/, retention-days: 1}
       - name: Wait for the control host's handoff
