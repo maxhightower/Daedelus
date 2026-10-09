@@ -27,14 +27,14 @@ Status vocabulary (handoff §15):
 |---|---|
 | Working branch | `claude/blissful-clarke-sow429` (session-mandated name), mirrored to `opus/daedelus-v2-1-activation-hardening` at freeze |
 | Base | `opus/daedelus-v2-distributed-execution` @ `cdc2597` (frozen V2 application code `923ca4f`) |
-| Final V2.1 application code | ⟨final SHA, filled at freeze⟩ |
-| Hosted runs | GitHub Actions [37882286579](https://github.com/maxhightower/Daedelus/actions/runs/37882286579) (code `37322df`); ⟨run 2⟩ |
+| Final V2.1 application code | **`733c1b6`** (Linux CI green; hosted run 37884783288 39/39 on this exact commit) |
+| Hosted runs | GitHub Actions [37882286579](https://github.com/maxhightower/Daedelus/actions/runs/37882286579) (code `37322df`, 37/39), [37883447177](https://github.com/maxhightower/Daedelus/actions/runs/37883447177) (`5860085`, 38/39), **[37884783288](https://github.com/maxhightower/Daedelus/actions/runs/37884783288) (`733c1b6`, 39/39)** |
 
 No merge into `main` and no pull request were made.
 
 ## 2. Frozen application code
 
-⟨SHA⟩. All later commits touch only evidence and documentation (see §17).
+`733c1b6`. All later commits touch only evidence and documentation.
 
 ## 3. Implementation by phase
 
@@ -62,15 +62,15 @@ Defects found and fixed during V2.1 (each with a regression test):
 
 | Suite | V2 baseline (`cdc2597`) | V2.1 |
 |---|---|---|
-| Backend pytest (Blender 4.5.3, LibreOffice 24.2) | 144 passed, 4 skipped | **234 passed, 10 skipped** (`e42dab5`; the skips are the opt-in live tests and host-specific cases) |
-| Studio typecheck / unit tests | pass / 14 of 14 | ⟨reg⟩ |
-| V0 demonstration | 40/40 | ⟨reg⟩ |
-| V1.1 demonstrations | A–D passed, E blocked | ⟨reg⟩ |
-| V1.2 demonstration | 28/28 | ⟨reg⟩ |
-| Walkthroughs spatial / semantic / office / execution | 60 / 19 / 23 / 15 | ⟨reg⟩ |
-| V2.1 studio walkthrough (sessions, CSRF, preflight, budget) | n/a | **29/29** |
+| Backend pytest (Blender 4.5.3, LibreOffice 24.2) | 144 passed, 4 skipped | **236 passed, 10 skipped** on `733c1b6` (the skips are the opt-in live tests and host-specific cases) |
+| Studio typecheck / unit tests | pass / 14 of 14 | **pass / 14 of 14** |
+| V0 demonstration | 40/40 | **40/40** |
+| V1.1 demonstrations | A–D passed, E blocked | **A–D passed, E blocked** (no video-capable credentials) |
+| V1.2 demonstration | 28/28 | **28/28** |
+| Walkthroughs spatial / semantic / office / execution / perf | 60 / 19 / 23 / 15 / ok | **60 / 19 / 23 / 15 / ok** (one threshold in the execution walkthrough changed from 3 to 2 jobs per creation, because creation no longer needs a separate inspect job; every check is unchanged) |
+| V2.1 studio walkthrough (sign-in, sessions, CSRF, preflight, budget, polling fallback, sign-out) | n/a | **31/31** |
 | Container cluster | 42/42 (S1–S8) | **70/70** hardened+TLS (S1–S11) |
-| Hosted two-VM run | n/a | run 1: 37/39 (two check defects); ⟨run 2⟩ |
+| Hosted two-VM run | n/a | run 1 37/39, run 2 38/39 (check defects, then the quick tunnel's missing SSE support), **run 3 39/39** |
 | Failure injection (handoff §11, 15 cases) | n/a | **15/15 covered, all passing** (map below) |
 
 Failure injection, handoff §11 (every test asserts the safe outcome):
@@ -170,7 +170,23 @@ Run [37882286579](https://github.com/maxhightower/Daedelus/actions/runs/37882286
   * The event stream through the tunnel delivered nothing. Likely cause: proxy compression. Fixed
     with `no-transform`.
 
-Details: `evidence/v2_1/hosted/run_37882286579/`. ⟨run 2 result⟩
+Details: `evidence/v2_1/hosted/run_37882286579/`.
+
+Run [37883447177](https://github.com/maxhightower/Daedelus/actions/runs/37883447177): 38/39.
+* Machine identity was proven by distinct kernel boot IDs, Azure VM IDs and public IPs.
+* The event stream received **zero bytes** through the tunnel: status 200, correct headers, not
+  even the `hello` frame. Cloudflare documents that quick tunnels do not support Server-Sent
+  Events.
+* Response: a long-poll form of the event channel, with an automatic studio fallback.
+
+**Run [37884783288](https://github.com/maxhightower/Daedelus/actions/runs/37884783288) on the
+frozen code `733c1b6`: 39/39, passed.**
+* Live progress reached the client through the long-poll fallback (first event at 1.35 s).
+* Blender create and edit on the remote VM: 12.2 s.
+* Recovery after worker death: 23.1 s.
+* Resume after a control-plane restart: 102.7 s.
+
+Evidence: `evidence/v2_1/hosted/run_37884783288/`.
 
 What was live and what was deterministic: execution, transport, identities, isolation and
 recovery were real and hosted. The AI planning step used the deterministic provider (Blocked
@@ -216,7 +232,9 @@ Source: `evidence/v2_1/performance/README.md`. Three repeats; the first run cold
 * `v21_03_preflight.png`: run preflight with targets, model, limits and confirmation.
 * `v21_04_budget.png`: execution usage against the budget, with node execution provenance.
 
-⟨regression walkthrough screenshots⟩
+* `v21_05_polling_fallback.png`: the studio with its event stream blocked, showing "live updates (polling)" and jobs arriving.
+
+The V0–V2 walkthrough screenshots were regenerated on V2.1 in the run workspaces. The committed V1 to V2 screenshots in `docs/screenshots/` are kept unchanged, as the frozen milestone record.
 
 ## 12. Native artifact output paths
 
@@ -224,7 +242,7 @@ Source: `evidence/v2_1/performance/README.md`. Three repeats; the first run cold
   `hosted_blender_jobs.json`, which records publication digests.
 * Cluster: `evidence/v2_1/security/cluster_hardened_tls/blender_render.png` and the job JSON files.
 * Benchmark: `evidence/v2_1/live_ai/deterministic/`.
-* Demos: ⟨reg⟩.
+* Demos: the V0, V1.1 and V1.2 demo reports and native outputs were written to the regression run directories; the logs are in `evidence/v2_1/regression/final_v21/`.
 
 The native `.blend`, `.xlsx`, `.docx`, `.pptx`, `.ora` and repository files stay in the run
 workspaces. They are validated by reopening (`file_reopens` checks); they are not committed.
