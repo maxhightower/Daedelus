@@ -78,6 +78,8 @@ def phase() -> dict | None:
         return None
 
 
+ADAPTERS = "blender,layered2d,code"  # must match the credentials control_e2e provisions
+
 class Pool:
     def __init__(self, control: str, creds: dict, out: Path, secrets_dir: Path):
         self.control, self.creds, self.out, self.sec = control, creds, out, secrets_dir
@@ -100,7 +102,8 @@ class Pool:
         log = open(self.out / f"worker_{name}.log", "ab")
         self.procs[name] = subprocess.Popen(
             [sys.executable, "-m", "daedelus.cli", "worker", "--control", self.control,
-             "--name", name], env=env, stdout=log, stderr=subprocess.STDOUT,
+             "--name", name, "--adapters", ADAPTERS], env=env, stdout=log,
+            stderr=subprocess.STDOUT,
             start_new_session=True)
         print(f"started worker {name} (cred {cred}, fault '{fault}')", flush=True)
 

@@ -467,6 +467,15 @@ def main(argv: list[str] | None = None) -> int:
         except CredentialRevoked as exc:
             print(f"worker credential rejected: {exc}", file=sys.stderr)
             return 3
+        except httpx.HTTPStatusError as exc:
+            if exc.response.status_code == 403:  # refused by policy: retrying cannot help
+                try:
+                    why = exc.response.json().get("detail")
+                except ValueError:
+                    why = exc.response.text[:300]
+                print(f"registration refused by the control plane: {why}", file=sys.stderr)
+                return 3
+            print(f"control plane not ready yet ({exc}); retrying", file=sys.stderr)
         except httpx.HTTPError as exc:
             print(f"control plane not reachable yet ({exc}); retrying", file=sys.stderr)
             time.sleep(2)
