@@ -1,0 +1,265 @@
+{
+ "labels": {
+  "deterministic": {
+   "status": "deterministic",
+   "provider": "heuristic",
+   "campaign": null,
+   "runs": 10
+  },
+  "claude": {
+   "status": "BLOCKED",
+   "reason": "no report (not run)"
+  },
+  "gemini": {
+   "status": "BLOCKED",
+   "reason": "no report (not run)"
+  }
+ },
+ "tasks": {
+  "A": {
+   "deterministic": {
+    "single": {
+     "task": "A",
+     "mode": "single",
+     "verification": "deterministic",
+     "blocked_by": null,
+     "checks": "3/7",
+     "checks_v21": "3/6",
+     "passed": false,
+     "model_observations": 0,
+     "operations": 2,
+     "invalid_units": 0,
+     "preservation": null,
+     "constraint_adherence": 0,
+     "live_calls": 0,
+     "cost": "$0.0000",
+     "unpriced_calls": 0,
+     "seconds": 4.52,
+     "loop_stop": null,
+     "iterations": null,
+     "failure": "inappropriate_operation_choice",
+     "assessment": null
+    },
+    "iterative": {
+     "task": "A",
+     "mode": "iterative",
+     "verification": "deterministic",
+     "blocked_by": null,
+     "checks": "3/7",
+     "checks_v21": "3/6",
+     "passed": false,
+     "model_observations": 0,
+     "operations": 2,
+     "invalid_units": 1,
+     "preservation": null,
+     "constraint_adherence": 0,
+     "live_calls": 0,
+     "cost": "$0.0000",
+     "unpriced_calls": 0,
+     "seconds": 6.84,
+     "loop_stop": "corrective revision failed validation and was rolled back",
+     "iterations": 1,
+     "failure": "inappropriate_operation_choice",
+     "assessment": null
+    },
+    "iteration_effect": "unchanged"
+   }
+  },
+  "B": {
+   "deterministic": {
+    "single": {
+     "task": "B",
+     "mode": "single",
+     "verification": "deterministic",
+     "blocked_by": null,
+     "checks": "5/5",
+     "checks_v21": "3/3",
+     "passed": true,
+     "model_observations": 0,
+     "operations": 1,
+     "invalid_units": 0,
+     "preservation": 2,
+     "constraint_adherence": null,
+     "live_calls": 0,
+     "cost": "$0.0000",
+     "unpriced_calls": 0,
+     "seconds": 6.84,
+     "loop_stop": null,
+     "iterations": null,
+     "failure": null,
+     "assessment": null
+    },
+    "iterative": {
+     "task": "B",
+     "mode": "iterative",
+     "verification": "deterministic",
+     "blocked_by": null,
+     "checks": "5/5",
+     "checks_v21": "3/3",
+     "passed": true,
+     "model_observations": 0,
+     "operations": 1,
+     "invalid_units": 0,
+     "preservation": 2,
+     "constraint_adherence": null,
+     "live_calls": 0,
+     "cost": "$0.0000",
+     "unpriced_calls": 0,
+     "seconds": 6.82,
+     "loop_stop": "achieved",
+     "iterations": 0,
+     "failure": null,
+     "assessment": null
+    },
+    "iteration_effect": "unchanged"
+   }
+  },
+  "C": {
+   "deterministic": {
+    "single": {
+     "task": "C",
+     "mode": "single",
+     "verification": "deterministic",
+     "blocked_by": null,
+     "checks": "5/5",
+     "checks_v21": "4/4",
+     "passed": true,
+     "model_observations": 0,
+     "operations": 1,
+     "invalid_units": 0,
+     "preservation": 2,
+     "constraint_adherence": null,
+     "live_calls": 0,
+     "cost": "$0.0000",
+     "unpriced_calls": 0,
+     "seconds": 0.53,
+     "loop_stop": null,
+     "iterations": null,
+     "failure": null,
+     "assessment": null
+    },
+    "iterative": {
+     "task": "C",
+     "mode": "iterative",
+     "verification": "deterministic",
+     "blocked_by": null,
+     "checks": "5/5",
+     "checks_v21": "4/4",
+     "passed": true,
+     "model_observations": 0,
+     "operations": 1,
+     "invalid_units": 0,
+     "preservation": 2,
+     "constraint_adherence": null,
+     "live_calls": 0,
+     "cost": "$0.0000",
+     "unpriced_calls": 0,
+     "seconds": 0.65,
+     "loop_stop": "achieved",
+     "iterations": 0,
+     "failure": null,
+     "assessment": null
+    },
+    "iteration_effect": "unchanged"
+   }
+  },
+  "D": {
+   "deterministic": {
+    "single": {
+     "task": "D",
+     "mode": "single",
+     "verification": "deterministic",
+     "blocked_by": null,
+     "checks": "1/5",
+     "checks_v21": "1/3",
+     "passed": false,
+     "model_observations": 0,
+     "operations": 0,
+     "invalid_units": 0,
+     "preservation": 2,
+     "constraint_adherence": 0,
+     "live_calls": 0,
+     "cost": "$0.0000",
+     "unpriced_calls": 0,
+     "seconds": 0.5,
+     "loop_stop": null,
+     "iterations": null,
+     "failure": "no_operations_planned",
+     "assessment": null
+    },
+    "iterative": {
+     "task": "D",
+     "mode": "iterative",
+     "verification": "deterministic",
+     "blocked_by": null,
+     "checks": "1/5",
+     "checks_v21": "1/3",
+     "passed": false,
+     "model_observations": 0,
+     "operations": 0,
+     "invalid_units": 0,
+     "preservation": 2,
+     "constraint_adherence": 0,
+     "live_calls": 0,
+     "cost": "$0.0000",
+     "unpriced_calls": 0,
+     "seconds": 0.52,
+     "loop_stop": "achieved",
+     "iterations": 0,
+     "failure": "no_operations_planned",
+     "assessment": null
+    },
+    "iteration_effect": "unchanged"
+   }
+  },
+  "E": {
+   "deterministic": {
+    "single": {
+     "task": "E",
+     "mode": "single",
+     "verification": "blocked",
+     "blocked_by": "no video input: pass --video-file or --video-url (a real, appropriately licensed video demonstrating a technique)",
+     "checks": "0/0",
+     "checks_v21": "0/0",
+     "passed": null,
+     "model_observations": null,
+     "operations": 0,
+     "invalid_units": 0,
+     "preservation": null,
+     "constraint_adherence": null,
+     "live_calls": 0,
+     "cost": null,
+     "unpriced_calls": null,
+     "seconds": null,
+     "loop_stop": null,
+     "iterations": null,
+     "failure": null,
+     "assessment": null
+    },
+    "iterative": {
+     "task": "E",
+     "mode": "iterative",
+     "verification": "blocked",
+     "blocked_by": "no video input: pass --video-file or --video-url (a real, appropriately licensed video demonstrating a technique)",
+     "checks": "0/0",
+     "checks_v21": "0/0",
+     "passed": null,
+     "model_observations": null,
+     "operations": 0,
+     "invalid_units": 0,
+     "preservation": null,
+     "constraint_adherence": null,
+     "live_calls": 0,
+     "cost": null,
+     "unpriced_calls": null,
+     "seconds": null,
+     "loop_stop": null,
+     "iterations": null,
+     "failure": null,
+     "assessment": null
+    },
+    "iteration_effect": "n/a (blocked)"
+   }
+  }
+ }
+}

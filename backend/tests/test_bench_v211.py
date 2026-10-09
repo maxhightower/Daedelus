@@ -80,7 +80,12 @@ def test_failure_classification_names_the_earliest_stage():
     assert c(preserve)["category"] == "wrong_component_selected"
     geo = _run(task="A", checks=[{"name": "a native Blender object with geometry was created",
                                   "ok": False}])
-    assert c(geo)["category"] == "insufficient_adapter_capabilities"  # nothing was planned
+    assert c(geo)["category"] == "inappropriate_operation_choice"  # no plan recorded at all
+    geo["plans"] = [{"operations": [], "notes": ["cannot model a handle"]}]
+    assert c(geo)["category"] == "no_operations_planned"
+    assert "cannot model a handle" in c(geo)["evidence"]
+    geo["plans"] = [{"operations": [{"op": "set_taper"}, {"op": "set_material"}]}]
+    assert c(geo)["category"] == "inappropriate_operation_choice"  # nothing creates geometry
     geo["plans"] = [{"operations": [{"op": "add_primitive"}]}]
     assert c(geo)["category"] == "incorrect_parameter_selection"
     assert "heuristic" in c(geo)["basis"]

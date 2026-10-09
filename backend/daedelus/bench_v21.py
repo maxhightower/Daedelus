@@ -398,10 +398,12 @@ def _held_out_spec(nat: Path) -> dict[str, Any]:
         p = subprocess.run([sys.executable, "-I", "-c", code], cwd=nat, capture_output=True,
                            text=True, timeout=30)
         bad = json.loads(p.stdout.strip().splitlines()[-1]) if p.returncode == 0 else None
-    except (subprocess.TimeoutExpired, ValueError, IndexError):
-        bad = None
+        err = (p.stderr.strip().splitlines() or [""])[-1][:200]
+    except (subprocess.TimeoutExpired, ValueError, IndexError) as exc:
+        bad, err = None, f"{type(exc).__name__}"
     if bad is None:
-        return {"passed": False, "detail": "slugify could not be run on the held-out cases"}
+        return {"passed": False, "detail": f"slugify could not be run on the held-out cases: "
+                                           f"{err}"}
     return {"passed": not bad, "detail": f"{len(HELD_OUT) - len(bad)}/{len(HELD_OUT)} cases; "
             f"wrong: {bad[:4]}"}
 
@@ -624,7 +626,8 @@ def _one(rep, ws, out, provider, t, mode, video, campaign, assessor=None) -> Non
 FAILURE_CATEGORIES = (
     "source_understanding_failure", "inappropriate_source_interpretation",
     "wrong_component_selected", "invalid_operation_schema", "insufficient_adapter_capabilities",
-    "incorrect_parameter_selection", "overly_restrictive_constraints",
+    "incorrect_parameter_selection", "inappropriate_operation_choice", "no_operations_planned",
+    "overly_restrictive_constraints",
     "blender_execution_failure", "native_artifact_validation_failure", "visual_quality_failure",
     "provider_refusal", "api_timeout_rate_limit", "budget_exhaustion")
 
@@ -660,16 +663,24 @@ def classify_failure(d: dict[str, Any]) -> dict[str, Any] | None:
         return out("planning", "invalid_operation_schema", err)
     if "blender" in low and ("error" in low or "failed" in low):
         return out("execution", "blender_execution_failure", err)
+    if plans and not ops and failed:
+        # the planner returned nothing to do; whether the catalogue could have expressed the
+        # change is a separate question (needs the model's stated intent, see the plan notes)
+        return out("planning", "no_operations_planned",
+                   f"0 operations planned; notes: {[n for p in plans for n in p.get('notes') or []][:3]}"
+                   f"; failed: {failed}")
     if any("preserved" in n for n in failed):
         return out("execution", "wrong_component_selected",
                    "an unrelated component changed: " + ", ".join(failed))
     if any("reopens" in n or "valid zip" in n or "layered" in n for n in failed):
         return out("validation", "native_artifact_validation_failure", ", ".join(failed))
     if any("geometry was created" in n or "GLB" in n for n in failed):
-        return out("planning", "insufficient_adapter_capabilities" if not ops else
-                   "incorrect_parameter_selection",
-                   f"{len(ops)} planned op(s): {[o.get('op') for o in ops][:8]}; failed: "
-                   f"{failed}")
+        names = [str(o.get("op")) for o in ops]
+        creates = [n for n in names if n.startswith(("add_", "create", "new_"))]
+        cat = ("inappropriate_operation_choice" if not creates else
+               "incorrect_parameter_selection")
+        return out("planning", cat, f"{len(ops)} planned op(s): {names[:8]} (geometry-creating:"
+                   f" {creates or 'none'}); failed: {failed}")
     if any("changed" in n for n in failed):
         return out("planning", "incorrect_parameter_selection" if ops else
                    "inappropriate_source_interpretation",
