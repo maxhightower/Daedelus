@@ -4,6 +4,11 @@
 #   jobs  - internal network (no route to the internet): workers reach ONLY the control plane.
 #
 # Secrets come from deploy/.env (copy .env.example; use long random values).
+#
+# This is the DEVELOPMENT topology: plain HTTP on the internal network
+# (DAEDELUS_ALLOW_INSECURE_CONTROL=1) and join-token enrolment. For hardened workers
+# (no capabilities, read-only root, seccomp, per-job bubblewrap sandbox, per-worker
+# credentials) add compose.hardened.yml; for hosted deployments see docs/CLOUD_DEPLOYMENT.md.
 name: daedelus
 
 networks:
@@ -41,6 +46,7 @@ services:
     image: daedelus-worker-office:local
     environment:
       DAEDELUS_WORKER_TOKEN: ${DAEDELUS_WORKER_TOKEN:?set DAEDELUS_WORKER_TOKEN in deploy/.env}
+      DAEDELUS_ALLOW_INSECURE_CONTROL: "1"  # internal compose network only
       DAEDELUS_WORKER_CAPABILITIES: cpu
       DAEDELUS_WORKER_ADAPTERS: spreadsheet,document,presentation
     networks: [jobs]
@@ -55,6 +61,7 @@ services:
     image: daedelus-worker-blender:local
     environment:
       DAEDELUS_WORKER_TOKEN: ${DAEDELUS_WORKER_TOKEN:?set DAEDELUS_WORKER_TOKEN in deploy/.env}
+      DAEDELUS_ALLOW_INSECURE_CONTROL: "1"  # internal compose network only
       DAEDELUS_WORKER_CAPABILITIES: cpu   # "gpu" only with a verified GPU device (see docs)
       DAEDELUS_WORKER_ADAPTERS: blender,layered2d
     networks: [jobs]
@@ -69,6 +76,7 @@ services:
     image: daedelus-worker-code:local
     environment:
       DAEDELUS_WORKER_TOKEN: ${DAEDELUS_WORKER_TOKEN:?set DAEDELUS_WORKER_TOKEN in deploy/.env}
+      DAEDELUS_ALLOW_INSECURE_CONTROL: "1"  # internal compose network only
       DAEDELUS_WORKER_CAPABILITIES: cpu
       DAEDELUS_WORKER_ADAPTERS: code
       DAEDELUS_WORKER_ALLOWED_COMMANDS: python -m pytest
