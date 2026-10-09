@@ -6,14 +6,14 @@ Budget per run: `{"max_model_calls": 24, "max_cost_usd": 2.0, "max_tokens": 6000
 
 | Task | Mode | Verification | Checks | Live calls | Cost | Seconds | Rubric (measured) |
 |---|---|---|---|---|---|---|---|
-| A | single | deterministic | 4/6 | 0 | $0.0000 | 4.34 | constraint_adherence=1 |
-| A | iterative | deterministic | 4/6 | 0 | $0.0000 | 6.18 | constraint_adherence=1 |
-| B | single | deterministic | 3/3 | 0 | $0.0000 | 5.06 | preservation=2 |
-| B | iterative | deterministic | 3/3 | 0 | $0.0000 | 5.87 | preservation=2 |
-| C | single | deterministic | 4/4 | 0 | $0.0000 | 0.41 | preservation=2 |
-| C | iterative | deterministic | 4/4 | 0 | $0.0000 | 0.45 | preservation=2 |
-| D | single | deterministic | 2/3 | 0 | $0.0000 | 0.41 | constraint_adherence=0, preservation=2 |
-| D | iterative | deterministic | 2/3 | 0 | $0.0000 | 0.43 | constraint_adherence=0, preservation=2 |
+| A | single | deterministic | 3/6 | 0 | $0.0000 | 4.67 | constraint_adherence=0 |
+| A | iterative | deterministic | 3/6 | 0 | $0.0000 | 6.01 | constraint_adherence=0 |
+| B | single | deterministic | 3/3 | 0 | $0.0000 | 5.6 | preservation=2 |
+| B | iterative | deterministic | 3/3 | 0 | $0.0000 | 6.04 | preservation=2 |
+| C | single | deterministic | 4/4 | 0 | $0.0000 | 0.43 | preservation=2 |
+| C | iterative | deterministic | 4/4 | 0 | $0.0000 | 0.48 | preservation=2 |
+| D | single | deterministic | 1/3 | 0 | $0.0000 | 0.44 | constraint_adherence=0, preservation=2 |
+| D | iterative | deterministic | 1/3 | 0 | $0.0000 | 0.48 | constraint_adherence=0, preservation=2 |
 | E | single | blocked (no video input: pass --video-file or --video-url (a real, appropriately licensed video demonstrating a technique)) | 0/0 | 0 | — | — | — |
 | E | iterative | blocked (no video input: pass --video-file or --video-url (a real, appropriately licensed video demonstrating a technique)) | 0/0 | 0 | — | — | — |
 
@@ -25,7 +25,7 @@ Rubric dimensions not measurable by the harness (relevance, structural fidelity,
 - [ ] a native Blender object with geometry was created — []
 - [x] the .blend file reopens
 - [x] render produced
-- [x] polygon budget met (measured)
+- [ ] polygon budget met (measured) — 0
 - [ ] height 0.1 m met (measured) — None
 
 ## A / iterative
@@ -34,7 +34,7 @@ Rubric dimensions not measurable by the harness (relevance, structural fidelity,
 - [ ] a native Blender object with geometry was created — []
 - [x] the .blend file reopens
 - [x] render produced
-- [x] polygon budget met (measured)
+- [ ] polygon budget met (measured) — 0
 - [ ] height 0.1 m met (measured) — None
 
 ## B / single
@@ -66,14 +66,14 @@ Rubric dimensions not measurable by the harness (relevance, structural fidelity,
 ## D / single
 
 - [x] a schema-valid plan was produced
-- [x] a real git diff of textutil.py exists
-- [ ] allowlisted tests pass — {"report": {"passed": false, "artifacts": [{"artifact_id": "art_afae0af5f211", "artifact": "textutil", "revision_id": "rev_cb826516fa1e", "report": {"passed": false, "checks": [{"name": "tests", "pass
+- [ ] a real git diff of textutil.py against the starting commit exists — 
+- [ ] allowlisted tests pass — {"report": {"passed": false, "artifacts": [{"artifact_id": "art_628090852d88", "artifact": "textutil", "revision_id": "rev_2939aafd180f", "report": {"passed": false, "checks": [{"name": "tests", "pass
 
 ## D / iterative
 
 - [x] a schema-valid plan was produced
-- [x] a real git diff of textutil.py exists
-- [ ] allowlisted tests pass — {"report": {"passed": false, "artifacts": [{"artifact_id": "art_fdcd6c915b3f", "artifact": "textutil", "revision_id": "rev_3034f349296a", "report": {"passed": false, "checks": [{"name": "tests", "pass
+- [ ] a real git diff of textutil.py against the starting commit exists — 
+- [ ] allowlisted tests pass — {"report": {"passed": false, "artifacts": [{"artifact_id": "art_9dead48b6ae4", "artifact": "textutil", "revision_id": "rev_cddc482d051e", "report": {"passed": false, "checks": [{"name": "tests", "pass
 
 ## E / single
 

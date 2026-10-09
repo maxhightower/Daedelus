@@ -24,8 +24,10 @@ PASS [5 preflight] the run view shows model calls and cost against the budget
 PASS [6 leaks] no request URL carried the API token
 PASS [6 leaks] event-stream URLs carry no ticket in session mode
 PASS [6 leaks] after sign-in the browser sends no bearer token (cookie only)
+PASS [6b long-poll fallback] without server-sent events the studio falls back to long-polling
+PASS [6b long-poll fallback] remote jobs still arrive live through the long-poll fallback
 PASS [7 sign out] signing out returns to the sign-in screen
 PASS [7 sign out] the old session cookie no longer authenticates (401)
 PASS [7 sign out] no uncaught page errors
 
-29/29 checks passed
+31/31 checks passed

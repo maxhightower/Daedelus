@@ -170,6 +170,12 @@ async function req<T>(method: string, path: string, body?: any): Promise<T> {
 
 const P = (pid: string) => `/api/projects/${pid}`;
 
+/** Long-poll form of the event stream (V2.1) for proxies that buffer server-sent events. */
+export function pollEvents(pid: string, since?: number) {
+  const qs = since == null ? "" : `?since=${since}&wait_s=20`;
+  return req<{ seq: number; events: { seq: number; kind: string }[] }>("GET", `/api/projects/${pid}/events/poll${qs}`);
+}
+
 export const api = {
   health: () => req<Health>("GET", "/api/health"),
   nodeTypes: () => req<NodeType[]>("GET", "/api/node-types"),

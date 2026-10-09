@@ -39,8 +39,8 @@ export function ExecutionSettingsPanel() {
       <div className="row small">
         <b>Execution</b>
         <span className="spacer" />
-        <Badge tone={s.live === "live" ? "ok" : s.live === "reconnecting" ? "warn" : "default"} title="project event stream (server-sent events)">
-          {s.live === "live" ? "● live updates" : s.live === "reconnecting" ? "reconnecting…" : s.live}
+        <Badge tone={s.live === "live" || s.live === "polling" ? "ok" : s.live === "reconnecting" ? "warn" : "default"} title="project event stream (server-sent events; long-polling where a proxy buffers them)">
+          {s.live === "live" ? "● live updates" : s.live === "polling" ? "● live updates (polling)" : s.live === "reconnecting" ? "reconnecting…" : s.live}
         </Badge>
       </div>
       <div className="target-choice" role="radiogroup" aria-label="execution target">

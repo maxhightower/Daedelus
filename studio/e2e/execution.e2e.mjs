@@ -96,7 +96,8 @@ try {
   check("the connected worker is listed with its capabilities and adapters", /office-worker-1/.test(wtext) && /cpu/.test(wtext) && /spreadsheet/.test(wtext), wtext);
   const created = await post(P("/artifacts"), { name: "Remote book", adapter: "spreadsheet", template: "data", params: { sheets: [{ id: "data", title: "Data", rows: [["x", "y"], [1, 2]] }] } });
   check("an artifact created under Cloud CPU", created.artifact.id);
-  await until(async () => (await page.locator("[data-testid=job-list] .job-row").count()) >= 3, 20000);
+  // V2.1: create returns its own inspection (post-inspect), so creation is create + preview, not create + inspect + preview
+  await until(async () => (await page.locator("[data-testid=job-list] .job-row").count()) >= 2, 20000);
   const jl = await page.locator("[data-testid=job-list]").innerText();
   check("remote jobs appear live in the job list (pushed over SSE)", /spreadsheet\.create/.test(jl) && /succeeded/.test(jl), jl.slice(0, 400));
   await shot("v2_01_execution_settings_jobs");

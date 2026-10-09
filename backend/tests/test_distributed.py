@@ -419,6 +419,34 @@ def test_sse_stream_reports_job_events(cluster):
     assert got[0] == "hello" and {"queued", "leased", "succeeded", "published"} <= set(got)
 
 
+def test_long_poll_events_for_proxies_without_sse(cluster):
+    """V2.1: the long-poll fallback (Cloudflare quick tunnels buffer SSE entirely)."""
+    cluster.worker("cpu-1")
+    pid = cluster.project("cloud_cpu")
+    start = cluster.c.get(f"/api/projects/{pid}/events/poll").json()
+    assert start["events"] == []
+    t0 = time.time()
+    empty = cluster.c.get(f"/api/projects/{pid}/events/poll?since={start['seq']}&wait_s=0.5").json()
+    assert empty == {"seq": start["seq"], "events": []} and time.time() - t0 >= 0.4
+    res: dict = {}
+    t = threading.Thread(target=lambda: res.update(r=cluster.c.get(
+        f"/api/projects/{pid}/events/poll?since={start['seq']}&wait_s=20")))
+    t.start()
+    time.sleep(0.3)
+    _workbook(cluster, pid)
+    t.join(timeout=30)
+    first = res["r"].json()
+    assert first["events"] and first["seq"] == first["events"][-1]["seq"]  # woke on the first event
+    kinds, seq = [e["kind"] for e in first["events"]], first["seq"]
+    for _ in range(20):
+        if "published" in kinds:
+            break
+        r = cluster.c.get(f"/api/projects/{pid}/events/poll?since={seq}&wait_s=5").json()
+        kinds += [e["kind"] for e in r["events"]]
+        seq = r["seq"]
+    assert {"queued", "leased", "succeeded", "published"} <= set(kinds)
+
+
 def test_worker_protocol_requires_tokens_and_scopes_blobs(cluster):
     c = cluster.c
     assert c.post("/api/cluster/workers", json={"name": "x"}).status_code == 401

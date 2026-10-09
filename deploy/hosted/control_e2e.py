@@ -298,8 +298,24 @@ def h1_h6(r: Run):
                         return
         except httpx.HTTPError as exc:
             got.append((None, f"stream error {exc}"))
+    polled: list = []
+
+    def poll():  # the long-poll fallback, through the same public endpoint
+        try:
+            seq = r.c.get(f"/api/projects/{pid}/events/poll").json()["seq"]
+            while time.time() - t0 < 300:
+                res = r.c.get(f"/api/projects/{pid}/events/poll?since={seq}&wait_s=20").json()
+                for ev in res["events"]:
+                    polled.append((round(time.time() - t0, 2), ev["kind"]))
+                seq = res["seq"]
+                if sum(1 for _, k in polled if k == "published") >= 2:
+                    return
+        except (httpx.HTTPError, ValueError, KeyError) as exc:
+            polled.append((None, f"poll error {exc}"))
     th = threading.Thread(target=listen, daemon=True)
     th.start()
+    tp = threading.Thread(target=poll, daemon=True)
+    tp.start()
     time.sleep(1)
     t1 = time.time()
     a = r.c.post(f"/api/projects/{pid}/artifacts", json={
@@ -320,6 +336,7 @@ def h1_h6(r: Run):
     r.check("Blender operations executed on the remote worker", e.status_code == 200,
             e.text[:400])
     th.join(timeout=120)
+    tp.join(timeout=60)
     jobs = r.jobs(pid)
     wid = w["id"]
     r.check("every job ran on the remote worker", jobs and all(
@@ -342,11 +359,18 @@ def h1_h6(r: Run):
             img is not None and img.status_code == 200 and img.content[:4] == b"\x89PNG")
     if img is not None and img.status_code == 200:
         (r.out / "hosted_render.png").write_bytes(img.content)
+    need = {"leased", "succeeded", "published"}
     first = next((t for t, k in got if k == "queued"), None)
-    r.check("the event stream delivered job progress through the public TLS endpoint",
-            first is not None and {"leased", "succeeded", "published"} <= {k for _, k in got},
-            got[:20])
+    pfirst = next((t for t, k in polled if k == "queued"), None)
+    sse_ok = first is not None and need <= {k for _, k in got}
+    poll_ok = pfirst is not None and need <= {k for _, k in polled}
+    r.check("job progress reached the client live through the public TLS endpoint "
+            "(server-sent events, or the long-poll fallback where the proxy does not support "
+            "them)", sse_ok or poll_ok, {"sse": got[:10], "poll": polled[:10]})
+    r.metrics["event_channel"] = ("sse" if sse_ok else "") + ("+" if sse_ok and poll_ok else "") \
+        + ("long-poll" if poll_ok else "")
     r.metrics["sse_first_event_seconds"] = first
+    r.metrics["poll_first_event_seconds"] = pfirst
     r.metrics["sse_diagnostics"] = diag
     r.metrics["job_seconds"] = [round(d["result"]["seconds"], 2) for d in detail if d["result"]]
     r.dump("hosted_blender_jobs.json", detail)

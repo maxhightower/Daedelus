@@ -156,6 +156,18 @@
     "detail": ""
   },
   {
+    "scenario": "6b long-poll fallback",
+    "name": "without server-sent events the studio falls back to long-polling",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "scenario": "6b long-poll fallback",
+    "name": "remote jobs still arrive live through the long-poll fallback",
+    "ok": true,
+    "detail": ""
+  },
+  {
     "scenario": "7 sign out",
     "name": "signing out returns to the sign-in screen",
     "ok": true,

@@ -381,6 +381,23 @@ def build_router() -> APIRouter:
         cl.audit.record("job_cancel_requested", target=job_id, by="user")
         return st.model_dump()
 
+    @r.get("/api/projects/{pid}/events/poll")
+    async def events_poll(pid: str, request: Request, since: int | None = None,
+                          wait_s: float = 20.0):
+        """Long-poll form of the event stream, for proxies that buffer or do not support
+        server-sent events (e.g. Cloudflare quick tunnels). Returns the events after ``since``
+        as soon as there are any, or an empty list after ``wait_s`` (at most 25 s)."""
+        cl = _cluster()
+        if since is None:  # new subscriber: start from now
+            tail = cl.queue.events(project_id=pid, since=0, limit=1_000_000)
+            return {"seq": tail[-1]["seq"] if tail else 0, "events": []}
+        deadline = time.time() + max(0.0, min(float(wait_s), 25.0))
+        while True:
+            evs = cl.queue.events(project_id=pid, since=since, limit=200)
+            if evs or time.time() >= deadline or await request.is_disconnected():
+                return {"seq": evs[-1]["seq"] if evs else since, "events": evs}
+            await asyncio.sleep(0.25)
+
     @r.get("/api/projects/{pid}/events")
     async def events(pid: str, request: Request, since: int | None = None,
                      last_event_id: str | None = Header(None)):

@@ -203,6 +203,24 @@ try {
   const bearerAfterLogin = requests.filter((r) => r.headers.authorization && !/\/api\/auth\/session$/.test(r.url));
   check("after sign-in the browser sends no bearer token (cookie only)", bearerAfterLogin.length === 0, bearerAfterLogin.map((r) => r.url).join("\n"));
 
+  // ---------------------------------------------------------------- 6b. proxy without SSE
+  scenario = "6b long-poll fallback";
+  const p2 = await context.newPage(); // same session; its event stream is blocked like a buffering proxy
+  await p2.route(/\/events(\?|$)/, (route) => route.abort());
+  await p2.goto(BASE);
+  await p2.locator("select[aria-label=project]").waitFor({ timeout: 20000 });
+  await p2.selectOption("select[aria-label=project]", PID);
+  await p2.locator("[data-testid=execution-badge]").click();
+  await p2.locator("[data-testid=execution-settings]").waitFor({ timeout: 15000 });
+  await until(async () => /live updates \(polling\)/.test(await p2.locator("[data-testid=execution-settings]").innerText()), 30000);
+  check("without server-sent events the studio falls back to long-polling", true);
+  const rowsBefore = await p2.locator("[data-testid=job-list] .job-row").count();
+  await post(P("/artifacts"), { name: "Polled book", adapter: "spreadsheet", template: "data", params: { sheets: [{ id: "data", title: "Data", rows: [["a"], [1]] }] } });
+  await until(async () => (await p2.locator("[data-testid=job-list] .job-row").count()) > rowsBefore, 30000);
+  check("remote jobs still arrive live through the long-poll fallback", true);
+  await p2.screenshot({ path: path.join(OUT, "v21_05_polling_fallback.png") });
+  await p2.close();
+
   // ---------------------------------------------------------------- 7. sign out
   scenario = "7 sign out";
   await page.click("[data-testid=sign-out]");

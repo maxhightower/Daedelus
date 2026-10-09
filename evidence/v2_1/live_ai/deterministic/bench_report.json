@@ -19,21 +19,21 @@
    "provider": "heuristic",
    "sources": [
     {
-     "id": "src_7598659694a1",
+     "id": "src_91b93f552305",
      "name": "Cafe photograph",
      "media_type": "image",
      "sha256": "1b334876bab6bccddc821520b67fad5bceaaf3c454885b75cdc126b7ebfe9576",
      "origin": "path"
     },
     {
-     "id": "src_9de4cef69623",
+     "id": "src_51532588b9b5",
      "name": "Stylized illustration",
      "media_type": "image",
      "sha256": "4d671408fa4c57ca1b552851a3ccf0d0a18a9e601e478e7feb561cc20fae472f",
      "origin": "path"
     },
     {
-     "id": "src_365c93951242",
+     "id": "src_f9dc3e1d295b",
      "name": "Prop specification",
      "media_type": "text",
      "sha256": "fe5aa9bca85f4c76300b073e2bee9503c29ce6a36349779d6e4208271a5c0a1b",
@@ -42,8 +42,8 @@
    ],
    "bindings": [
     {
-     "id": "bind_7dea046e8169",
-     "source_id": "src_7598659694a1",
+     "id": "bind_da635a99ab8e",
+     "source_id": "src_91b93f552305",
      "role": "reference",
      "aspects": [
       "geometry",
@@ -68,8 +68,8 @@
      "constraint": "soft"
     },
     {
-     "id": "bind_22a99bbfa98e",
-     "source_id": "src_9de4cef69623",
+     "id": "bind_8ed5d844bf49",
+     "source_id": "src_51532588b9b5",
      "role": "inspiration",
      "aspects": [
       "style",
@@ -81,8 +81,8 @@
      "constraint": "soft"
     },
     {
-     "id": "bind_4a44b4c26e39",
-     "source_id": "src_365c93951242",
+     "id": "bind_0785f141a893",
+     "source_id": "src_f9dc3e1d295b",
      "role": "constraint",
      "aspects": [
       "geometry"
@@ -93,7 +93,7 @@
      "constraint": "hard"
     }
    ],
-   "seconds": 4.34,
+   "seconds": 4.67,
    "execution_status": "succeeded",
    "error": null,
    "budget": {
@@ -116,7 +116,7 @@
      "cost_usd": 0.0,
      "cost": "$0.0000",
      "unpriced_calls": 0,
-     "seconds": 4.34
+     "seconds": 4.67
     },
     "by_provider": {},
     "refusals": []
@@ -135,7 +135,7 @@
         "axis": "Z"
        },
        "derived_from": [
-        "bind_7dea046e8169"
+        "bind_da635a99ab8e"
        ],
        "rationale": "silhouette taper ratio 0.74"
       },
@@ -146,15 +146,15 @@
         "base_color": "#94b1af"
        },
        "derived_from": [
-        "bind_22a99bbfa98e"
+        "bind_8ed5d844bf49"
        ],
        "rationale": "colour from 'Stylized illustration'"
       }
      ],
      "interpretations": {
-      "bind_7dea046e8169": "reference (drive, weight 0.6): silhouette top/bottom width 0.56/0.76 -> taper target -0.304, applied -0.182",
-      "bind_22a99bbfa98e": "inspiration (blend, weight 0.30): dominant foreground colour (measured) #2f8f8a -> base colour #bfbfbf -> #94b1af",
-      "bind_4a44b4c26e39": "presented; no allowed operation family of adapter 'blender' expresses aspects ['geometry'] for text measurements at this unit"
+      "bind_da635a99ab8e": "reference (drive, weight 0.6): silhouette top/bottom width 0.56/0.76 -> taper target -0.304, applied -0.182",
+      "bind_8ed5d844bf49": "inspiration (blend, weight 0.30): dominant foreground colour (measured) #2f8f8a -> base colour #bfbfbf -> #94b1af",
+      "bind_0785f141a893": "presented; no allowed operation family of adapter 'blender' expresses aspects ['geometry'] for text measurements at this unit"
      },
      "notes": [],
      "usage": {}
@@ -162,7 +162,7 @@
    ],
    "validation_decisions": [
     {
-     "unit": "artifact:art_9f2a5bf16ef2#mug",
+     "unit": "artifact:art_d18209af1fd0#mug",
      "status": "succeeded",
      "error": null
     }
@@ -425,7 +425,7 @@
       "calls": 0,
       "input_tokens": null,
       "output_tokens": null,
-      "latency_ms": 169.0,
+      "latency_ms": 190.0,
       "cost_usd": null,
       "model": null,
       "request_id": null,
@@ -592,7 +592,7 @@
       "calls": 0,
       "input_tokens": null,
       "output_tokens": null,
-      "latency_ms": 0.3,
+      "latency_ms": 0.2,
       "cost_usd": null,
       "model": null,
       "request_id": null,
@@ -696,25 +696,25 @@
    "model_observation_count": 0,
    "revisions": [
     {
-     "id": "rev_d94ac4730927",
+     "id": "rev_36c182fbe460",
      "number": 1,
      "message": "Created from template 'empty'",
      "previews": {
-      "render": "artifacts/art_9f2a5bf16ef2/revisions/0001/previews/preview.png",
-      "glb": "artifacts/art_9f2a5bf16ef2/revisions/0001/previews/model.glb",
-      "glb_ids": "artifacts/art_9f2a5bf16ef2/revisions/0001/previews/model.glb"
+      "render": "artifacts/art_d18209af1fd0/revisions/0001/previews/preview.png",
+      "glb": "artifacts/art_d18209af1fd0/revisions/0001/previews/model.glb",
+      "glb_ids": "artifacts/art_d18209af1fd0/revisions/0001/previews/model.glb"
      },
      "validation": null,
      "render_file": "A_single_rev1.png"
     },
     {
-     "id": "rev_8fff3e1d14f3",
+     "id": "rev_523d4fb4abe2",
      "number": 2,
      "message": "A-single / Agent: mug",
      "previews": {
-      "render": "artifacts/art_9f2a5bf16ef2/revisions/0002/previews/preview.png",
-      "glb": "artifacts/art_9f2a5bf16ef2/revisions/0002/previews/model.glb",
-      "glb_ids": "artifacts/art_9f2a5bf16ef2/revisions/0002/previews/model.glb"
+      "render": "artifacts/art_d18209af1fd0/revisions/0002/previews/preview.png",
+      "glb": "artifacts/art_d18209af1fd0/revisions/0002/previews/model.glb",
+      "glb_ids": "artifacts/art_d18209af1fd0/revisions/0002/previews/model.glb"
      },
      "validation": {
       "passed": true,
@@ -775,7 +775,7 @@
     },
     {
      "name": "polygon budget met (measured)",
-     "ok": true,
+     "ok": false,
      "detail": "0"
     },
     {
@@ -794,7 +794,7 @@
      "basis": "needs review"
     },
     "constraint_adherence": {
-     "score": 1,
+     "score": 0,
      "basis": "measured",
      "note": "poly_count=0, height=None"
     },
@@ -817,21 +817,21 @@
    "provider": "heuristic",
    "sources": [
     {
-     "id": "src_a60a08e8628b",
+     "id": "src_52e2fcd8b48e",
      "name": "Cafe photograph",
      "media_type": "image",
      "sha256": "1b334876bab6bccddc821520b67fad5bceaaf3c454885b75cdc126b7ebfe9576",
      "origin": "path"
     },
     {
-     "id": "src_1df90eef25cd",
+     "id": "src_518c477accc5",
      "name": "Stylized illustration",
      "media_type": "image",
      "sha256": "4d671408fa4c57ca1b552851a3ccf0d0a18a9e601e478e7feb561cc20fae472f",
      "origin": "path"
     },
     {
-     "id": "src_32f26af24c6b",
+     "id": "src_e749d19e2189",
      "name": "Prop specification",
      "media_type": "text",
      "sha256": "fe5aa9bca85f4c76300b073e2bee9503c29ce6a36349779d6e4208271a5c0a1b",
@@ -840,8 +840,8 @@
    ],
    "bindings": [
     {
-     "id": "bind_1be229cacc72",
-     "source_id": "src_a60a08e8628b",
+     "id": "bind_510d8b7fb796",
+     "source_id": "src_52e2fcd8b48e",
      "role": "reference",
      "aspects": [
       "geometry",
@@ -866,8 +866,8 @@
      "constraint": "soft"
     },
     {
-     "id": "bind_561b7ca274d7",
-     "source_id": "src_1df90eef25cd",
+     "id": "bind_32588005c827",
+     "source_id": "src_518c477accc5",
      "role": "inspiration",
      "aspects": [
       "style",
@@ -879,8 +879,8 @@
      "constraint": "soft"
     },
     {
-     "id": "bind_a76fac1c0b54",
-     "source_id": "src_32f26af24c6b",
+     "id": "bind_72ba74c5a953",
+     "source_id": "src_e749d19e2189",
      "role": "constraint",
      "aspects": [
       "geometry"
@@ -891,7 +891,7 @@
      "constraint": "hard"
     }
    ],
-   "seconds": 6.18,
+   "seconds": 6.01,
    "execution_status": "failed",
    "error": "agent: hard constraint(s) still violated after 1 correction(s) (corrective revision failed validation and was rolled back): height eq 0.1 from 'Prop specification' - measured None; source text: \"Height 0.1 m. The model must have no more than 600 polygons.\". No revision satisfied the hard constraints.",
    "budget": {
@@ -914,7 +914,7 @@
      "cost_usd": 0.0,
      "cost": "$0.0000",
      "unpriced_calls": 0,
-     "seconds": 6.17
+     "seconds": 6.01
     },
     "by_provider": {},
     "refusals": []
@@ -933,7 +933,7 @@
         "axis": "Z"
        },
        "derived_from": [
-        "bind_1be229cacc72"
+        "bind_510d8b7fb796"
        ],
        "rationale": "silhouette taper ratio 0.74"
       },
@@ -944,15 +944,15 @@
         "base_color": "#94b1af"
        },
        "derived_from": [
-        "bind_561b7ca274d7"
+        "bind_32588005c827"
        ],
        "rationale": "colour from 'Stylized illustration'"
       }
      ],
      "interpretations": {
-      "bind_1be229cacc72": "reference (drive, weight 0.6): silhouette top/bottom width 0.56/0.76 -> taper target -0.304, applied -0.182",
-      "bind_561b7ca274d7": "inspiration (blend, weight 0.30): dominant foreground colour (measured) #2f8f8a -> base colour #bfbfbf -> #94b1af",
-      "bind_a76fac1c0b54": "presented; no allowed operation family of adapter 'blender' expresses aspects ['geometry'] for text measurements at this unit"
+      "bind_510d8b7fb796": "reference (drive, weight 0.6): silhouette top/bottom width 0.56/0.76 -> taper target -0.304, applied -0.182",
+      "bind_32588005c827": "inspiration (blend, weight 0.30): dominant foreground colour (measured) #2f8f8a -> base colour #bfbfbf -> #94b1af",
+      "bind_72ba74c5a953": "presented; no allowed operation family of adapter 'blender' expresses aspects ['geometry'] for text measurements at this unit"
      },
      "notes": [],
      "usage": {}
@@ -960,7 +960,7 @@
    ],
    "validation_decisions": [
     {
-     "unit": "artifact:art_1a7a553b0434#mug",
+     "unit": "artifact:art_929895ccdbce#mug",
      "status": "failed",
      "error": "ValueError: component has no geometry to measure"
     }
@@ -981,7 +981,7 @@
      "cache_read_tokens": null,
      "unpriced_calls": 0
     },
-    "seconds": 1.7,
+    "seconds": 1.81,
     "unresolved": [
      {
       "criterion": "height eq 0.1 from 'Prop specification'",
@@ -989,7 +989,7 @@
       "kind": "constraint",
       "detail": "measured None; source text: \"Height 0.1 m. The model must have no more than 600 polygons.\"",
       "component_id": "mug",
-      "binding_id": "bind_a76fac1c0b54",
+      "binding_id": "bind_72ba74c5a953",
       "evidence": {
        "property": "height",
        "op": "eq",
@@ -1002,7 +1002,7 @@
      }
     ],
     "best_valid_revision_id": null,
-    "final_revision_id": "rev_e52ae6aa8664"
+    "final_revision_id": "rev_0ba4c792ffc5"
    },
    "evaluations": [
     {
@@ -1015,7 +1015,7 @@
        "kind": "constraint",
        "detail": "measured 0; source text: \"Height 0.1 m. The model must have no more than 600 polygons.\"",
        "component_id": "mug",
-       "binding_id": "bind_a76fac1c0b54",
+       "binding_id": "bind_72ba74c5a953",
        "evidence": {
         "property": "poly_count",
         "op": "lte",
@@ -1032,7 +1032,7 @@
        "kind": "constraint",
        "detail": "measured None; source text: \"Height 0.1 m. The model must have no more than 600 polygons.\"",
        "component_id": "mug",
-       "binding_id": "bind_a76fac1c0b54",
+       "binding_id": "bind_72ba74c5a953",
        "evidence": {
         "property": "height",
         "op": "eq",
@@ -1046,7 +1046,7 @@
      ],
      "revisions": [
       {
-       "unit": "artifact:art_1a7a553b0434#mug",
+       "unit": "artifact:art_929895ccdbce#mug",
        "plan": {
         "provider": "heuristic",
         "model": "heuristic-v1",
@@ -1334,7 +1334,7 @@
       "calls": 0,
       "input_tokens": null,
       "output_tokens": null,
-      "latency_ms": 164.5,
+      "latency_ms": 159.2,
       "cost_usd": null,
       "model": null,
       "request_id": null,
@@ -1501,7 +1501,7 @@
       "calls": 0,
       "input_tokens": null,
       "output_tokens": null,
-      "latency_ms": 0.2,
+      "latency_ms": 0.3,
       "cost_usd": null,
       "model": null,
       "request_id": null,
@@ -1605,25 +1605,25 @@
    "model_observation_count": 0,
    "revisions": [
     {
-     "id": "rev_29d4c94599b5",
+     "id": "rev_8b032073e338",
      "number": 1,
      "message": "Created from template 'empty'",
      "previews": {
-      "render": "artifacts/art_1a7a553b0434/revisions/0001/previews/preview.png",
-      "glb": "artifacts/art_1a7a553b0434/revisions/0001/previews/model.glb",
-      "glb_ids": "artifacts/art_1a7a553b0434/revisions/0001/previews/model.glb"
+      "render": "artifacts/art_929895ccdbce/revisions/0001/previews/preview.png",
+      "glb": "artifacts/art_929895ccdbce/revisions/0001/previews/model.glb",
+      "glb_ids": "artifacts/art_929895ccdbce/revisions/0001/previews/model.glb"
      },
      "validation": null,
      "render_file": "A_iterative_rev1.png"
     },
     {
-     "id": "rev_e52ae6aa8664",
+     "id": "rev_0ba4c792ffc5",
      "number": 2,
      "message": "A-iterative / Agent: mug",
      "previews": {
-      "render": "artifacts/art_1a7a553b0434/revisions/0002/previews/preview.png",
-      "glb": "artifacts/art_1a7a553b0434/revisions/0002/previews/model.glb",
-      "glb_ids": "artifacts/art_1a7a553b0434/revisions/0002/previews/model.glb"
+      "render": "artifacts/art_929895ccdbce/revisions/0002/previews/preview.png",
+      "glb": "artifacts/art_929895ccdbce/revisions/0002/previews/model.glb",
+      "glb_ids": "artifacts/art_929895ccdbce/revisions/0002/previews/model.glb"
      },
      "validation": {
       "passed": true,
@@ -1684,7 +1684,7 @@
     },
     {
      "name": "polygon budget met (measured)",
-     "ok": true,
+     "ok": false,
      "detail": "0"
     },
     {
@@ -1703,7 +1703,7 @@
      "basis": "needs review"
     },
     "constraint_adherence": {
-     "score": 1,
+     "score": 0,
      "basis": "measured",
      "note": "poly_count=0, height=None"
     },
@@ -1726,7 +1726,7 @@
    "provider": "heuristic",
    "sources": [
     {
-     "id": "src_846117bb4431",
+     "id": "src_fb99e1be01bc",
      "name": "Launch photo",
      "media_type": "image",
      "sha256": "96677f79beb3872970f2d3d907e5063b9e42aa5b1fba85fa2d55e7f2ad681ff6",
@@ -1735,8 +1735,8 @@
    ],
    "bindings": [
     {
-     "id": "bind_43a8d3aa2bf8",
-     "source_id": "src_846117bb4431",
+     "id": "bind_6654b06394a1",
+     "source_id": "src_fb99e1be01bc",
      "role": "reference",
      "aspects": [
       "color",
@@ -1760,7 +1760,7 @@
      "constraint": "soft"
     }
    ],
-   "seconds": 5.06,
+   "seconds": 5.6,
    "execution_status": "succeeded",
    "error": null,
    "budget": {
@@ -1783,7 +1783,7 @@
      "cost_usd": 0.0,
      "cost": "$0.0000",
      "unpriced_calls": 0,
-     "seconds": 5.06
+     "seconds": 5.6
     },
     "by_provider": {},
     "refusals": []
@@ -1810,13 +1810,13 @@
         "base_color": "#9a9285"
        },
        "derived_from": [
-        "bind_43a8d3aa2bf8"
+        "bind_6654b06394a1"
        ],
        "rationale": "colour from 'Launch photo'"
       }
      ],
      "interpretations": {
-      "bind_43a8d3aa2bf8": "reference (drive, weight 0.60): dominant foreground colour of region [0.46, 0.28, 0.09, 0.66] (measured) #82745f -> base colour #bfbfbf -> #9a9285"
+      "bind_6654b06394a1": "reference (drive, weight 0.60): dominant foreground colour of region [0.46, 0.28, 0.09, 0.66] (measured) #82745f -> base colour #bfbfbf -> #9a9285"
      },
      "notes": [],
      "usage": {}
@@ -1824,12 +1824,12 @@
    ],
    "validation_decisions": [
     {
-     "unit": "artifact:art_f7a84d8eaa27#rocket",
+     "unit": "artifact:art_0198460b7b1e#rocket",
      "status": "succeeded",
      "error": null
     },
     {
-     "unit": "artifact:art_f7a84d8eaa27#body",
+     "unit": "artifact:art_0198460b7b1e#body",
      "status": "succeeded",
      "error": null
     }
@@ -2092,7 +2092,7 @@
       "calls": 0,
       "input_tokens": null,
       "output_tokens": null,
-      "latency_ms": 24.9,
+      "latency_ms": 25.2,
       "cost_usd": null,
       "model": null,
       "request_id": null,
@@ -2105,25 +2105,25 @@
    "model_observation_count": 0,
    "revisions": [
     {
-     "id": "rev_b5f863304276",
+     "id": "rev_db7c937980b4",
      "number": 1,
      "message": "Created from template 'components'",
      "previews": {
-      "render": "artifacts/art_f7a84d8eaa27/revisions/0001/previews/preview.png",
-      "glb": "artifacts/art_f7a84d8eaa27/revisions/0001/previews/model.glb",
-      "glb_ids": "artifacts/art_f7a84d8eaa27/revisions/0001/previews/model.glb"
+      "render": "artifacts/art_0198460b7b1e/revisions/0001/previews/preview.png",
+      "glb": "artifacts/art_0198460b7b1e/revisions/0001/previews/model.glb",
+      "glb_ids": "artifacts/art_0198460b7b1e/revisions/0001/previews/model.glb"
      },
      "validation": null,
      "render_file": "B_single_rev1.png"
     },
     {
-     "id": "rev_be3cefa71024",
+     "id": "rev_1daf2496f389",
      "number": 2,
      "message": "B-single / Agent: rocket, body",
      "previews": {
-      "render": "artifacts/art_f7a84d8eaa27/revisions/0002/previews/preview.png",
-      "glb": "artifacts/art_f7a84d8eaa27/revisions/0002/previews/model.glb",
-      "glb_ids": "artifacts/art_f7a84d8eaa27/revisions/0002/previews/model.glb"
+      "render": "artifacts/art_0198460b7b1e/revisions/0002/previews/preview.png",
+      "glb": "artifacts/art_0198460b7b1e/revisions/0002/previews/model.glb",
+      "glb_ids": "artifacts/art_0198460b7b1e/revisions/0002/previews/model.glb"
      },
      "validation": {
       "passed": true,
@@ -2212,7 +2212,7 @@
    "provider": "heuristic",
    "sources": [
     {
-     "id": "src_d13318850920",
+     "id": "src_869685f90d7f",
      "name": "Launch photo",
      "media_type": "image",
      "sha256": "96677f79beb3872970f2d3d907e5063b9e42aa5b1fba85fa2d55e7f2ad681ff6",
@@ -2221,8 +2221,8 @@
    ],
    "bindings": [
     {
-     "id": "bind_1ae37dc65709",
-     "source_id": "src_d13318850920",
+     "id": "bind_d890b5bbcf16",
+     "source_id": "src_869685f90d7f",
      "role": "reference",
      "aspects": [
       "color",
@@ -2246,7 +2246,7 @@
      "constraint": "soft"
     }
    ],
-   "seconds": 5.87,
+   "seconds": 6.04,
    "execution_status": "succeeded",
    "error": null,
    "budget": {
@@ -2269,7 +2269,7 @@
      "cost_usd": 0.0,
      "cost": "$0.0000",
      "unpriced_calls": 0,
-     "seconds": 5.87
+     "seconds": 6.04
     },
     "by_provider": {},
     "refusals": []
@@ -2296,13 +2296,13 @@
         "base_color": "#9a9285"
        },
        "derived_from": [
-        "bind_1ae37dc65709"
+        "bind_d890b5bbcf16"
        ],
        "rationale": "colour from 'Launch photo'"
       }
      ],
      "interpretations": {
-      "bind_1ae37dc65709": "reference (drive, weight 0.60): dominant foreground colour of region [0.46, 0.28, 0.09, 0.66] (measured) #82745f -> base colour #bfbfbf -> #9a9285"
+      "bind_d890b5bbcf16": "reference (drive, weight 0.60): dominant foreground colour of region [0.46, 0.28, 0.09, 0.66] (measured) #82745f -> base colour #bfbfbf -> #9a9285"
      },
      "notes": [],
      "usage": {}
@@ -2310,12 +2310,12 @@
    ],
    "validation_decisions": [
     {
-     "unit": "artifact:art_88931aebe73f#rocket",
+     "unit": "artifact:art_37c3ba02437e#rocket",
      "status": "succeeded",
      "error": null
     },
     {
-     "unit": "artifact:art_88931aebe73f#body",
+     "unit": "artifact:art_37c3ba02437e#body",
      "status": "succeeded",
      "error": null
     }
@@ -2338,8 +2338,8 @@
     },
     "seconds": 0.53,
     "unresolved": [],
-    "best_valid_revision_id": "rev_f5a3f8f16b9a",
-    "final_revision_id": "rev_f5a3f8f16b9a"
+    "best_valid_revision_id": "rev_1e9fb73aa0f9",
+    "final_revision_id": "rev_1e9fb73aa0f9"
    },
    "evaluations": [
     {
@@ -2352,7 +2352,7 @@
        "kind": "deterministic",
        "detail": "#9a9285 vs #82745f: distance 0.122 (limit 0.25)",
        "component_id": "body",
-       "binding_id": "bind_1ae37dc65709",
+       "binding_id": "bind_d890b5bbcf16",
        "evidence": {
         "distance": 0.1223,
         "limit": 0.25,
@@ -2623,7 +2623,7 @@
       "calls": 0,
       "input_tokens": null,
       "output_tokens": null,
-      "latency_ms": 24.1,
+      "latency_ms": 24.5,
       "cost_usd": null,
       "model": null,
       "request_id": null,
@@ -2636,25 +2636,25 @@
    "model_observation_count": 0,
    "revisions": [
     {
-     "id": "rev_fc003a67bee0",
+     "id": "rev_b4293efd47bd",
      "number": 1,
      "message": "Created from template 'components'",
      "previews": {
-      "render": "artifacts/art_88931aebe73f/revisions/0001/previews/preview.png",
-      "glb": "artifacts/art_88931aebe73f/revisions/0001/previews/model.glb",
-      "glb_ids": "artifacts/art_88931aebe73f/revisions/0001/previews/model.glb"
+      "render": "artifacts/art_37c3ba02437e/revisions/0001/previews/preview.png",
+      "glb": "artifacts/art_37c3ba02437e/revisions/0001/previews/model.glb",
+      "glb_ids": "artifacts/art_37c3ba02437e/revisions/0001/previews/model.glb"
      },
      "validation": null,
      "render_file": "B_iterative_rev1.png"
     },
     {
-     "id": "rev_f5a3f8f16b9a",
+     "id": "rev_1e9fb73aa0f9",
      "number": 2,
      "message": "B-iterative / Agent: rocket, body",
      "previews": {
-      "render": "artifacts/art_88931aebe73f/revisions/0002/previews/preview.png",
-      "glb": "artifacts/art_88931aebe73f/revisions/0002/previews/model.glb",
-      "glb_ids": "artifacts/art_88931aebe73f/revisions/0002/previews/model.glb"
+      "render": "artifacts/art_37c3ba02437e/revisions/0002/previews/preview.png",
+      "glb": "artifacts/art_37c3ba02437e/revisions/0002/previews/model.glb",
+      "glb_ids": "artifacts/art_37c3ba02437e/revisions/0002/previews/model.glb"
      },
      "validation": {
       "passed": true,
@@ -2743,7 +2743,7 @@
    "provider": "heuristic",
    "sources": [
     {
-     "id": "src_b4fb5c49b096",
+     "id": "src_8be512306ea6",
      "name": "Cat photograph",
      "media_type": "image",
      "sha256": "9540e8d656047041ae92c8c19f8aeb2baa4ede5a17030470e8a1cfc7bb26182a",
@@ -2752,8 +2752,8 @@
    ],
    "bindings": [
     {
-     "id": "bind_4edb87c708f7",
-     "source_id": "src_b4fb5c49b096",
+     "id": "bind_386d9df70466",
+     "source_id": "src_8be512306ea6",
      "role": "reference",
      "aspects": [
       "color",
@@ -2766,7 +2766,7 @@
      "constraint": "soft"
     }
    ],
-   "seconds": 0.41,
+   "seconds": 0.43,
    "execution_status": "succeeded",
    "error": null,
    "budget": {
@@ -2789,7 +2789,7 @@
      "cost_usd": 0.0,
      "cost": "$0.0000",
      "unpriced_calls": 0,
-     "seconds": 0.41
+     "seconds": 0.43
     },
     "by_provider": {},
     "refusals": []
@@ -2813,19 +2813,19 @@
        "op": "paint_reference",
        "component_id": "subject",
        "params": {
-        "source_id": "src_b4fb5c49b096",
+        "source_id": "src_8be512306ea6",
         "fit": "cover",
         "mix": 0.6,
         "blur": 0
        },
        "derived_from": [
-        "bind_4edb87c708f7"
+        "bind_386d9df70466"
        ],
        "rationale": "paint reference 'Cat photograph' into layer"
       }
      ],
      "interpretations": {
-      "bind_4edb87c708f7": "reference pixels painted into layer at mix 0.6"
+      "bind_386d9df70466": "reference pixels painted into layer at mix 0.6"
      },
      "notes": [],
      "usage": {}
@@ -2833,12 +2833,12 @@
    ],
    "validation_decisions": [
     {
-     "unit": "artifact:art_582a0f7cca65#poster",
+     "unit": "artifact:art_eeff4cffad95#poster",
      "status": "succeeded",
      "error": null
     },
     {
-     "unit": "artifact:art_582a0f7cca65#subject",
+     "unit": "artifact:art_eeff4cffad95#subject",
      "status": "succeeded",
      "error": null
     }
@@ -3003,7 +3003,7 @@
       "calls": 0,
       "input_tokens": null,
       "output_tokens": null,
-      "latency_ms": 0.2,
+      "latency_ms": 0.3,
       "cost_usd": null,
       "model": null,
       "request_id": null,
@@ -3016,26 +3016,26 @@
    "model_observation_count": 0,
    "revisions": [
     {
-     "id": "rev_73e5a0528ac6",
+     "id": "rev_3a58d53b4ab1",
      "number": 1,
      "message": "Created from template 'layers'",
      "previews": {
-      "composite": "artifacts/art_582a0f7cca65/revisions/0001/previews/composite.png",
-      "layer:background": "artifacts/art_582a0f7cca65/revisions/0001/previews/layer_background.png",
-      "layer:subject": "artifacts/art_582a0f7cca65/revisions/0001/previews/layer_subject.png",
-      "layer:frame": "artifacts/art_582a0f7cca65/revisions/0001/previews/layer_frame.png"
+      "composite": "artifacts/art_eeff4cffad95/revisions/0001/previews/composite.png",
+      "layer:background": "artifacts/art_eeff4cffad95/revisions/0001/previews/layer_background.png",
+      "layer:subject": "artifacts/art_eeff4cffad95/revisions/0001/previews/layer_subject.png",
+      "layer:frame": "artifacts/art_eeff4cffad95/revisions/0001/previews/layer_frame.png"
      },
      "validation": null
     },
     {
-     "id": "rev_a0097cd078ee",
+     "id": "rev_c74bdf1d5ae6",
      "number": 2,
      "message": "C-single / Agent: poster, subject",
      "previews": {
-      "composite": "artifacts/art_582a0f7cca65/revisions/0002/previews/composite.png",
-      "layer:background": "artifacts/art_582a0f7cca65/revisions/0002/previews/layer_background.png",
-      "layer:subject": "artifacts/art_582a0f7cca65/revisions/0002/previews/layer_subject.png",
-      "layer:frame": "artifacts/art_582a0f7cca65/revisions/0002/previews/layer_frame.png"
+      "composite": "artifacts/art_eeff4cffad95/revisions/0002/previews/composite.png",
+      "layer:background": "artifacts/art_eeff4cffad95/revisions/0002/previews/layer_background.png",
+      "layer:subject": "artifacts/art_eeff4cffad95/revisions/0002/previews/layer_subject.png",
+      "layer:frame": "artifacts/art_eeff4cffad95/revisions/0002/previews/layer_frame.png"
      },
      "validation": {
       "passed": true,
@@ -3126,7 +3126,7 @@
    "provider": "heuristic",
    "sources": [
     {
-     "id": "src_a5eaeee12d9d",
+     "id": "src_96c6c4070e1a",
      "name": "Cat photograph",
      "media_type": "image",
      "sha256": "9540e8d656047041ae92c8c19f8aeb2baa4ede5a17030470e8a1cfc7bb26182a",
@@ -3135,8 +3135,8 @@
    ],
    "bindings": [
     {
-     "id": "bind_821d9eed2a0f",
-     "source_id": "src_a5eaeee12d9d",
+     "id": "bind_72e3c5950099",
+     "source_id": "src_96c6c4070e1a",
      "role": "reference",
      "aspects": [
       "color",
@@ -3149,7 +3149,7 @@
      "constraint": "soft"
     }
    ],
-   "seconds": 0.45,
+   "seconds": 0.48,
    "execution_status": "succeeded",
    "error": null,
    "budget": {
@@ -3172,7 +3172,7 @@
      "cost_usd": 0.0,
      "cost": "$0.0000",
      "unpriced_calls": 0,
-     "seconds": 0.45
+     "seconds": 0.48
     },
     "by_provider": {},
     "refusals": []
@@ -3196,19 +3196,19 @@
        "op": "paint_reference",
        "component_id": "subject",
        "params": {
-        "source_id": "src_a5eaeee12d9d",
+        "source_id": "src_96c6c4070e1a",
         "fit": "cover",
         "mix": 0.6,
         "blur": 0
        },
        "derived_from": [
-        "bind_821d9eed2a0f"
+        "bind_72e3c5950099"
        ],
        "rationale": "paint reference 'Cat photograph' into layer"
       }
      ],
      "interpretations": {
-      "bind_821d9eed2a0f": "reference pixels painted into layer at mix 0.6"
+      "bind_72e3c5950099": "reference pixels painted into layer at mix 0.6"
      },
      "notes": [],
      "usage": {}
@@ -3216,12 +3216,12 @@
    ],
    "validation_decisions": [
     {
-     "unit": "artifact:art_6cc7f0bd6dc3#poster",
+     "unit": "artifact:art_f4d69710fa8b#poster",
      "status": "succeeded",
      "error": null
     },
     {
-     "unit": "artifact:art_6cc7f0bd6dc3#subject",
+     "unit": "artifact:art_f4d69710fa8b#subject",
      "status": "succeeded",
      "error": null
     }
@@ -3244,8 +3244,8 @@
     },
     "seconds": 0.04,
     "unresolved": [],
-    "best_valid_revision_id": "rev_6e13e247e4ee",
-    "final_revision_id": "rev_6e13e247e4ee"
+    "best_valid_revision_id": "rev_24a942d7227c",
+    "final_revision_id": "rev_24a942d7227c"
    },
    "evaluations": [
     {
@@ -3415,7 +3415,7 @@
       "calls": 0,
       "input_tokens": null,
       "output_tokens": null,
-      "latency_ms": 0.2,
+      "latency_ms": 0.3,
       "cost_usd": null,
       "model": null,
       "request_id": null,
@@ -3428,26 +3428,26 @@
    "model_observation_count": 0,
    "revisions": [
     {
-     "id": "rev_ac08f62d9bd4",
+     "id": "rev_2dfbb00c69d8",
      "number": 1,
      "message": "Created from template 'layers'",
      "previews": {
-      "composite": "artifacts/art_6cc7f0bd6dc3/revisions/0001/previews/composite.png",
-      "layer:background": "artifacts/art_6cc7f0bd6dc3/revisions/0001/previews/layer_background.png",
-      "layer:subject": "artifacts/art_6cc7f0bd6dc3/revisions/0001/previews/layer_subject.png",
-      "layer:frame": "artifacts/art_6cc7f0bd6dc3/revisions/0001/previews/layer_frame.png"
+      "composite": "artifacts/art_f4d69710fa8b/revisions/0001/previews/composite.png",
+      "layer:background": "artifacts/art_f4d69710fa8b/revisions/0001/previews/layer_background.png",
+      "layer:subject": "artifacts/art_f4d69710fa8b/revisions/0001/previews/layer_subject.png",
+      "layer:frame": "artifacts/art_f4d69710fa8b/revisions/0001/previews/layer_frame.png"
      },
      "validation": null
     },
     {
-     "id": "rev_6e13e247e4ee",
+     "id": "rev_24a942d7227c",
      "number": 2,
      "message": "C-iterative / Agent: poster, subject",
      "previews": {
-      "composite": "artifacts/art_6cc7f0bd6dc3/revisions/0002/previews/composite.png",
-      "layer:background": "artifacts/art_6cc7f0bd6dc3/revisions/0002/previews/layer_background.png",
-      "layer:subject": "artifacts/art_6cc7f0bd6dc3/revisions/0002/previews/layer_subject.png",
-      "layer:frame": "artifacts/art_6cc7f0bd6dc3/revisions/0002/previews/layer_frame.png"
+      "composite": "artifacts/art_f4d69710fa8b/revisions/0002/previews/composite.png",
+      "layer:background": "artifacts/art_f4d69710fa8b/revisions/0002/previews/layer_background.png",
+      "layer:subject": "artifacts/art_f4d69710fa8b/revisions/0002/previews/layer_subject.png",
+      "layer:frame": "artifacts/art_f4d69710fa8b/revisions/0002/previews/layer_frame.png"
      },
      "validation": {
       "passed": true,
@@ -3538,7 +3538,7 @@
    "provider": "heuristic",
    "sources": [
     {
-     "id": "src_69de840a249a",
+     "id": "src_da4513e5b29e",
      "name": "Requirement",
      "media_type": "text",
      "sha256": "7099a4077b40796f7bb77b0a3065399f4c887a6e5878ea0275d182509a87ec4e",
@@ -3547,8 +3547,8 @@
    ],
    "bindings": [
     {
-     "id": "bind_e44d2408917a",
-     "source_id": "src_69de840a249a",
+     "id": "bind_80e1fcf66d8b",
+     "source_id": "src_da4513e5b29e",
      "role": "constraint",
      "aspects": [
       "behavior",
@@ -3560,7 +3560,7 @@
      "constraint": "hard"
     }
    ],
-   "seconds": 0.41,
+   "seconds": 0.44,
    "execution_status": "failed",
    "error": "validate: validation failed: ['textutil:tests']",
    "budget": {
@@ -3583,7 +3583,7 @@
      "cost_usd": 0.0,
      "cost": "$0.0000",
      "unpriced_calls": 0,
-     "seconds": 0.4
+     "seconds": 0.43
     },
     "by_provider": {},
     "refusals": []
@@ -3595,7 +3595,7 @@
      "recorded": false,
      "operations": [],
      "interpretations": {
-      "bind_e44d2408917a": "presented; no allowed operation family of adapter 'code' expresses aspects ['behavior', 'code'] for text measurements at this unit"
+      "bind_80e1fcf66d8b": "presented; no allowed operation family of adapter 'code' expresses aspects ['behavior', 'code'] for text measurements at this unit"
      },
      "notes": [],
      "usage": {}
@@ -3603,7 +3603,7 @@
    ],
    "validation_decisions": [
     {
-     "unit": "artifact:art_afae0af5f211#repo",
+     "unit": "artifact:art_628090852d88#repo",
      "status": "succeeded",
      "error": null
     }
@@ -3670,22 +3670,22 @@
     }
    ],
    "model_observation_count": 0,
-   "git_diff_tail": "1210bb7 Initial artifact state\n\ndiff --git a/.gitignore b/.gitignore\nnew file mode 100644\nindex 0000000..75c6182\n--- /dev/null\n+++ b/.gitignore\n@@ -0,0 +1,3 @@\n+__pycache__/\n+*.pyc\n+.pytest_cache/\ndiff --git a/test_textutil.py b/test_textutil.py\nnew file mode 100644\nindex 0000000..ef68dc0\n--- /dev/null\n+++ b/test_textutil.py\n@@ -0,0 +1,9 @@\n+from textutil import slugify\n+\n+\n+def test_basic():\n+    assert slugify('Hello, World!') == 'hello-world'\n+\n+\n+def test_accents_and_spaces():\n+    assert slugify('  Cr\u00e8me br\u00fbl\u00e9e  recipes ') == 'creme-brulee-recipes'\ndiff --git a/textutil.py b/textutil.py\nnew file mode 100644\nindex 0000000..ca1a85a\n--- /dev/null\n+++ b/textutil.py\n@@ -0,0 +1,2 @@\n+def slugify(text):\n+    raise NotImplementedError\n",
+   "git_diff": "",
    "checks": [
     {
      "name": "a schema-valid plan was produced",
      "ok": true,
-     "detail": "[{'unit': 'artifact:art_afae0af5f211#repo', 'status': 'succeeded', 'error': None}]"
+     "detail": "[{'unit': 'artifact:art_628090852d88#repo', 'status': 'succeeded', 'error': None}]"
     },
     {
-     "name": "a real git diff of textutil.py exists",
-     "ok": true,
+     "name": "a real git diff of textutil.py against the starting commit exists",
+     "ok": false,
      "detail": ""
     },
     {
      "name": "allowlisted tests pass",
      "ok": false,
-     "detail": "{\"report\": {\"passed\": false, \"artifacts\": [{\"artifact_id\": \"art_afae0af5f211\", \"artifact\": \"textutil\", \"revision_id\": \"rev_cb826516fa1e\", \"report\": {\"passed\": false, \"checks\": [{\"name\": \"tests\", \"passed\": false, \"detail\": \"`python -m pytest -q` exited 1\", \"data\": {\"output\": \"FF                                                                       [100%]\\n=================================== FAILURE"
+     "detail": "{\"report\": {\"passed\": false, \"artifacts\": [{\"artifact_id\": \"art_628090852d88\", \"artifact\": \"textutil\", \"revision_id\": \"rev_2939aafd180f\", \"report\": {\"passed\": false, \"checks\": [{\"name\": \"tests\", \"passed\": false, \"detail\": \"`python -m pytest -q` exited 1\", \"data\": {\"output\": \"FF                                                                       [100%]\\n=================================== FAILURE"
     }
    ],
    "rubric": {
@@ -3704,7 +3704,7 @@
     },
     "preservation": {
      "score": 2,
-     "basis": "measured (diff)",
+     "basis": "measured (the existing tests were not edited)",
      "note": ""
     },
     "usability": {
@@ -3721,7 +3721,7 @@
    "provider": "heuristic",
    "sources": [
     {
-     "id": "src_a5a0ea863d39",
+     "id": "src_e893229fdb6b",
      "name": "Requirement",
      "media_type": "text",
      "sha256": "7099a4077b40796f7bb77b0a3065399f4c887a6e5878ea0275d182509a87ec4e",
@@ -3730,8 +3730,8 @@
    ],
    "bindings": [
     {
-     "id": "bind_c67f307aa7c1",
-     "source_id": "src_a5a0ea863d39",
+     "id": "bind_d9c929827d33",
+     "source_id": "src_e893229fdb6b",
      "role": "constraint",
      "aspects": [
       "behavior",
@@ -3743,7 +3743,7 @@
      "constraint": "hard"
     }
    ],
-   "seconds": 0.43,
+   "seconds": 0.48,
    "execution_status": "failed",
    "error": "validate: validation failed: ['textutil:tests']",
    "budget": {
@@ -3766,7 +3766,7 @@
      "cost_usd": 0.0,
      "cost": "$0.0000",
      "unpriced_calls": 0,
-     "seconds": 0.42
+     "seconds": 0.47
     },
     "by_provider": {},
     "refusals": []
@@ -3778,7 +3778,7 @@
      "recorded": false,
      "operations": [],
      "interpretations": {
-      "bind_c67f307aa7c1": "presented; no allowed operation family of adapter 'code' expresses aspects ['behavior', 'code'] for text measurements at this unit"
+      "bind_d9c929827d33": "presented; no allowed operation family of adapter 'code' expresses aspects ['behavior', 'code'] for text measurements at this unit"
      },
      "notes": [],
      "usage": {}
@@ -3786,7 +3786,7 @@
    ],
    "validation_decisions": [
     {
-     "unit": "artifact:art_fdcd6c915b3f#repo",
+     "unit": "artifact:art_9dead48b6ae4#repo",
      "status": "succeeded",
      "error": null
     }
@@ -3809,8 +3809,8 @@
     },
     "seconds": 0.02,
     "unresolved": [],
-    "best_valid_revision_id": "rev_3034f349296a",
-    "final_revision_id": "rev_3034f349296a"
+    "best_valid_revision_id": "rev_cddc482d051e",
+    "final_revision_id": "rev_cddc482d051e"
    },
    "evaluations": [
     {
@@ -3882,22 +3882,22 @@
     }
    ],
    "model_observation_count": 0,
-   "git_diff_tail": "1210bb7 Initial artifact state\n\ndiff --git a/.gitignore b/.gitignore\nnew file mode 100644\nindex 0000000..75c6182\n--- /dev/null\n+++ b/.gitignore\n@@ -0,0 +1,3 @@\n+__pycache__/\n+*.pyc\n+.pytest_cache/\ndiff --git a/test_textutil.py b/test_textutil.py\nnew file mode 100644\nindex 0000000..ef68dc0\n--- /dev/null\n+++ b/test_textutil.py\n@@ -0,0 +1,9 @@\n+from textutil import slugify\n+\n+\n+def test_basic():\n+    assert slugify('Hello, World!') == 'hello-world'\n+\n+\n+def test_accents_and_spaces():\n+    assert slugify('  Cr\u00e8me br\u00fbl\u00e9e  recipes ') == 'creme-brulee-recipes'\ndiff --git a/textutil.py b/textutil.py\nnew file mode 100644\nindex 0000000..ca1a85a\n--- /dev/null\n+++ b/textutil.py\n@@ -0,0 +1,2 @@\n+def slugify(text):\n+    raise NotImplementedError\n",
+   "git_diff": "",
    "checks": [
     {
      "name": "a schema-valid plan was produced",
      "ok": true,
-     "detail": "[{'unit': 'artifact:art_fdcd6c915b3f#repo', 'status': 'succeeded', 'error': None}]"
+     "detail": "[{'unit': 'artifact:art_9dead48b6ae4#repo', 'status': 'succeeded', 'error': None}]"
     },
     {
-     "name": "a real git diff of textutil.py exists",
-     "ok": true,
+     "name": "a real git diff of textutil.py against the starting commit exists",
+     "ok": false,
      "detail": ""
     },
     {
      "name": "allowlisted tests pass",
      "ok": false,
-     "detail": "{\"report\": {\"passed\": false, \"artifacts\": [{\"artifact_id\": \"art_fdcd6c915b3f\", \"artifact\": \"textutil\", \"revision_id\": \"rev_3034f349296a\", \"report\": {\"passed\": false, \"checks\": [{\"name\": \"tests\", \"passed\": false, \"detail\": \"`python -m pytest -q` exited 1\", \"data\": {\"output\": \"FF                                                                       [100%]\\n=================================== FAILURE"
+     "detail": "{\"report\": {\"passed\": false, \"artifacts\": [{\"artifact_id\": \"art_9dead48b6ae4\", \"artifact\": \"textutil\", \"revision_id\": \"rev_cddc482d051e\", \"report\": {\"passed\": false, \"checks\": [{\"name\": \"tests\", \"passed\": false, \"detail\": \"`python -m pytest -q` exited 1\", \"data\": {\"output\": \"FF                                                                       [100%]\\n=================================== FAILURE"
     }
    ],
    "rubric": {
@@ -3916,7 +3916,7 @@
     },
     "preservation": {
      "score": 2,
-     "basis": "measured (diff)",
+     "basis": "measured (the existing tests were not edited)",
      "note": ""
     },
     "usability": {
@@ -3990,6 +3990,6 @@
    "verification": "blocked"
   }
  ],
- "seconds": 43.0,
+ "seconds": 44.3,
  "status": "deterministic"
 }

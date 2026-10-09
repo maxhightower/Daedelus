@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { api, boardApi, clusterApi, ensureFileTicket, eventsUrl, getAuthMode, type JobStatus } from "./api";
+import { api, boardApi, clusterApi, ensureFileTicket, eventsUrl, getAuthMode, pollEvents, type JobStatus } from "./api";
 import type {
   Artifact,
   Binding,
@@ -73,7 +73,7 @@ interface StudioState {
   run: <T>(p: Promise<T>, ok?: string) => Promise<T | undefined>;
   watchExecution: (workflowId: string) => void;
   jobs: JobStatus[]; // V2 remote jobs of this project (newest first)
-  live: "off" | "connecting" | "live" | "reconnecting"; // event-stream connection state
+  live: "off" | "connecting" | "live" | "polling" | "reconnecting"; // event-stream connection state
   reloadJobs: () => Promise<void>;
 }
 
@@ -129,7 +129,7 @@ export function StudioProvider({ children }: { children: ReactNode }) {
   const locator = useRef<(id: string) => void>(() => {});
   const watched = useRef<Set<string>>(new Set());
   const [jobs, setJobs] = useState<JobStatus[]>([]);
-  const [live, setLive] = useState<"off" | "connecting" | "live" | "reconnecting">("off");
+  const [live, setLive] = useState<"off" | "connecting" | "live" | "polling" | "reconnecting">("off");
 
   boardRef.current = board;
 
@@ -416,7 +416,11 @@ export function StudioProvider({ children }: { children: ReactNode }) {
     };
     const handlers: Record<string, (m: MessageEvent) => void> = {};
     const on = (k: string, fn: (m: MessageEvent) => void) => (handlers[k] = fn);
+    let helloSeen = false;
+    let polling = false;
+    let fallback: any = null;
     on("hello", (m) => {
+      helloSeen = true;
       setLive("live");
       if (lastSeq == null) lastSeq = JSON.parse(m.data).seq;
     });
@@ -447,7 +451,7 @@ export function StudioProvider({ children }: { children: ReactNode }) {
     // Session or no auth: the browser's own reconnect resumes by Last-Event-ID. Bearer mode
     // (tickets are single-use): reopen with a fresh ticket and resume from the last sequence.
     const connect = async () => {
-      if (closed) return;
+      if (closed || polling) return;
       await ensureFileTicket(projectId).catch(() => null);
       const url = await eventsUrl(projectId, getAuthMode() === "bearer" ? lastSeq : undefined).catch(() => null);
       if (closed || !url) return;
@@ -467,9 +471,34 @@ export function StudioProvider({ children }: { children: ReactNode }) {
         }
       };
     };
+    // Some proxies buffer or do not support server-sent events (e.g. Cloudflare quick
+    // tunnels): if the stream has not said hello after 8 s, switch to long-polling
+    const poll = async () => {
+      polling = true;
+      clearTimeout(retry);
+      es?.close();
+      setLive("polling");
+      if (lastSeq == null) lastSeq = (await pollEvents(projectId).catch(() => null))?.seq;
+      while (!closed) {
+        const r = await pollEvents(projectId, lastSeq ?? 0).catch(() => null);
+        if (!r) {
+          await new Promise((res) => setTimeout(res, 2000));
+          continue;
+        }
+        for (const ev of r.events) {
+          lastSeq = ev.seq;
+          handlers[ev.kind]?.({ data: JSON.stringify(ev), lastEventId: String(ev.seq) } as MessageEvent);
+        }
+        if (!r.events.length) lastSeq = r.seq;
+      }
+    };
+    fallback = setTimeout(() => {
+      if (!helloSeen && !closed) poll();
+    }, 8000);
     connect();
     return () => {
       closed = true;
+      clearTimeout(fallback);
       clearTimeout(jobTimer);
       clearTimeout(artTimer);
       clearTimeout(retry);

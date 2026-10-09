@@ -1,0 +1,13 @@
+demo exit=0 seconds=60
+demo-v11 exit=0 seconds=31
+demo-v12 exit=0 seconds=49
+typecheck exit=0 seconds=6
+studio-unit exit=0 seconds=2
+walkthrough-spatial exit=0 seconds=115
+walkthrough-semantic exit=0 seconds=24
+walkthrough-office exit=0 seconds=126
+walkthrough-execution exit=1 seconds=27
+walkthrough-perf exit=0 seconds=19
+bench-v21(heuristic) exit=0 seconds=45
+DONE
+walkthrough-execution(rerun) exit=0 seconds=85
