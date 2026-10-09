@@ -1,9 +1,20 @@
-"""Worker process: ``daedelus worker --control URL`` (token in DAEDELUS_WORKER_TOKEN).
+"""Worker process: ``daedelus worker --control URL``.
+
+Credentials (V2.1): ``DAEDELUS_WORKER_CREDENTIAL`` (a per-worker credential created by an
+operator, ``ddw1.<id>.<secret>``; may also be read from ``DAEDELUS_WORKER_CREDENTIAL_FILE``)
+or ``DAEDELUS_WORKER_TOKEN`` (a join token: the worker enrols and receives its own credential,
+kept in memory). A worker whose credential is revoked stops.
+
+Transport: the control URL must be ``https://`` unless it is a loopback address or
+``DAEDELUS_ALLOW_INSECURE_CONTROL=1`` (development compose networks only; refused in the hosted
+profile). Server certificates are always verified - against the system store, or the CA bundle
+in ``DAEDELUS_CONTROL_CA`` for a private CA. Verification is never disabled.
 
 Loop: register -> long-poll for a lease -> fetch the job's blobs (verified by hash, cached)
--> run the adapter method in a child process -> heartbeat while it runs (extends the lease,
-receives cancellation) -> upload new blobs -> complete. The child is killed on cancellation,
-deadline or lease loss. The worker never executes anything except the fixed adapter methods.
+-> run the adapter method in a sandboxed child process (``sandbox.py``) -> heartbeat while it
+runs (extends the lease, receives cancellation) -> upload new blobs -> complete. The child is
+killed on cancellation, deadline or lease loss. The worker never executes anything except the
+fixed adapter methods.
 
 Fault injection for tests (DAEDELUS_WORKER_FAULT, comma-separated): ``crash_after_lease``,
 ``stall_heartbeat``, ``corrupt_upload``, ``duplicate_complete``, ``slow:<seconds>``.
@@ -26,9 +37,11 @@ from typing import Any
 
 import httpx
 
-from .. import __version__
+from .. import __version__, profile
 from .cas import BlobStore, materialize, snapshot
+from .identity import parse_credential
 from .models import MUTATING, JobResult, Lease
+from .sandbox import Sandbox, choose, required_adapters
 
 
 def new_group_kwargs() -> dict[str, Any]:
@@ -59,35 +72,109 @@ class LeaseRevoked(Exception):
     pass
 
 
+class CredentialRevoked(Exception):
+    """The control plane no longer accepts this worker's credential."""
+
+
+def control_client_kwargs(control: str) -> dict[str, Any]:
+    """httpx settings for talking to the control plane: TLS verified, plain HTTP refused
+    unless the URL is loopback or the development override is set."""
+    from urllib.parse import urlparse
+    import ipaddress
+    import ssl
+    u = urlparse(control)
+    if u.scheme not in ("http", "https"):
+        raise ValueError(f"control URL must be http(s): {control}")
+    if u.scheme == "http":
+        host = (u.hostname or "").strip("[]")
+        try:
+            loop = ipaddress.ip_address(host).is_loopback
+        except ValueError:
+            loop = host == "localhost"
+        if not loop and (profile.hosted() or not profile.flag("DAEDELUS_ALLOW_INSECURE_CONTROL")):
+            raise ValueError(f"refusing plain-HTTP control URL {control}: use https:// "
+                             "(DAEDELUS_ALLOW_INSECURE_CONTROL=1 is accepted only outside the "
+                             "hosted profile, for isolated development networks)")
+        return {}
+    ca = os.environ.get("DAEDELUS_CONTROL_CA")
+    if ca:
+        ctx = ssl.create_default_context(cafile=ca)
+    else:
+        ctx = ssl.create_default_context()
+    ctx.minimum_version = ssl.TLSVersion.TLSv1_2
+    cert, key = os.environ.get("DAEDELUS_WORKER_TLS_CERT"), os.environ.get("DAEDELUS_WORKER_TLS_KEY")
+    if cert:  # optional mutual TLS (client certificate checked by the proxy)
+        ctx.load_cert_chain(cert, key or None)
+    return {"verify": ctx}
+
+
 class Worker:
     def __init__(self, control: str, token: str, *, name: str | None = None,
                  capabilities: list[str] | None = None, adapters: list[str] | None = None,
-                 work_dir: Path | None = None, transport: httpx.BaseTransport | None = None):
+                 work_dir: Path | None = None, transport: httpx.BaseTransport | None = None,
+                 sandbox: Sandbox | None = None, deployment: str = "",
+                 credential_file: Path | None = None):
         self.control = control.rstrip("/")
         self.name = name or f"{socket.gethostname()}-{os.getpid()}"
         self.capabilities = capabilities or ["cpu"]
         if adapters is None:
             from ..adapters import registry
             adapters = [n for n, a in registry().items() if a.check_environment()[0]]
-        self.adapters = adapters
         self.work = Path(work_dir or tempfile.mkdtemp(prefix="dd_worker_"))
+        self.work.mkdir(parents=True, exist_ok=True)
+        self.work.chmod(0o700)
         self.cache = BlobStore(self.work / "cache")
+        self.credential_file = credential_file
+        self.sandbox = sandbox or choose(self.work, hide=[credential_file.parent]
+                                         if credential_file else None)
+        need = required_adapters()
+        self.refused_adapters = sorted(a for a in adapters if a in need and
+                                       not self.sandbox.network_isolated)
+        self.adapters = [a for a in adapters if a not in self.refused_adapters]
+        self.deployment = deployment or os.environ.get("DAEDELUS_WORKER_DEPLOYMENT", "process")
+        kw = {} if transport is not None else control_client_kwargs(self.control)
         self.http = httpx.Client(base_url=self.control, transport=transport, timeout=120,
-                                 headers={"Authorization": f"Bearer {token}"})
+                                 headers={"Authorization": f"Bearer {token}"}, **kw)
+        self.credential = token if parse_credential(token) else None
         self.id: str | None = None
         self.faults = {f.split(":")[0]: (f.split(":")[1] if ":" in f else "")
                        for f in os.environ.get("DAEDELUS_WORKER_FAULT", "").split(",") if f}
         self._stop = threading.Event()
         self.done = 0
+        self.revoked = False
+        self.stats = {"bytes_in": 0, "bytes_out": 0, "cache_hits": 0}
 
     # ---------------------------------------------------------------- protocol
+    def _use_credential(self, cred: str) -> None:
+        self.credential = cred
+        self.http.headers["Authorization"] = f"Bearer {cred}"
+        if self.credential_file is not None:
+            tmp = self.credential_file.with_suffix(".tmp")
+            tmp.write_text(cred)
+            tmp.chmod(0o600)
+            os.replace(tmp, self.credential_file)
+
     def register(self) -> str:
         r = self.http.post("/api/cluster/workers", json={
             "name": self.name, "capabilities": self.capabilities, "adapters": self.adapters,
-            "version": __version__, "host": socket.gethostname()})
+            "version": __version__, "host": socket.gethostname(),
+            "isolation": self.sandbox.report, "deployment": self.deployment})
+        if r.status_code == 401 and self.credential:
+            raise CredentialRevoked(r.text)
         r.raise_for_status()
-        self.id = r.json()["id"]
+        body = r.json()
+        if body.get("credential"):  # enrolled with a join token: switch to our own identity
+            self._use_credential(body["credential"])
+        self.id = body["id"]
         return self.id
+
+    def rotate(self) -> None:
+        """Replace this worker's secret (the old one stays valid for a short grace period)."""
+        r = self.http.post("/api/cluster/workers/self/rotate")
+        if r.status_code == 401:
+            raise CredentialRevoked(r.text)
+        r.raise_for_status()
+        self._use_credential(r.json()["credential"])
 
     def stop(self) -> None:
         self._stop.set()
@@ -102,6 +189,8 @@ class Worker:
             except httpx.HTTPError:
                 time.sleep(1)
                 continue
+            if r.status_code == 401:  # credential revoked (or rotated away): stop for good
+                raise CredentialRevoked(r.text)
             if r.status_code == 404:  # control plane forgot us (fresh database): re-register
                 self.register()
                 continue
@@ -139,18 +228,20 @@ class Worker:
 
     def _fetch(self, lease: Lease, sha: str) -> None:
         if self.cache.has(sha):
+            self.stats["cache_hits"] += 1
             return
         r = self._call("GET", f"/api/cluster/jobs/{lease.job.id}/blobs/{sha}",
                        headers=self._h(lease))
-        if r.status_code == 409:
+        if r.status_code in (401, 403, 409):
             raise LeaseRevoked(r.text)
         r.raise_for_status()
         self.cache.put_bytes(r.content, expected=sha)  # verifies the hash
+        self.stats["bytes_in"] += len(r.content)
 
     def _upload(self, lease: Lease, store: BlobStore, shas: set[str]) -> None:
         r = self._call("POST", f"/api/cluster/jobs/{lease.job.id}/missing",
                        json={"shas": sorted(shas)}, headers=self._h(lease))
-        if r.status_code == 409:
+        if r.status_code in (401, 403, 409):
             raise LeaseRevoked(r.text)
         r.raise_for_status()
         for sha in r.json()["missing"]:
@@ -163,9 +254,10 @@ class Worker:
                     raise RuntimeError("control plane accepted a corrupted blob")
             u = self._call("PUT", f"/api/cluster/jobs/{lease.job.id}/blobs/{sha}", content=data,
                            headers=self._h(lease))
-            if u.status_code == 409:
+            if u.status_code in (401, 403, 409):
                 raise LeaseRevoked(u.text)
             u.raise_for_status()
+            self.stats["bytes_out"] += len(data)
 
     # ---------------------------------------------------------------- one job
     def handle(self, lease: Lease) -> None:
@@ -174,7 +266,10 @@ class Worker:
             os._exit(17)  # simulate a worker dying mid-job (no fail/complete is sent)
         jd = Path(tempfile.mkdtemp(prefix=f"{job.id}_", dir=self.work))
         t0 = time.time()
-        state = {"cancel": False, "lost": False, "progress": 0.05, "message": "fetching inputs"}
+        self.stats = {"bytes_in": 0, "bytes_out": 0, "cache_hits": 0}
+        timings: dict[str, float] = {}
+        state = {"cancel": False, "lost": False, "revoked": False, "progress": 0.05,
+                 "message": "fetching inputs"}
         hb_stop = threading.Event()
 
         def heartbeat():
@@ -186,8 +281,9 @@ class Worker:
                     r = self.http.post(f"/api/cluster/jobs/{job.id}/heartbeat", json={
                         "progress": state["progress"], "message": state["message"]},
                         headers=self._h(lease))
-                    if r.status_code == 409:
+                    if r.status_code in (401, 403, 409):  # revoked / not ours / lease lost
                         state["lost"] = True
+                        state["revoked"] = r.status_code == 401
                         return
                     if r.ok and r.json().get("cancel"):
                         state["cancel"] = True
@@ -197,6 +293,10 @@ class Worker:
         hb = threading.Thread(target=heartbeat, daemon=True)
         hb.start()
         try:
+            if job.adapter not in self.adapters:  # defence in depth: never run what we refused
+                self._fail(lease, f"worker {self.name} does not offer adapter '{job.adapter}' "
+                                  f"(refused: {self.refused_adapters})", False)
+                return
             try:
                 for name, m in (("native", job.native), ("before", job.before)):
                     if m is None:
@@ -216,20 +316,26 @@ class Worker:
             except Exception as exc:
                 self._fail(lease, f"input transfer failed: {type(exc).__name__}: {exc}", True)
                 return
+            timings["fetch"] = round(time.time() - t0, 4)
             state.update(progress=0.2, message=f"running {job.adapter}.{job.method}")
-            proc = subprocess.Popen([sys.executable, "-m", "daedelus.distributed.runjob", str(jd)],
-                                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                    **new_group_kwargs())
+            t_run = time.time()
+            proc = self.sandbox.popen([sys.executable, "-m", "daedelus.distributed.runjob",
+                                       str(jd)], jd, stdout=subprocess.PIPE,
+                                      stderr=subprocess.STDOUT)
             slow = float(self.faults.get("slow") or 0)
             deadline = t0 + job.timeout_s
             while proc.poll() is None or slow > time.time() - t0:
                 if state["cancel"] or state["lost"] or time.time() > deadline:
                     self._kill(proc)
                     break
-                time.sleep(0.1)
+                time.sleep(0.05)
+            timings["run"] = round(time.time() - t_run, 4)
             logs = (proc.stdout.read() or b"").decode(errors="replace")[-8000:] if proc.stdout \
                 else ""
             if state["lost"]:
+                if state["revoked"]:
+                    self.revoked = True
+                    self._stop.set()  # our credential was revoked: stop taking work
                 return  # lease revoked: another attempt owns the job now; drop our result
             if state["cancel"]:
                 self._fail(lease, "cancelled on request", False, cancelled=True)
@@ -239,14 +345,16 @@ class Worker:
                 return
             rp = jd / "result.json"
             if not rp.exists():
-                self._fail(lease, f"job runner exited with {proc.returncode} without a result; "
+                rc = proc.returncode
+                hint = " (killed: memory or process limit?)" if rc is not None and rc < 0 else ""
+                self._fail(lease, f"job runner exited with {rc}{hint} without a result; "
                                   f"{logs[-500:]}", True)
                 return
             out = json.loads(rp.read_text())
             state.update(progress=0.9, message="uploading results")
+            t_up = time.time()
             res = JobResult(ok=bool(out.get("ok")), value=out.get("value") or {},
-                            error=out.get("error"), logs=logs, seconds=round(time.time() - t0, 3),
-                            worker_id=self.id)
+                            error=out.get("error"), logs=logs, worker_id=self.id)
             if out.get("adapter_error"):
                 res.value = {"adapter_error": True}
             try:
@@ -260,10 +368,20 @@ class Worker:
                         self._upload(lease, store, res.artifacts.blobs())
             except LeaseRevoked:
                 return  # another attempt owns the job now; our result is not wanted
+            timings["upload"] = round(time.time() - t_up, 4)
+            if isinstance(out.get("timings"), dict):
+                timings.update({f"runner.{k}": v for k, v in out["timings"].items()})
+            res.seconds = round(time.time() - t0, 3)
+            res.timings = timings
+            res.bytes_in, res.bytes_out = self.stats["bytes_in"], self.stats["bytes_out"]
+            res.isolation = self.sandbox.profile
             r = self._call("POST", f"/api/cluster/jobs/{job.id}/complete",
                            content=res.model_dump_json(),
                            headers={**self._h(lease), "Content-Type": "application/json"})
-            if r.status_code == 409:
+            if r.status_code in (401, 403, 409):
+                if r.status_code == 401:
+                    self.revoked = True
+                    self._stop.set()
                 return  # lease lost meanwhile: result discarded by the control plane (audited)
             r.raise_for_status()
             if "duplicate_complete" in self.faults:
@@ -297,30 +415,68 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--adapters", default=os.environ.get("DAEDELUS_WORKER_ADAPTERS"))
     ap.add_argument("--work-dir", default=os.environ.get("DAEDELUS_WORKER_DIR"))
     ap.add_argument("--max-jobs", type=int, default=None)
+    ap.add_argument("--rotate-hours", type=float,
+                    default=float(os.environ.get("DAEDELUS_WORKER_ROTATE_HOURS", "0") or 0),
+                    help="replace this worker's credential secret periodically")
     a = ap.parse_args(argv)
-    token = os.environ.get("DAEDELUS_WORKER_TOKEN", "")
+    cred_file = os.environ.get("DAEDELUS_WORKER_CREDENTIAL_FILE")
+    token = os.environ.get("DAEDELUS_WORKER_CREDENTIAL", "")
+    if not token and cred_file and Path(cred_file).is_file():
+        token = Path(cred_file).read_text().strip()
     if not token:
-        print("DAEDELUS_WORKER_TOKEN is required", file=sys.stderr)
+        token = os.environ.get("DAEDELUS_WORKER_TOKEN", "")
+    if not token:
+        print("a worker credential (DAEDELUS_WORKER_CREDENTIAL / _FILE) or a join token "
+              "(DAEDELUS_WORKER_TOKEN) is required", file=sys.stderr)
+        return 2
+    if profile.hosted() and not parse_credential(token):
+        print("the hosted profile requires a per-worker credential (join-token enrolment is "
+              "for development)", file=sys.stderr)
         return 2
     caps = [c.strip() for c in a.capabilities.split(",") if c.strip()]
     if "gpu" in caps and not os.environ.get("DAEDELUS_GPU_VERIFIED"):
         print("refusing to advertise 'gpu' without DAEDELUS_GPU_VERIFIED=1 (set it only on a "
               "host with a working GPU render device)", file=sys.stderr)
         return 2
-    w = Worker(a.control, token, name=a.name, capabilities=caps,
-               adapters=[x.strip() for x in a.adapters.split(",")] if a.adapters else None,
-               work_dir=Path(a.work_dir) if a.work_dir else None)
+    try:
+        w = Worker(a.control, token, name=a.name, capabilities=caps,
+                   adapters=[x.strip() for x in a.adapters.split(",")] if a.adapters else None,
+                   work_dir=Path(a.work_dir) if a.work_dir else None,
+                   credential_file=Path(cred_file) if cred_file else None)
+    except (ValueError, RuntimeError) as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
     for i in range(60):
         try:
             w.register()
             break
+        except CredentialRevoked as exc:
+            print(f"worker credential rejected: {exc}", file=sys.stderr)
+            return 3
         except httpx.HTTPError as exc:
             print(f"control plane not reachable yet ({exc}); retrying", file=sys.stderr)
             time.sleep(2)
     else:
         return 1
     print(json.dumps({"worker": w.id, "name": w.name, "capabilities": w.capabilities,
-                      "adapters": w.adapters}), flush=True)
+                      "adapters": w.adapters, "refused_adapters": w.refused_adapters,
+                      "isolation": w.sandbox.report.get("profile"),
+                      "isolation_controls": w.sandbox.report.get("controls")}), flush=True)
     signal.signal(signal.SIGTERM, lambda *_: w.stop())
-    w.run(max_jobs=a.max_jobs)
+    if a.rotate_hours > 0:
+        def rotator():
+            while not w._stop.wait(a.rotate_hours * 3600):
+                try:
+                    w.rotate()
+                except Exception as exc:  # keep working with the current secret
+                    print(f"credential rotation failed: {exc}", file=sys.stderr, flush=True)
+        threading.Thread(target=rotator, daemon=True).start()
+    try:
+        w.run(max_jobs=a.max_jobs)
+    except CredentialRevoked as exc:
+        print(f"worker credential revoked; stopping: {exc}", file=sys.stderr, flush=True)
+        return 3
+    if w.revoked:
+        print("worker credential revoked; stopping", file=sys.stderr, flush=True)
+        return 3
     return 0

@@ -18,8 +18,11 @@ from __future__ import annotations
 import json
 import os
 import sys
+import time
 import traceback
 from pathlib import Path
+
+T_START = time.perf_counter()
 
 
 def main(jobdir: str) -> int:
@@ -35,6 +38,7 @@ def main(jobdir: str) -> int:
     files = {k: str(jd / "files" / str(i)) for i, k in enumerate(sorted(req.files))}
     a = req.args
     res: dict = {"ok": True, "value": {}}
+    t_imported = time.perf_counter()
     try:
         m = req.method
         if m == "create":
@@ -84,6 +88,8 @@ def main(jobdir: str) -> int:
     except Exception as exc:
         res = {"ok": False, "error": f"{type(exc).__name__}: {exc}",
                "trace": traceback.format_exc()[-4000:]}
+    res["timings"] = {"startup": round(t_imported - T_START, 4),
+                      "method": round(time.perf_counter() - t_imported, 4)}
     (jd / "result.json").write_text(json.dumps(res, default=str))
     return 0
 

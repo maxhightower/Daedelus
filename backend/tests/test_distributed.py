@@ -162,8 +162,10 @@ class Cluster:
         self.procs: list[subprocess.Popen] = []
 
     def worker(self, name: str, *, fault: str = "", adapters: str = "spreadsheet,document",
-               caps: str = "cpu", max_jobs: int | None = None) -> subprocess.Popen:
-        env = {**os.environ, "DAEDELUS_WORKER_TOKEN": WT, "DAEDELUS_WORKER_FAULT": fault}
+               caps: str = "cpu", max_jobs: int | None = None,
+               env: dict | None = None) -> subprocess.Popen:
+        env = {**os.environ, "DAEDELUS_WORKER_TOKEN": WT, "DAEDELUS_WORKER_FAULT": fault,
+               **(env or {})}
         args = [sys.executable, "-m", "daedelus.cli", "worker", "--control", self.url, "--name",
                 name, "--adapters", adapters, "--capabilities", caps,
                 "--work-dir", str(self.tmp / f"wk_{name}")]
@@ -385,9 +387,12 @@ def test_worker_protocol_requires_tokens_and_scopes_blobs(cluster):
     assert c.post("/api/cluster/workers", json={"name": "x"}).status_code == 401
     assert c.post("/api/cluster/workers", json={"name": "x"},
                   headers={"Authorization": "Bearer wrong-token-xxxxxxxxxxxx"}).status_code == 401
-    h = {"Authorization": f"Bearer {WT}"}
     w = c.post("/api/cluster/workers", json={"name": "probe", "adapters": ["spreadsheet"]},
-               headers=h).json()
+               headers={"Authorization": f"Bearer {WT}"}).json()
+    # V2.1: the join token only enrols; the worker then uses its own credential
+    h = {"Authorization": f"Bearer {w['credential']}"}
+    assert c.post("/api/cluster/lease", json={"worker_id": w["id"], "wait_s": 0},
+                  headers={"Authorization": f"Bearer {WT}"}).status_code == 401
     # a lease token for one job cannot read other blobs
     cl = cluster.app.state.cluster
     secret = cl.blobs.put_bytes(b"other project's data")
@@ -427,7 +432,8 @@ def test_api_tokens_project_scope_and_trusted_hosts(tmp_path, monkeypatch):
     assert [p["id"] for p in c.get("/api/projects", headers=S).json()] == [p1]
     assert c.get(f"/api/projects/{p1}/artifacts", headers=S).status_code == 200
     assert c.get(f"/api/projects/{p2}/artifacts", headers=S).status_code == 403
-    assert c.get(f"/api/projects/{p1}/artifacts?token={scoped}").status_code == 200
+    # V2.1: reusable tokens in query strings are refused
+    assert c.get(f"/api/projects/{p1}/artifacts?token={scoped}").status_code == 401
     assert c.post("/api/projects", json={"name": "x"}, headers=S).status_code == 403
     assert c.get("/api/cluster/audit", headers=S).status_code == 403
     assert c.get("/api/health", headers={"Host": "evil.example"}).status_code == 400

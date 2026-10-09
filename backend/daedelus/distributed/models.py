@@ -74,6 +74,11 @@ class JobResult(BaseModel):
     logs: str = ""
     seconds: float = 0.0
     worker_id: str | None = None
+    # V2.1 observability: per-phase seconds (fetch / run / upload / runner.*), bytes moved
+    timings: dict[str, float] = Field(default_factory=dict)
+    bytes_in: int = 0
+    bytes_out: int = 0
+    isolation: str = ""
 
 
 class JobStatus(BaseModel):
@@ -105,6 +110,10 @@ class WorkerInfo(BaseModel):
     registered_at: str = Field(default_factory=now_iso)
     host: str = ""
     draining: bool = False
+    credential_kind: str = ""  # provisioned | enrolled (V2.1 per-worker identity)
+    isolation: dict[str, Any] = Field(default_factory=dict)  # job sandbox self-test
+    deployment: str = ""  # process | container | hosted (declared by the operator)
+    peer: str = ""  # network address the worker registered from
 
 
 class Lease(BaseModel):

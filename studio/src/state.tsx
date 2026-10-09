@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { api, boardApi, clusterApi, eventsUrl, type JobStatus } from "./api";
+import { api, boardApi, clusterApi, ensureFileTicket, eventsUrl, getAuthMode, type JobStatus } from "./api";
 import type {
   Artifact,
   Binding,
@@ -398,7 +398,10 @@ export function StudioProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!projectId || typeof EventSource === "undefined") return;
-    const es = new EventSource(eventsUrl(projectId));
+    let es: EventSource | null = null;
+    let closed = false;
+    let lastSeq: number | undefined;
+    let retry: any = null;
     setLive("connecting");
     let jobTimer: any = null;
     let artTimer: any = null;
@@ -411,10 +414,13 @@ export function StudioProvider({ children }: { children: ReactNode }) {
         artTimer = setTimeout(fn, 150);
       }
     };
-    es.addEventListener("hello", () => setLive("live"));
-    es.onopen = () => setLive("live");
-    es.onerror = () => setLive("reconnecting"); // EventSource reconnects and resumes by id
-    es.addEventListener("execution", async (m: MessageEvent) => {
+    const handlers: Record<string, (m: MessageEvent) => void> = {};
+    const on = (k: string, fn: (m: MessageEvent) => void) => (handlers[k] = fn);
+    on("hello", (m) => {
+      setLive("live");
+      if (lastSeq == null) lastSeq = JSON.parse(m.data).seq;
+    });
+    on("execution", async (m: MessageEvent) => {
       const ev = JSON.parse(m.data);
       const d = ev.data ?? {};
       const e = await api.execution(projectId, d.execution_id).catch(() => null);
@@ -426,7 +432,7 @@ export function StudioProvider({ children }: { children: ReactNode }) {
         await reloadBoard();
       }
     });
-    es.addEventListener("revision", () =>
+    on("revision", () =>
       later(async () => {
         const fresh = await api.artifacts(projectId).catch(() => null);
         if (!fresh) return;
@@ -437,11 +443,37 @@ export function StudioProvider({ children }: { children: ReactNode }) {
       }, "art"),
     );
     for (const k of ["queued", "leased", "progress", "retry", "succeeded", "failed", "timed_out", "cancelled", "cancel_requested", "conflict", "published"])
-      es.addEventListener(k, () => later(loadJobs, "job"));
+      on(k, () => later(loadJobs, "job"));
+    // Session or no auth: the browser's own reconnect resumes by Last-Event-ID. Bearer mode
+    // (tickets are single-use): reopen with a fresh ticket and resume from the last sequence.
+    const connect = async () => {
+      if (closed) return;
+      await ensureFileTicket(projectId).catch(() => null);
+      const url = await eventsUrl(projectId, getAuthMode() === "bearer" ? lastSeq : undefined).catch(() => null);
+      if (closed || !url) return;
+      es = new EventSource(url);
+      for (const [k, fn] of Object.entries(handlers))
+        es.addEventListener(k, (m: MessageEvent) => {
+          if (m.lastEventId) lastSeq = Number(m.lastEventId);
+          fn(m);
+        });
+      es.onopen = () => setLive("live");
+      es.onerror = () => {
+        setLive("reconnecting");
+        if (getAuthMode() === "bearer") {
+          es?.close();
+          clearTimeout(retry);
+          retry = setTimeout(connect, 1500);
+        }
+      };
+    };
+    connect();
     return () => {
+      closed = true;
       clearTimeout(jobTimer);
       clearTimeout(artTimer);
-      es.close();
+      clearTimeout(retry);
+      es?.close();
       setLive("off");
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -1,8 +1,11 @@
 """Control-plane cluster service: durable queue, blob storage, worker auth, audit, reaper.
 
 One instance per control plane (``configure()``), stored under ``<workspace>/cluster``.
-Worker endpoints are disabled unless ``DAEDELUS_WORKER_TOKENS`` (comma-separated shared
-secrets) is set - a fresh installation exposes no worker surface.
+Worker endpoints are disabled until a worker credential exists (``daedelus cluster credential
+create``) or ``DAEDELUS_WORKER_TOKENS`` lists join tokens - a fresh installation exposes no
+worker surface. Join tokens only *enrol* a worker, which then receives its own revocable
+credential (see ``identity.py``); the hosted profile refuses enrolment unless
+``DAEDELUS_ALLOW_WORKER_ENROLLMENT=1``.
 """
 
 from __future__ import annotations
@@ -15,7 +18,9 @@ import time
 from pathlib import Path
 from typing import Any, Callable
 
+from .. import profile
 from .cas import BlobStore
+from .identity import CredentialStore, WorkerIdentity
 from .models import TERMINAL, JobRequest, JobResult, JobStatus, WorkerInfo
 from .queue import JobQueue
 
@@ -64,7 +69,8 @@ class ClusterService:
         self.audit = Audit(self.root / "audit.jsonl")
         toks = worker_tokens if worker_tokens is not None else [
             t.strip() for t in os.environ.get("DAEDELUS_WORKER_TOKENS", "").split(",") if t.strip()]
-        self._worker_tokens = [t for t in toks if len(t) >= 16]
+        self._worker_tokens = [t for t in toks if len(t) >= 16]  # join (enrolment) tokens
+        self.creds = CredentialStore(self.queue)
         self._stop = threading.Event()
         # restart recovery: leases that expired while the control plane was down are re-queued
         for s in self.queue.reap():
@@ -89,11 +95,27 @@ class ClusterService:
 
     # ---------------------------------------------------------------- auth
     @property
-    def workers_enabled(self) -> bool:
-        return bool(self._worker_tokens)
+    def enrollment_allowed(self) -> bool:
+        if not self._worker_tokens:
+            return False
+        return not profile.hosted() or profile.flag("DAEDELUS_ALLOW_WORKER_ENROLLMENT")
 
-    def check_worker_token(self, token: str | None) -> bool:
-        return bool(token) and any(hmac.compare_digest(token, t) for t in self._worker_tokens)
+    @property
+    def workers_enabled(self) -> bool:
+        return self.enrollment_allowed or self.creds.any_active()
+
+    def check_join_token(self, token: str | None) -> bool:
+        return self.enrollment_allowed and bool(token) and any(
+            hmac.compare_digest(token, t) for t in self._worker_tokens)
+
+    def authenticate_worker(self, token: str | None, peer: str = "") -> WorkerIdentity | None:
+        return self.creds.authenticate(token or "", peer)
+
+    def revoke_worker(self, cred_id: str, reason: str, *, by: str = "operator") -> list[str]:
+        jobs = self.creds.revoke(cred_id, reason)
+        self.audit.record("worker_revoked", actor=by, target=cred_id, reason=reason,
+                          leases_revoked=jobs)
+        return jobs
 
     # ---------------------------------------------------------------- availability
     def live_workers(self) -> list[WorkerInfo]:
@@ -150,6 +172,7 @@ class ClusterService:
         for j in jobs:
             counts[j.state] = counts.get(j.state, 0) + 1
         return {"workers_enabled": self.workers_enabled,
+                "enrollment_allowed": self.enrollment_allowed,
                 "workers": [w.model_dump() | {"alive": time.time() - w.last_seen <= ALIVE_S}
                             for w in self.queue.workers()],
                 "jobs": counts}

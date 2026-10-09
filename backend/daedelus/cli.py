@@ -49,6 +49,55 @@ def _watch_parent(pid: int) -> None:
     threading.Thread(target=loop, daemon=True, name="parent-watchdog").start()
 
 
+def _cluster_cmd(args) -> int:
+    """Offline credential administration against the workspace's cluster database."""
+    from .distributed.identity import CredentialStore
+    from .distributed.queue import JobQueue
+    from .distributed.service import Audit
+
+    root = Path(_ws(args)) / "cluster"
+    q = JobQueue(root / "queue.db")
+    creds = CredentialStore(q)
+    audit = Audit(root / "audit.jsonl")
+
+    def emit(secret: str, out: str | None) -> None:
+        if out:
+            fd = os.open(out, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+            with os.fdopen(fd, "w") as f:
+                f.write(secret + "\n")
+            print(f"credential written to {out}")
+        else:
+            print(secret)
+    try:
+        if args.cred_cmd == "create":
+            ads = [a.strip() for a in args.adapters.split(",")] if args.adapters else None
+            caps = [c.strip() for c in args.capabilities.split(",") if c.strip()]
+            rec, wire = creds.create(args.name, adapters=ads, capabilities=caps)
+            audit.record("worker_credential_created", actor="cli", target=rec["id"],
+                         name=args.name, adapters=ads, capabilities=caps)
+            print(json.dumps({k: rec[k] for k in ("id", "name", "adapters", "capabilities")}),
+                  file=sys.stderr)
+            emit(wire, args.out)
+        elif args.cred_cmd == "list":
+            print(json.dumps(creds.list(), indent=1))
+        elif args.cred_cmd == "rotate":
+            wire = creds.rotate(args.id, grace_s=args.grace)
+            audit.record("worker_credential_rotated", actor="cli", target=args.id,
+                         grace_s=args.grace)
+            emit(wire, args.out)
+        elif args.cred_cmd == "revoke":
+            jobs = creds.revoke(args.id, args.reason)
+            audit.record("worker_revoked", actor="cli", target=args.id, reason=args.reason,
+                         leases_revoked=jobs)
+            print(json.dumps({"id": args.id, "state": "revoked", "leases_revoked": jobs}))
+    except KeyError as exc:
+        print(f"unknown or inactive credential: {exc}", file=sys.stderr)
+        return 1
+    finally:
+        q.close()
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     argv = sys.argv[1:] if argv is None else argv
     if argv[:1] == ["worker"]:
@@ -64,6 +113,33 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--studio-dist", default=None)
     s.add_argument("--parent-pid", type=int, default=None,
                    help="exit when this process ends (used by the desktop shell)")
+    s.add_argument("--tls-cert", default=os.environ.get("DAEDELUS_TLS_CERT"),
+                   help="serve HTTPS with this certificate chain (PEM)")
+    s.add_argument("--tls-key", default=os.environ.get("DAEDELUS_TLS_KEY"))
+    s.add_argument("--tls-client-ca", default=os.environ.get("DAEDELUS_TLS_CLIENT_CA"),
+                   help="also request client certificates signed by this CA (optional mTLS)")
+    s.add_argument("--behind-tls-proxy", action="store_true",
+                   default=bool(os.environ.get("DAEDELUS_BEHIND_TLS_PROXY")),
+                   help="plain HTTP on a private interface; a TLS proxy terminates HTTPS "
+                        "(trusts X-Forwarded-* from DAEDELUS_FORWARDED_ALLOW_IPS)")
+    cs = sub.add_parser("cluster", help="worker credentials (V2.1): create / list / rotate / "
+                                        "revoke")
+    csub = cs.add_subparsers(dest="cluster_cmd", required=True)
+    cc = csub.add_parser("credential", help="manage per-worker credentials")
+    ccs = cc.add_subparsers(dest="cred_cmd", required=True)
+    c_new = ccs.add_parser("create", help="create a credential (printed once)")
+    c_new.add_argument("--name", required=True)
+    c_new.add_argument("--adapters", default=None, help="comma-separated; default: any")
+    c_new.add_argument("--capabilities", default="cpu", help="cpu or cpu,gpu")
+    c_new.add_argument("--out", default=None, help="write the credential to this file (0600)")
+    ccs.add_parser("list", help="list credentials (secrets are never shown)")
+    c_rot = ccs.add_parser("rotate", help="issue a new secret")
+    c_rot.add_argument("id")
+    c_rot.add_argument("--grace", type=float, default=0.0, help="seconds the old secret stays valid")
+    c_rot.add_argument("--out", default=None)
+    c_rev = ccs.add_parser("revoke", help="revoke a credential and its leases")
+    c_rev.add_argument("id")
+    c_rev.add_argument("--reason", default="revoked by operator")
     d = sub.add_parser("demo", help="build the multimodal demo and run all isolation scenarios")
     d.add_argument("--out", default="evidence/demo")
     d.add_argument("--no-video", action="store_true", help="skip the YouTube URL source")
@@ -93,8 +169,8 @@ def main(argv: list[str] | None = None) -> int:
         if args.parent_pid:
             _watch_parent(args.parent_pid)
         import ipaddress
-        import os
 
+        from . import profile
         try:
             loopback = ipaddress.ip_address(args.host).is_loopback
         except ValueError:
@@ -103,10 +179,34 @@ def main(argv: list[str] | None = None) -> int:
             print(f"refusing to listen on {args.host} without DAEDELUS_API_TOKENS: a non-loopback "
                   "bind would expose every project unauthenticated", file=sys.stderr)
             return 2
+        tls = bool(args.tls_cert)
+        if tls and not args.tls_key:
+            print("--tls-key is required with --tls-cert", file=sys.stderr)
+            return 2
+        if profile.hosted() and not tls and not loopback and not args.behind_tls_proxy:
+            print("hosted profile: refusing a plaintext control plane on a non-loopback "
+                  "interface. Serve HTTPS (--tls-cert/--tls-key) or put it behind a TLS proxy "
+                  "on a private network (--behind-tls-proxy).", file=sys.stderr)
+            return 2
+        if profile.hosted() and not os.environ.get("DAEDELUS_API_TOKENS"):
+            print("hosted profile: DAEDELUS_API_TOKENS is required", file=sys.stderr)
+            return 2
         app = create_app(_ws(args), args.studio_dist)
-        print(f"DAEDELUS_LISTENING http://{args.host}:{args.port}", flush=True)
-        uvicorn.run(app, host=args.host, port=args.port, log_level="warning")
+        kw: dict = {}
+        if tls:
+            import ssl
+            kw.update(ssl_certfile=args.tls_cert, ssl_keyfile=args.tls_key)
+            if args.tls_client_ca:
+                kw.update(ssl_ca_certs=args.tls_client_ca, ssl_cert_reqs=ssl.CERT_OPTIONAL)
+        if args.behind_tls_proxy:
+            kw.update(proxy_headers=True, forwarded_allow_ips=os.environ.get(
+                "DAEDELUS_FORWARDED_ALLOW_IPS", "127.0.0.1"))
+        scheme = "https" if tls else "http"
+        print(f"DAEDELUS_LISTENING {scheme}://{args.host}:{args.port}", flush=True)
+        uvicorn.run(app, host=args.host, port=args.port, log_level="warning", **kw)
         return 0
+    if args.cmd == "cluster":
+        return _cluster_cmd(args)
     if args.cmd == "demo":
         from .scenarios import run_scenarios
 

@@ -19,6 +19,7 @@ job any more - its late result is discarded and audited.
 from __future__ import annotations
 
 import hashlib
+import hmac
 import json
 import secrets
 import sqlite3
@@ -53,6 +54,10 @@ def _h(token: str) -> str:
 
 class LeaseLost(Exception):
     """The caller's lease is no longer valid (expired, re-queued, finished or cancelled)."""
+
+
+class LeaseOwnerMismatch(LeaseLost):
+    """A lease token was presented by a worker other than the one that leased the job."""
 
 
 class JobQueue:
@@ -239,24 +244,46 @@ class JobQueue:
                              lease_expires_at=now + self.lease_s, attempt=attempt)
         return None
 
-    def _check(self, db, job_id: str, token: str) -> sqlite3.Row:
+    def _check(self, db, job_id: str, token: str, worker_id: str | None = None) -> sqlite3.Row:
         r = self._row(db, job_id)
         if r is None:
             raise LeaseLost(f"unknown job {job_id}")
-        if r["state"] not in ("leased", "running") or r["token_hash"] != _h(token):
+        if r["state"] not in ("leased", "running") or r["token_hash"] is None or \
+                not hmac.compare_digest(r["token_hash"], _h(token)):
             raise LeaseLost(f"lease on {job_id} is no longer valid (state {r['state']})")
+        if worker_id is not None and r["worker_id"] != worker_id:
+            # a valid lease token presented by a different authenticated worker: the token
+            # was stolen or misrouted. Refuse; the owner keeps its lease.
+            raise LeaseOwnerMismatch(f"lease on {job_id} belongs to another worker")
         return r
 
-    def check_lease(self, job_id: str, token: str) -> JobRequest:
+    def check_lease(self, job_id: str, token: str, worker_id: str | None = None) -> JobRequest:
         with self._tx() as db:
-            r = self._check(db, job_id, token)
+            r = self._check(db, job_id, token, worker_id)
             return JobRequest.model_validate_json(r["request"])
 
+    def _revoke_leases_locked(self, db, worker_id: str, reason: str) -> list[str]:
+        """Revoke every live lease held by a worker (credential revoked): re-queue or fail."""
+        db.row_factory = sqlite3.Row
+        rows = db.execute("SELECT * FROM jobs WHERE worker_id=? AND state IN ('leased','running')",
+                          (worker_id,)).fetchall()
+        db.row_factory = None
+        out = []
+        for r in rows:
+            if r["cancel_requested"]:
+                db.execute("UPDATE jobs SET state='cancelled', token_hash=NULL, "
+                           "lease_expires=NULL, updated_at=? WHERE id=?", (now_iso(), r["id"]))
+                self._event(db, r["id"], r["project_id"], "cancelled", error=reason)
+            else:
+                self._fail_locked(db, r, reason, retryable=True)
+            out.append(r["id"])
+        return out
+
     def heartbeat(self, job_id: str, token: str, progress: float | None = None,
-                  message: str | None = None) -> dict[str, Any]:
+                  message: str | None = None, worker_id: str | None = None) -> dict[str, Any]:
         now = time.time()
         with self._tx() as db:
-            r = self._check(db, job_id, token)
+            r = self._check(db, job_id, token, worker_id)
             if r["lease_expires"] is not None and r["lease_expires"] < now:
                 raise LeaseLost(f"lease on {job_id} expired")
             db.execute("UPDATE jobs SET state='running', lease_expires=?, progress=?, message=?, "
@@ -270,12 +297,14 @@ class JobQueue:
             return {"cancel": bool(r["cancel_requested"]), "lease_expires_at": now + self.lease_s,
                     "deadline": r["deadline"]}
 
-    def complete(self, job_id: str, token: str, result: JobResult) -> JobStatus:
+    def complete(self, job_id: str, token: str, result: JobResult,
+                 worker_id: str | None = None) -> JobStatus:
         with self._tx() as db:
             r = self._row(db, job_id)
-            if r is not None and r["state"] == "succeeded" and r["token_hash"] == _h(token):
+            if r is not None and r["state"] == "succeeded" and r["token_hash"] == _h(token) and \
+                    (worker_id is None or r["worker_id"] == worker_id):
                 return self._status(r)  # duplicate completion of the same attempt: idempotent
-            r = self._check(db, job_id, token)
+            r = self._check(db, job_id, token, worker_id)
             if r["cancel_requested"]:
                 state, err = "cancelled", "cancelled while running; result discarded"
             elif not result.ok:
@@ -291,9 +320,9 @@ class JobQueue:
             return self._status(self._row(db, job_id))
 
     def fail(self, job_id: str, token: str, error: str, *, retryable: bool,
-             cancelled: bool = False) -> JobStatus:
+             cancelled: bool = False, worker_id: str | None = None) -> JobStatus:
         with self._tx() as db:
-            r = self._check(db, job_id, token)
+            r = self._check(db, job_id, token, worker_id)
             if cancelled or r["cancel_requested"]:
                 db.execute("UPDATE jobs SET state='cancelled', error=?, lease_expires=NULL, "
                            "updated_at=? WHERE id=?", (error, now_iso(), job_id))

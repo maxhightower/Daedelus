@@ -42,21 +42,100 @@ export async function initApiBase(): Promise<string> {
   return base;
 }
 
-// Optional API token (servers started with DAEDELUS_API_TOKENS): taken once from ?token=...,
-// kept for the browser session only, sent as a bearer header (and as a query parameter where
-// the browser cannot set headers: <img>, EventSource).
-let token: string | null = null;
-try {
-  const q = new URLSearchParams(window.location.search).get("token");
-  if (q) sessionStorage.setItem("daedelus.token", q);
-  token = sessionStorage.getItem("daedelus.token");
-} catch {
-  /* storage unavailable */
-}
-const tq = (sep: string) => (token ? `${sep}token=${encodeURIComponent(token)}` : "");
+// Authentication (V2.1). Servers started with DAEDELUS_API_TOKENS require it.
+//  - Browser on the same origin: the API token is exchanged ONCE for an HttpOnly session
+//    cookie (POST /api/auth/session); state-changing requests carry the session's CSRF token.
+//    The token is never stored and never put into a URL.
+//  - Cross-origin (desktop shell talking to a remote server): the token is held in memory
+//    only and sent as a bearer header; <img> and EventSource use short-lived, project-scoped
+//    tickets instead of the token.
+// A legacy ?token= in the page URL is consumed and removed from the address bar at once.
+export type AuthMode = "none" | "session" | "bearer" | "required";
+let authMode: AuthMode = "none";
+let csrf: string | null = null;
+let bearer: string | null = null; // memory only
+const fileTickets: Record<string, { ticket: string; expires: number }> = {};
+const sameOrigin = () => !base || new URL(base, window.location.href).origin === window.location.origin;
 
-export const fileUrl = (pid: string, rel: string) => `${base}/api/projects/${pid}/files/${rel}${tq("?")}`;
-export const eventsUrl = (pid: string) => `${base}/api/projects/${pid}/events${tq("?")}`;
+export const getAuthMode = () => authMode;
+
+async function rawFetch(path: string, init: RequestInit = {}) {
+  return fetch(`${base}${path}`, { credentials: sameOrigin() ? "same-origin" : "omit", ...init });
+}
+
+/** Determine whether the server needs authentication and establish a session if possible. */
+export async function initAuth(): Promise<AuthMode> {
+  let legacy: string | null = null;
+  try {
+    const url = new URL(window.location.href);
+    legacy = url.searchParams.get("token");
+    if (legacy) {
+      url.searchParams.delete("token");
+      window.history.replaceState(null, "", url.toString());
+    }
+    sessionStorage.removeItem("daedelus.token"); // V2 stored it here; never again
+  } catch {
+    /* no URL / storage */
+  }
+  const cfg = await rawFetch("/api/auth/config").then((r) => (r.ok ? r.json() : null)).catch(() => null);
+  if (!cfg || !cfg.auth_required) return (authMode = "none");
+  if (legacy) return login(legacy);
+  const r = await rawFetch("/api/auth/session").catch(() => null);
+  if (r && r.ok) {
+    const j = await r.json();
+    if (j.csrf) {
+      csrf = j.csrf;
+      return (authMode = "session");
+    }
+  }
+  return (authMode = "required");
+}
+
+/** Exchange an API token for a session (same origin) or keep it in memory (cross origin). */
+export async function login(token: string): Promise<AuthMode> {
+  if (sameOrigin()) {
+    const r = await rawFetch("/api/auth/session", { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+    if (!r.ok) throw new ApiError(r.status, "the token was not accepted");
+    csrf = (await r.json()).csrf;
+    return (authMode = "session");
+  }
+  const r = await rawFetch("/api/auth/session", { headers: { Authorization: `Bearer ${token}` } });
+  if (!r.ok) throw new ApiError(r.status, "the token was not accepted");
+  bearer = token;
+  return (authMode = "bearer");
+}
+
+export async function logout(): Promise<void> {
+  if (authMode === "session") await req("DELETE", "/api/auth/session").catch(() => null);
+  bearer = null;
+  csrf = null;
+  authMode = "required";
+}
+
+async function ticket(pid: string, purpose: "events" | "files") {
+  return req<{ ticket: string; expires: number }>("POST", "/api/auth/ticket", { project_id: pid, purpose });
+}
+
+/** Bearer mode: keep a files ticket for the open project (images, previews, downloads). */
+export async function ensureFileTicket(pid: string): Promise<void> {
+  if (authMode !== "bearer") return;
+  const cur = fileTickets[pid];
+  if (cur && cur.expires * 1000 - Date.now() > 120_000) return;
+  fileTickets[pid] = await ticket(pid, "files");
+}
+
+const tq = (pid: string, sep: string) =>
+  authMode === "bearer" && fileTickets[pid] ? `${sep}ticket=${encodeURIComponent(fileTickets[pid].ticket)}` : "";
+
+export const fileUrl = (pid: string, rel: string) => `${base}/api/projects/${pid}/files/${rel}${tq(pid, "?")}`;
+
+/** URL for the project's event stream; in bearer mode it carries a fresh single-use ticket. */
+export async function eventsUrl(pid: string, since?: number): Promise<string> {
+  const qs: string[] = [];
+  if (since != null) qs.push(`since=${since}`);
+  if (authMode === "bearer") qs.push(`ticket=${encodeURIComponent((await ticket(pid, "events")).ticket)}`);
+  return `${base}/api/projects/${pid}/events${qs.length ? "?" + qs.join("&") : ""}`;
+}
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -65,13 +144,17 @@ export class ApiError extends Error {
 }
 
 async function req<T>(method: string, path: string, body?: any): Promise<T> {
-  const init: RequestInit = { method, headers: token ? { Authorization: `Bearer ${token}` } : {} };
+  const headers: Record<string, string> = {};
+  if (authMode === "bearer" && bearer) headers.Authorization = `Bearer ${bearer}`;
+  if (authMode === "session" && csrf && method !== "GET") headers["X-CSRF-Token"] = csrf;
+  const init: RequestInit = { method, headers, credentials: sameOrigin() ? "same-origin" : "omit" };
   if (body instanceof FormData) init.body = body;
   else if (body !== undefined) {
     init.body = JSON.stringify(body);
-    (init.headers as any)["Content-Type"] = "application/json";
+    headers["Content-Type"] = "application/json";
   }
   const r = await fetch(`${base}${path}`, init);
+  if (r.status === 401 && authMode !== "none") authMode = "required";
   if (!r.ok) {
     let msg = `${r.status} ${r.statusText}`;
     try {

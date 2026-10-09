@@ -85,11 +85,44 @@ class BlobStore:
         return p.read_bytes()
 
 
+MAX_FILES = 100_000
+MAX_PATH = 1024
+
+
 def _safe_rel(rel: str) -> str:
-    p = Path(rel)
-    if p.is_absolute() or ".." in p.parts or rel.startswith(("/", "\\")) or not rel:
+    """A manifest path must be a plain relative POSIX path that stays inside the tree."""
+    from pathlib import PurePosixPath, PureWindowsPath
+    if not rel or len(rel) > MAX_PATH or "\x00" in rel or "\\" in rel or rel.startswith("/"):
+        raise BlobError(f"unsafe path in manifest: {rel!r}")
+    p = PurePosixPath(rel)
+    w = PureWindowsPath(rel)
+    if p.is_absolute() or w.drive or w.root or any(part in ("..", ".", "") for part in
+                                                    rel.split("/")) or ":" in rel:
         raise BlobError(f"unsafe path in manifest: {rel!r}")
     return p.as_posix()
+
+
+def check_manifest(m: Manifest) -> None:
+    """Validate a manifest received from another machine before anything is written."""
+    if len(m.files) > MAX_FILES:
+        raise BlobError(f"manifest lists {len(m.files)} files (limit {MAX_FILES})")
+    seen: set[str] = set()
+    for rel, fe in m.files.items():
+        _safe_rel(rel)
+        if not valid_sha(fe.sha256):
+            raise BlobError(f"invalid blob id in manifest for {rel!r}")
+        if fe.size < 0:
+            raise BlobError(f"negative size in manifest for {rel!r}")
+        low = rel.lower()
+        if low in seen:  # would collide on case-insensitive filesystems (Windows, macOS)
+            raise BlobError(f"case-colliding paths in manifest: {rel!r}")
+        seen.add(low)
+    paths = set(m.files)
+    for rel in paths:  # a file may not also be used as a directory ("a" and "a/b")
+        parts = rel.split("/")
+        for i in range(1, len(parts)):
+            if "/".join(parts[:i]) in paths:
+                raise BlobError(f"manifest uses {'/'.join(parts[:i])!r} as file and directory")
 
 
 def snapshot(dir_: Path, store: BlobStore | None = None) -> Manifest:
@@ -115,6 +148,7 @@ def materialize(m: Manifest, store: BlobStore, dst: Path) -> None:
     dst = Path(dst)
     if dst.exists():
         raise BlobError(f"{dst} already exists")
+    check_manifest(m)
     tmp = Path(tempfile.mkdtemp(prefix=".mat_", dir=dst.parent))
     try:
         for rel, fe in m.files.items():
@@ -126,7 +160,9 @@ def materialize(m: Manifest, store: BlobStore, dst: Path) -> None:
             shutil.copyfile(src, out)
             if sha256_file(out) != fe.sha256:
                 raise BlobError(f"corrupt blob {fe.sha256} for {rel}")
-            os.chmod(out, fe.mode)
+            # only the executable bit crosses machines: never setuid/setgid/sticky or
+            # group/world-writable modes chosen by a remote party
+            os.chmod(out, 0o755 if fe.mode & 0o111 else 0o644)
         os.replace(tmp, dst)
     except Exception:
         shutil.rmtree(tmp, ignore_errors=True)

@@ -9,7 +9,7 @@ import tempfile
 import threading
 import traceback
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -37,6 +37,9 @@ from .models import (
 from .distributed import remote
 from .distributed import service as dist_service
 from .distributed.router import build_router as build_cluster_router
+from . import profile
+from .sessions import SessionStore, token_fp
+from .sessions import describe as sessions_describe
 from . import security as sec
 from .nodes import NODE_TYPES
 from .adapters import AdapterError, get_adapter
@@ -58,6 +61,11 @@ class ProjectPatch(BaseModel):
     name: str | None = None
     description: str | None = None
     settings: ProjectSettings | None = None
+
+
+class TicketBody(BaseModel):
+    project_id: str
+    purpose: Literal["events", "files"]
 
 
 class UrlSource(BaseModel):
@@ -237,8 +245,11 @@ def create_app(workspace_root: str | Path | None = None,
     # V2 control plane: durable job queue, blob store and audit log next to the projects
     cluster = dist_service.configure(root / "cluster")
     app.state.cluster = cluster
-    app.add_middleware(sec.AuthMiddleware, grants=sec.parse_tokens(
-        os.environ.get("DAEDELUS_API_TOKENS")), audit=dist_service.get_cluster)
+    grants = sec.parse_tokens(os.environ.get("DAEDELUS_API_TOKENS"))
+    session_store = SessionStore(root / "cluster" / "auth.db")
+    app.state.sessions = session_store
+    app.add_middleware(sec.AuthMiddleware, grants=grants, audit=dist_service.get_cluster,
+                       sessions=session_store)
     app.add_middleware(CORSMiddleware, allow_origins=sec.cors_origins(), allow_methods=["*"],
                        allow_headers=["*"])
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=sec.allowed_hosts())
@@ -293,6 +304,69 @@ def create_app(workspace_root: str | Path | None = None,
     @app.exception_handler(ValueError)
     async def _bad(_: Request, exc: ValueError):
         return JSONResponse(status_code=400, content={"detail": str(exc)})
+
+    # -- browser sessions and tickets (V2.1, sessions.py) -----------------------
+    def _secure(request: Request) -> bool:
+        return request.url.scheme == "https" or profile.hosted() or \
+            request.headers.get("x-forwarded-proto") == "https"
+
+    @app.get("/api/auth/config")
+    def auth_config():
+        return {"auth_required": bool(grants), "profile": profile.name(),
+                "methods": ["bearer", "session", "ticket"] if grants else []}
+
+    @app.post("/api/auth/session")
+    def create_session(request: Request):
+        if not grants:
+            return {"authenticated": True, "auth_required": False, "csrf": None,
+                    "projects": None}
+        g = getattr(request.state, "grant", None)
+        if g is None or getattr(request.state, "auth_method", "") != "bearer":
+            raise HTTPException(401, "send the API token as Authorization: Bearer to start a "
+                                     "session")
+        sid, sess = session_store.create(token_fp(g.token), request.headers.get("user-agent",
+                                                                                 ""))
+        resp = JSONResponse(sessions_describe(sess, g.projects))
+        resp.set_cookie("dd_session", sid, httponly=True, samesite="strict",
+                        secure=_secure(request), path="/api/",
+                        max_age=int(session_store.hours * 3600))
+        cl = dist_service.get_cluster()
+        if cl is not None:
+            cl.audit.record("session_created", actor=request.client.host if request.client
+                            else "?", scoped=g.projects is not None)
+        return resp
+
+    @app.get("/api/auth/session")
+    def get_session(request: Request):
+        if not grants:
+            return {"authenticated": True, "auth_required": False, "csrf": None,
+                    "projects": None}
+        sess = getattr(request.state, "session", None)
+        g = request.state.grant
+        if sess is None:  # bearer-authenticated caller: no cookie session
+            return {"authenticated": True, "csrf": None, "method": "bearer",
+                    "projects": sorted(g.projects) if g.projects is not None else None}
+        return sessions_describe(sess, g.projects)
+
+    @app.delete("/api/auth/session")
+    def delete_session(request: Request):
+        sid = request.cookies.get("dd_session")
+        if sid:
+            session_store.delete(sid)
+        resp = JSONResponse({"authenticated": False})
+        resp.delete_cookie("dd_session", path="/api/")
+        return resp
+
+    @app.post("/api/auth/ticket")
+    def create_ticket(request: Request, body: TicketBody):
+        if not grants:
+            return {"ticket": None, "expires": None}
+        g = request.state.grant
+        if g.projects is not None and body.project_id not in g.projects:
+            raise HTTPException(403, "token not valid for this project")
+        store_for(body.project_id)
+        t, exp = session_store.ticket(token_fp(g.token), body.project_id, body.purpose)
+        return {"ticket": t, "expires": exp, "purpose": body.purpose}
 
     # -- system ---------------------------------------------------------------
     @app.get("/api/health")
@@ -425,6 +499,9 @@ def create_app(workspace_root: str | Path | None = None,
     async def add_path(pid: str, body: PathSource):
         st = store_for(pid)
         p = Path(body.path).expanduser()
+        why = sec.path_source_refusal(p)
+        if why:
+            raise HTTPException(403, why)
         if not p.exists():
             raise HTTPException(400, f"path does not exist: {p}")
         return (await _in_thread(ingest.register_file, st, p, name=body.name)).model_dump()

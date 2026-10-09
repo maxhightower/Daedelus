@@ -49,6 +49,9 @@ input.small-input { width: 110px; }
 label.inline { display: inline-flex; align-items: center; gap: 4px; }
 .empty { color: var(--muted); padding: 30px; text-align: center; }
 .fatal { padding: 40px; color: var(--err); }
+.login-screen { display: flex; align-items: center; justify-content: center; height: 100vh; }
+.login-screen form { display: flex; flex-direction: column; gap: 10px; width: 320px; padding: 24px; border: 1px solid var(--border, #333); border-radius: 8px; }
+.login-screen .error { color: var(--err); }
 
 .badge { display: inline-block; padding: 1px 6px; border-radius: 10px; font-size: 11px; background: #2c313b; border: 1px solid var(--border); margin-right: 4px; }
 .badge-ok { color: var(--ok); border-color: #2f5c43; }

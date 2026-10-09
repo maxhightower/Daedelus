@@ -13,9 +13,15 @@ COPY studio/ ./
 RUN npm run build
 
 FROM ${PYTHON_IMAGE}
-RUN useradd --create-home --uid 10001 daedelus \
- && apt-get update -qq && apt-get install -y -qq --no-install-recommends git curl \
- && rm -rf /var/lib/apt/lists/*
+COPY deploy/docker/system-setup.sh /usr/local/sbin/dd-system-setup
+RUN --mount=type=secret,id=ca,required=false \
+    pk="ca-certificates git curl"; \
+    command -v python3 > /dev/null || pk="$pk python3 python3-venv"; \
+    python3 -c 'import ensurepip' 2>/dev/null || pk="$pk python3-venv"; \
+    dd-system-setup $pk \
+ && (id -u daedelus > /dev/null 2>&1 || useradd --create-home --uid 10001 daedelus) \
+ && python3 -m venv /opt/venv
+ENV PATH=/opt/venv/bin:$PATH
 COPY backend/ /src/backend/
 RUN --mount=type=secret,id=ca,required=false \
     if [ -f /run/secrets/ca ]; then export PIP_CERT=/run/secrets/ca; fi; \

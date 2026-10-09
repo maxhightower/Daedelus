@@ -140,7 +140,22 @@ def register_path(store: ProjectStore, path: Path | str, *, name: str | None = N
         tags=tags or [],
     )
     dest = store.source_dir(src.id) / "snapshot"
-    shutil.copytree(path, dest, ignore=shutil.ignore_patterns(*SKIP_DIRS))
+    skip = shutil.ignore_patterns(*SKIP_DIRS)
+    escaped: list[str] = []
+
+    def ignore(d: str, names: list[str]) -> set[str]:
+        out = set(skip(d, names))
+        for n in names:  # a symlink pointing outside the snapshot would copy foreign files
+            fp = Path(d) / n
+            if fp.is_symlink():
+                tgt = fp.resolve()
+                if tgt != path and path not in tgt.parents:
+                    out.add(n)
+                    escaped.append(str(fp.relative_to(path)))
+        return out
+    shutil.copytree(path, dest, ignore=ignore)
+    if escaped:
+        src.metadata["skipped_symlinks"] = escaped[:50]
     src.locator.path = store.rel(dest)
     src.content_hash = sha256_tree(dest)
     store.save_source(src)
@@ -358,9 +373,11 @@ def http_client(timeout: float = 15.0):
         if os.environ.get(var) and Path(os.environ[var]).exists():
             verify = os.environ[var]
             break
-    # redirects are followed by netsafe.safe_get, which re-validates every hop
-    return httpx.Client(timeout=timeout, follow_redirects=False, verify=verify,
-                        headers={"User-Agent": "Daedelus/0.1 (+source-ingestion)"})
+    # redirects are followed by netsafe.safe_get, which re-validates every hop; direct
+    # connections are pinned to the validated address (no DNS rebinding between check and use)
+    from .netsafe import pinned_client
+    return pinned_client(timeout=timeout, verify=verify,
+                         headers={"User-Agent": "Daedelus/0.1 (+source-ingestion)"})
 
 
 @extractor(MediaType.video_url, "video_url.metadata")
