@@ -158,9 +158,10 @@ def test_no_code_path_disables_tls_verification():
     assert bad == []
 
 
-def test_worker_survives_proxy_502_while_control_plane_restarts(tmp_path):
+@pytest.mark.parametrize("status", [502, 500])
+def test_worker_survives_proxy_502_while_control_plane_restarts(tmp_path, monkeypatch, status):
     """Found by the hardened+TLS cluster run (S7): a TLS proxy answers 502 while the control
-    plane restarts. The worker must wait, not crash."""
+    plane restarts. The worker must wait, not crash. Likewise a 500 on the lease poll."""
     from daedelus.distributed.sandbox import Sandbox
     from daedelus.distributed.worker import Worker
     calls = {"lease": 0}
@@ -171,7 +172,7 @@ def test_worker_survives_proxy_502_while_control_plane_restarts(tmp_path):
         if req.url.path == "/api/cluster/lease":
             calls["lease"] += 1
             if calls["lease"] <= 2:
-                return httpx.Response(502, text="Bad Gateway")
+                return httpx.Response(status, text="error")
             w.stop()
             return httpx.Response(204)
         return httpx.Response(404)
@@ -180,5 +181,6 @@ def test_worker_survives_proxy_502_while_control_plane_restarts(tmp_path):
     w = Worker("http://127.0.0.1:1", WT, adapters=["spreadsheet"], work_dir=tmp_path / "w",
                sandbox=sb, transport=httpx.MockTransport(handler))
     w.register()
+    monkeypatch.setattr(w._stop, "wait", lambda t=None: False)  # no real back-off sleeps
     w.run()  # must return normally
     assert calls["lease"] == 3

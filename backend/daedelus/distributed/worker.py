@@ -188,6 +188,7 @@ class Worker:
         if self.id is None:
             self.register()
         idle_since = time.time()
+        errors = 0
         while not self._stop.is_set():
             try:
                 r = self.http.post("/api/cluster/lease", json={"worker_id": self.id, "wait_s": 10})
@@ -197,6 +198,13 @@ class Worker:
             if r.status_code in TRANSIENT:  # e.g. a TLS proxy answering while the control
                 time.sleep(2)               # plane restarts: wait, do not die
                 continue
+            if r.status_code >= 500:  # a server error on the poll (e.g. during shutdown):
+                errors += 1           # back off and keep the worker alive
+                print(f"lease poll failed with {r.status_code}; retrying", file=sys.stderr,
+                      flush=True)
+                self._stop.wait(min(30.0, 2.0 ** min(errors, 5)))
+                continue
+            errors = 0
             if r.status_code == 401:  # credential revoked (or rotated away): stop for good
                 raise CredentialRevoked(r.text)
             if r.status_code == 404:  # control plane forgot us (fresh database): re-register

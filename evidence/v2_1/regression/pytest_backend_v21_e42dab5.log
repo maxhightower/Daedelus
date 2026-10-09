@@ -1,0 +1,27 @@
+........ss..........................s......................s............ [ 29%]
+....................................................ssss................ [ 59%]
+........................................................................ [ 88%]
+..................ss........                                             [100%]
+=============================== warnings summary ===============================
+tests/test_tls.py::test_failed_tls_verification_is_refused[no_ca]
+  /opt/ddvenv/lib/python3.12/site-packages/_pytest/threadexception.py:58: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-135 (run)
+  
+  Traceback (most recent call last):
+    File "/usr/lib/python3.12/threading.py", line 1073, in _bootstrap_inner
+      self.run()
+    File "/usr/lib/python3.12/threading.py", line 1010, in run
+      self._target(*self._args, **self._kwargs)
+    File "/home/user/Daedelus/backend/daedelus/distributed/worker.py", line 209, in run
+      r.raise_for_status()
+    File "/opt/ddvenv/lib/python3.12/site-packages/httpx/_models.py", line 829, in raise_for_status
+      raise HTTPStatusError(message, request=request, response=self)
+  httpx.HTTPStatusError: Server error '500 Internal Server Error' for url 'https://localhost:36303/api/cluster/lease'
+  For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+  
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+234 passed, 10 skipped, 1 warning in 373.40s (0:06:13)
+EXIT 0
