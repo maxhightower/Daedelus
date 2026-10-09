@@ -1,0 +1,445 @@
+{
+ "seconds": 463.4,
+ "passed": true,
+ "checks": [
+  {
+   "scenario": "setup",
+   "name": "compose stack healthy",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S1 topology",
+   "name": "control plane container has no Blender and no LibreOffice",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S1 topology",
+   "name": "control plane reports Blender unavailable locally",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S1 topology",
+   "name": "worker network is internal (no route out of the host)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S1 topology",
+   "name": "workers cannot reach the internet",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S1 topology",
+   "name": "published port (edge) binds to 127.0.0.1 only",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S1 topology",
+   "name": "the control plane itself publishes no port (TLS edge only)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S1 topology",
+   "name": "Blender, Office and code workers registered",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S2 Blender worker",
+   "name": "Blender artifact created on a worker",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S2 Blender worker",
+   "name": "remote edit produced a checked revision",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S2 Blender worker",
+   "name": "render preview produced by the worker and served by the control plane",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S2 Blender worker",
+   "name": "every Blender job ran on the Blender worker",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S2 Blender worker",
+   "name": "components exist after publication",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S3 Office workers",
+   "name": "research pipeline succeeded with all adapter work on workers",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S3 Office workers",
+   "name": "node wb resolved to cloud_cpu",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S3 Office workers",
+   "name": "node doc resolved to cloud_cpu",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S3 Office workers",
+   "name": "node deck resolved to cloud_cpu",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S3 Office workers",
+   "name": "formulas recalculated by LibreOffice inside the office worker",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S3 Office workers",
+   "name": "cross-artifact dependencies synced remotely",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S4 code worker",
+   "name": "code artifact created on the code worker",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S4 code worker",
+   "name": "allowlisted tests ran on the code worker and passed",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S4 code worker",
+   "name": "a command the project allows but the WORKER's allowlist does not is not executed",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S5 worker killed mid-job",
+   "name": "the slow worker leased the job",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S5 worker killed mid-job",
+   "name": "request completed after the worker was killed",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S5 worker killed mid-job",
+   "name": "job retried (attempt 2) and succeeded on another worker",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S5 worker killed mid-job",
+   "name": "lease expiry recorded in the job's event history",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S6 network partition",
+   "name": "the partitioned-to-be worker leased the job",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S6 network partition",
+   "name": "request completed despite the partition",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S6 network partition",
+   "name": "the partitioned worker's late result was rejected and audited",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S6 network partition",
+   "name": "exactly one result published for the job",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S7 control-plane restart",
+   "name": "an apply job is running on a worker when the control plane restarts",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S7 control-plane restart",
+   "name": "control plane back after restart",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S7 control-plane restart",
+   "name": "interrupted execution resumed and succeeded",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S7 control-plane restart",
+   "name": "the in-flight apply job finished on its worker and was reused (not recomputed)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S7 control-plane restart",
+   "name": "node log records the resumption",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S7 control-plane restart",
+   "name": "resumption audited",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S8 security",
+   "name": "API rejects requests without a token",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S8 security",
+   "name": "worker endpoint rejects a bad worker token",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S8 security",
+   "name": "Host header outside the allowlist is rejected (DNS rebinding)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S8 security",
+   "name": "SSRF guard refuses http://169.254.169.254/latest/meta-data/",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S8 security",
+   "name": "SSRF guard refuses http://control:8765/api/health",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S8 security",
+   "name": "SSRF guard refuses http://127.0.0.1:8765/api/projects",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S8 security",
+   "name": "authentication failures are audited",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S9 worker identity",
+   "name": "every worker registered with its own provisioned credential",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S9 worker identity",
+   "name": "a forged worker credential cannot register",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S9 worker identity",
+   "name": "the old shared join token no longer enrols workers",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S9 worker identity",
+   "name": "the soon-to-be-revoked worker leased the job",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S9 worker identity",
+   "name": "revocation revoked the worker's lease",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S9 worker identity",
+   "name": "the revoked worker stopped (exit code 3)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S9 worker identity",
+   "name": "the job completed on a legitimate worker",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S9 worker identity",
+   "name": "nothing was accepted from the revoked worker",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S9 worker identity",
+   "name": "revocation audited",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S10 isolation",
+   "name": "worker-office: non-root, no capabilities, no-new-privileges, seccomp filter, read-only root, PID and memory limits (inspected and seen from /proc)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S10 isolation",
+   "name": "worker-blender: non-root, no capabilities, no-new-privileges, seccomp filter, read-only root, PID and memory limits (inspected and seen from /proc)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S10 isolation",
+   "name": "worker-code: non-root, no capabilities, no-new-privileges, seccomp filter, read-only root, PID and memory limits (inspected and seen from /proc)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S10 isolation",
+   "name": "worker 6766be22eea5-1: per-job bubblewrap sandbox verified by its self-test",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S10 isolation",
+   "name": "worker d4d3258cf7d2-1: per-job bubblewrap sandbox verified by its self-test",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S10 isolation",
+   "name": "worker 0e3e7d69e0a9-1: per-job bubblewrap sandbox verified by its self-test",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S10 isolation",
+   "name": "repository tests that try to escape the sandbox all find it closed (network, credentials, environment, system files, processes, other jobs)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S10 isolation",
+   "name": "a memory bomb fails the job's tests, not the worker",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S10 isolation",
+   "name": "the code worker is still alive after the memory bomb",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S11 TLS",
+   "name": "HTTPS with the deployment CA verifies and serves the API",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S11 TLS",
+   "name": "HSTS header present",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S11 TLS",
+   "name": "a client without the deployment CA refuses the connection",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S11 TLS",
+   "name": "no plaintext control-plane endpoint on the host",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S11 TLS",
+   "name": "workers cannot reach the control plane's plaintext port",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S11 TLS",
+   "name": "workers registered over HTTPS through the edge",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S11 TLS",
+   "name": "a worker with the wrong CA fails certificate verification and never registers",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S11 TLS",
+   "name": "browser session cookie is Secure, HttpOnly and SameSite=Strict (hosted profile)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "scenario": "S11 TLS",
+   "name": "job events stream to the client through the TLS proxy as they happen",
+   "ok": true,
+   "detail": ""
+  }
+ ],
+ "metrics": {
+  "provisioned_credentials": [
+   "worker-blender",
+   "worker-code",
+   "worker-office"
+  ],
+  "blender_create_edit_seconds": 13.3,
+  "office_pipeline_seconds": 27.3,
+  "office_pipeline_jobs": 28,
+  "recovery_after_worker_kill_seconds": 25.1,
+  "execution_after_restart_seconds": 42.0,
+  "sse_first_event_seconds_via_tls": 1.02
+ },
+ "scope": "single Docker host: control plane and workers as containers on separate networks; not a hosted multi-machine deployment; no GPU",
+ "topology": [
+  "compose.yml",
+  "compose.hardened.yml",
+  "compose.tls.yml"
+ ]
+}

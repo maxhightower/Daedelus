@@ -1,0 +1,3668 @@
+[
+ {
+  "ts": 1791518982.8812885,
+  "actor": "cli",
+  "action": "worker_credential_created",
+  "target": "wkr_e76f583ddfb1",
+  "outcome": "ok",
+  "detail": {
+   "name": "worker-office",
+   "adapters": [
+    "spreadsheet",
+    "document",
+    "presentation"
+   ],
+   "capabilities": [
+    "cpu"
+   ]
+  }
+ },
+ {
+  "ts": 1791518983.616593,
+  "actor": "cli",
+  "action": "worker_credential_created",
+  "target": "wkr_1edc08df950a",
+  "outcome": "ok",
+  "detail": {
+   "name": "worker-blender",
+   "adapters": [
+    "blender",
+    "layered2d"
+   ],
+   "capabilities": [
+    "cpu"
+   ]
+  }
+ },
+ {
+  "ts": 1791518984.3446012,
+  "actor": "cli",
+  "action": "worker_credential_created",
+  "target": "wkr_c0ffd45d706b",
+  "outcome": "ok",
+  "detail": {
+   "name": "worker-code",
+   "adapters": [
+    "code"
+   ],
+   "capabilities": [
+    "cpu"
+   ]
+  }
+ },
+ {
+  "ts": 1791518997.9589214,
+  "actor": "wkr_1edc08df950a",
+  "action": "worker_registered",
+  "target": "6766be22eea5-1",
+  "outcome": "ok",
+  "detail": {
+   "capabilities": [
+    "cpu"
+   ],
+   "adapters": [
+    "blender",
+    "layered2d"
+   ],
+   "credential": "provisioned",
+   "peer": "172.20.0.3",
+   "isolation": "bwrap",
+   "deployment": "container"
+  }
+ },
+ {
+  "ts": 1791518998.1782856,
+  "actor": "wkr_c0ffd45d706b",
+  "action": "worker_registered",
+  "target": "d4d3258cf7d2-1",
+  "outcome": "ok",
+  "detail": {
+   "capabilities": [
+    "cpu"
+   ],
+   "adapters": [
+    "code"
+   ],
+   "credential": "provisioned",
+   "peer": "172.20.0.4",
+   "isolation": "bwrap",
+   "deployment": "container"
+  }
+ },
+ {
+  "ts": 1791518998.3320916,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "worker_registered",
+  "target": "0e3e7d69e0a9-1",
+  "outcome": "ok",
+  "detail": {
+   "capabilities": [
+    "cpu"
+   ],
+   "adapters": [
+    "spreadsheet",
+    "document",
+    "presentation"
+   ],
+   "credential": "provisioned",
+   "peer": "172.20.0.5",
+   "isolation": "bwrap",
+   "deployment": "container"
+  }
+ },
+ {
+  "ts": 1791518999.4865792,
+  "actor": "control-plane",
+  "action": "execution_target_changed",
+  "target": "prj_53393f2cfd50",
+  "outcome": "ok",
+  "detail": {
+   "value": "cloud_cpu"
+  }
+ },
+ {
+  "ts": 1791518999.5021338,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_828c9d367a86",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_53393f2cfd50",
+   "artifact": null,
+   "adapter": "blender",
+   "method": "create",
+   "requires": "cpu",
+   "origin": {
+    "via": "api"
+   }
+  }
+ },
+ {
+  "ts": 1791518999.5040884,
+  "actor": "wkr_1edc08df950a",
+  "action": "job_leased",
+  "target": "job_828c9d367a86",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519002.6666625,
+  "actor": "wkr_1edc08df950a",
+  "action": "job_completed",
+  "target": "job_828c9d367a86",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 3.154
+  }
+ },
+ {
+  "ts": 1791519002.675165,
+  "actor": "control-plane",
+  "action": "published",
+  "target": "job_828c9d367a86",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_53393f2cfd50",
+   "artifact": null,
+   "digest": "97bf5c81daebbcedd5fd9d5d5d98e0b46ec967711b0769487f318477fad3b56b"
+  }
+ },
+ {
+  "ts": 1791519002.687771,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_ef15901e83a6",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_53393f2cfd50",
+   "artifact": null,
+   "adapter": "blender",
+   "method": "preview",
+   "requires": "cpu",
+   "origin": {
+    "via": "api"
+   }
+  }
+ },
+ {
+  "ts": 1791519002.6908698,
+  "actor": "wkr_1edc08df950a",
+  "action": "job_leased",
+  "target": "job_ef15901e83a6",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519004.8398926,
+  "actor": "wkr_1edc08df950a",
+  "action": "job_completed",
+  "target": "job_ef15901e83a6",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 2.138
+  }
+ },
+ {
+  "ts": 1791519004.8661733,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_807e3ecf3594",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_53393f2cfd50",
+   "artifact": null,
+   "adapter": "blender",
+   "method": "side_effect_scope",
+   "requires": "cpu",
+   "origin": {
+    "via": "api"
+   }
+  }
+ },
+ {
+  "ts": 1791519004.8691418,
+  "actor": "wkr_1edc08df950a",
+  "action": "job_leased",
+  "target": "job_807e3ecf3594",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519005.2407389,
+  "actor": "wkr_1edc08df950a",
+  "action": "job_completed",
+  "target": "job_807e3ecf3594",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 0.362
+  }
+ },
+ {
+  "ts": 1791519005.2547538,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_4e98192e8017",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_53393f2cfd50",
+   "artifact": null,
+   "adapter": "blender",
+   "method": "apply",
+   "requires": "cpu",
+   "origin": {
+    "via": "api"
+   }
+  }
+ },
+ {
+  "ts": 1791519005.257238,
+  "actor": "wkr_1edc08df950a",
+  "action": "job_leased",
+  "target": "job_4e98192e8017",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519007.1601086,
+  "actor": "wkr_1edc08df950a",
+  "action": "job_completed",
+  "target": "job_4e98192e8017",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 1.895
+  }
+ },
+ {
+  "ts": 1791519007.174097,
+  "actor": "control-plane",
+  "action": "published",
+  "target": "job_4e98192e8017",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_53393f2cfd50",
+   "artifact": null,
+   "digest": "abe0330d18f537ce24b2e6bd1be6b16fe6e5e4c685bdaae75bb8114ac5e8e8c2"
+  }
+ },
+ {
+  "ts": 1791519007.181939,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_e63c05935c5c",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_53393f2cfd50",
+   "artifact": null,
+   "adapter": "blender",
+   "method": "validate",
+   "requires": "cpu",
+   "origin": {
+    "via": "api"
+   }
+  }
+ },
+ {
+  "ts": 1791519007.1844363,
+  "actor": "wkr_1edc08df950a",
+  "action": "job_leased",
+  "target": "job_e63c05935c5c",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519008.0083225,
+  "actor": "wkr_1edc08df950a",
+  "action": "job_completed",
+  "target": "job_e63c05935c5c",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 0.814
+  }
+ },
+ {
+  "ts": 1791519008.036931,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_f6e70aa1dd9b",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_53393f2cfd50",
+   "artifact": null,
+   "adapter": "blender",
+   "method": "preview",
+   "requires": "cpu",
+   "origin": {
+    "via": "api"
+   }
+  }
+ },
+ {
+  "ts": 1791519008.0397022,
+  "actor": "wkr_1edc08df950a",
+  "action": "job_leased",
+  "target": "job_f6e70aa1dd9b",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519012.4841635,
+  "actor": "wkr_1edc08df950a",
+  "action": "job_completed",
+  "target": "job_f6e70aa1dd9b",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 4.438
+  }
+ },
+ {
+  "ts": 1791519012.4991283,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_f4d890f1d249",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_53393f2cfd50",
+   "artifact": null,
+   "adapter": "blender",
+   "method": "diff",
+   "requires": "cpu",
+   "origin": {
+    "via": "api"
+   }
+  }
+ },
+ {
+  "ts": 1791519012.5027988,
+  "actor": "wkr_1edc08df950a",
+  "action": "job_leased",
+  "target": "job_f4d890f1d249",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519012.7734728,
+  "actor": "wkr_1edc08df950a",
+  "action": "job_completed",
+  "target": "job_f4d890f1d249",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 0.262
+  }
+ },
+ {
+  "ts": 1791519012.825452,
+  "actor": "control-plane",
+  "action": "execution_target_changed",
+  "target": "prj_1cf51b220897",
+  "outcome": "ok",
+  "detail": {
+   "value": "cloud_cpu"
+  }
+ },
+ {
+  "ts": 1791519012.873285,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_e447e57e449f",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_1cf51b220897",
+   "artifact": null,
+   "adapter": "spreadsheet",
+   "method": "create",
+   "requires": "cpu",
+   "origin": {
+    "via": "api"
+   }
+  }
+ },
+ {
+  "ts": 1791519012.8749304,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_e447e57e449f",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519015.323143,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_e447e57e449f",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 2.441
+  }
+ },
+ {
+  "ts": 1791519015.3321278,
+  "actor": "control-plane",
+  "action": "published",
+  "target": "job_e447e57e449f",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_1cf51b220897",
+   "artifact": null,
+   "digest": "34055ad036c0dc3d964ba500cc02a144166616c9efa6b470f05eb5bca3c9436d"
+  }
+ },
+ {
+  "ts": 1791519015.3375595,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_e770723f0c27",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_1cf51b220897",
+   "artifact": null,
+   "adapter": "spreadsheet",
+   "method": "preview",
+   "requires": "cpu",
+   "origin": {
+    "via": "api"
+   }
+  }
+ },
+ {
+  "ts": 1791519015.3405042,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_e770723f0c27",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519017.773912,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_e770723f0c27",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 2.427
+  }
+ },
+ {
+  "ts": 1791519017.797816,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_b4d280598348",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_1cf51b220897",
+   "artifact": null,
+   "adapter": "document",
+   "method": "create",
+   "requires": "cpu",
+   "origin": {
+    "via": "api"
+   }
+  }
+ },
+ {
+  "ts": 1791519017.800825,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_b4d280598348",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519018.244538,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_b4d280598348",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 0.436
+  }
+ },
+ {
+  "ts": 1791519018.2546446,
+  "actor": "control-plane",
+  "action": "published",
+  "target": "job_b4d280598348",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_1cf51b220897",
+   "artifact": null,
+   "digest": "a745e756558ff786f5b09774120f3b1482190db0d089a5390dc2ebfdf1b55516"
+  }
+ },
+ {
+  "ts": 1791519018.2627592,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_955d910391e5",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_1cf51b220897",
+   "artifact": null,
+   "adapter": "document",
+   "method": "preview",
+   "requires": "cpu",
+   "origin": {
+    "via": "api"
+   }
+  }
+ },
+ {
+  "ts": 1791519018.265989,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_955d910391e5",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519020.6307979,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_955d910391e5",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 2.355
+  }
+ },
+ {
+  "ts": 1791519020.6560977,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_b1f498b6e7db",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_1cf51b220897",
+   "artifact": null,
+   "adapter": "presentation",
+   "method": "create",
+   "requires": "cpu",
+   "origin": {
+    "via": "api"
+   }
+  }
+ },
+ {
+  "ts": 1791519020.6586912,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_b1f498b6e7db",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519021.096996,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_b1f498b6e7db",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 0.43
+  }
+ },
+ {
+  "ts": 1791519021.1078126,
+  "actor": "control-plane",
+  "action": "published",
+  "target": "job_b1f498b6e7db",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_1cf51b220897",
+   "artifact": null,
+   "digest": "29099c85d8bf4ce6bb590a8ea528840531e33dd463e7a6ee37e2481f3117cec4"
+  }
+ },
+ {
+  "ts": 1791519021.1137285,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_fd5a9a29da46",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_1cf51b220897",
+   "artifact": null,
+   "adapter": "presentation",
+   "method": "preview",
+   "requires": "cpu",
+   "origin": {
+    "via": "api"
+   }
+  }
+ },
+ {
+  "ts": 1791519021.1161714,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_fd5a9a29da46",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519022.9174519,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_fd5a9a29da46",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 1.792
+  }
+ },
+ {
+  "ts": 1791519023.052356,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_cee80d249591",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_1cf51b220897",
+   "artifact": null,
+   "adapter": "spreadsheet",
+   "method": "apply",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_d1a4f98fb6a0",
+    "node_id": "wb",
+    "workflow_id": "wf_d5146a2935cc"
+   }
+  }
+ },
+ {
+  "ts": 1791519023.0549748,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_cee80d249591",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519025.1657534,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_cee80d249591",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 2.102
+  }
+ },
+ {
+  "ts": 1791519025.1814508,
+  "actor": "control-plane",
+  "action": "published",
+  "target": "job_cee80d249591",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_1cf51b220897",
+   "artifact": null,
+   "digest": "3d1ac9ccaf94085a1a1a86852941f4c4540a2f8a66ab152ade3d9528c80bd087"
+  }
+ },
+ {
+  "ts": 1791519025.1870444,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_5d05b0eecd2c",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_1cf51b220897",
+   "artifact": null,
+   "adapter": "spreadsheet",
+   "method": "validate",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_d1a4f98fb6a0",
+    "node_id": "wb",
+    "workflow_id": "wf_d5146a2935cc"
+   }
+  }
+ },
+ {
+  "ts": 1791519025.1894119,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_5d05b0eecd2c",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519027.0219738,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_5d05b0eecd2c",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 1.821
+  }
+ },
+ {
+  "ts": 1791519027.0430355,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_115c47268951",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_1cf51b220897",
+   "artifact": null,
+   "adapter": "spreadsheet",
+   "method": "preview",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_d1a4f98fb6a0",
+    "node_id": "wb",
+    "workflow_id": "wf_d5146a2935cc"
+   }
+  }
+ },
+ {
+  "ts": 1791519027.0457766,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_115c47268951",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519029.270944,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_115c47268951",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 2.216
+  }
+ },
+ {
+  "ts": 1791519029.2883546,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_7872d0a0d928",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_1cf51b220897",
+   "artifact": null,
+   "adapter": "spreadsheet",
+   "method": "diff",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_d1a4f98fb6a0",
+    "node_id": "wb",
+    "workflow_id": "wf_d5146a2935cc"
+   }
+  }
+ },
+ {
+  "ts": 1791519029.2913587,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_7872d0a0d928",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519029.7912934,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_7872d0a0d928",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 0.491
+  }
+ },
+ {
+  "ts": 1791519029.834274,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_267f06d7e178",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_1cf51b220897",
+   "artifact": null,
+   "adapter": "document",
+   "method": "apply",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_d1a4f98fb6a0",
+    "node_id": "doc",
+    "workflow_id": "wf_d5146a2935cc"
+   }
+  }
+ },
+ {
+  "ts": 1791519029.8367417,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_267f06d7e178",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519030.2684824,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_267f06d7e178",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 0.423
+  }
+ },
+ {
+  "ts": 1791519030.2817779,
+  "actor": "control-plane",
+  "action": "published",
+  "target": "job_267f06d7e178",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_1cf51b220897",
+   "artifact": null,
+   "digest": "1a832761216b25122234e8aa742ed5156fc4ca41abf5de807ceb370f05f7cc27"
+  }
+ },
+ {
+  "ts": 1791519030.2868726,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_acfaa75a4bd8",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_1cf51b220897",
+   "artifact": null,
+   "adapter": "document",
+   "method": "validate",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_d1a4f98fb6a0",
+    "node_id": "doc",
+    "workflow_id": "wf_d5146a2935cc"
+   }
+  }
+ },
+ {
+  "ts": 1791519030.290111,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_acfaa75a4bd8",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519031.9667847,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_acfaa75a4bd8",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 1.666
+  }
+ },
+ {
+  "ts": 1791519031.982231,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_ac8c39a872ad",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_1cf51b220897",
+   "artifact": null,
+   "adapter": "document",
+   "method": "preview",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_d1a4f98fb6a0",
+    "node_id": "doc",
+    "workflow_id": "wf_d5146a2935cc"
+   }
+  }
+ },
+ {
+  "ts": 1791519031.9843793,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_ac8c39a872ad",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519033.8346434,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_ac8c39a872ad",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 1.843
+  }
+ },
+ {
+  "ts": 1791519033.8501153,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_2456763b726f",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_1cf51b220897",
+   "artifact": null,
+   "adapter": "document",
+   "method": "diff",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_d1a4f98fb6a0",
+    "node_id": "doc",
+    "workflow_id": "wf_d5146a2935cc"
+   }
+  }
+ },
+ {
+  "ts": 1791519033.852607,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_2456763b726f",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519034.2248328,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_2456763b726f",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 0.36
+  }
+ },
+ {
+  "ts": 1791519034.2687018,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_db3962e4cfb2",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_1cf51b220897",
+   "artifact": null,
+   "adapter": "presentation",
+   "method": "apply",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_d1a4f98fb6a0",
+    "node_id": "deck",
+    "workflow_id": "wf_d5146a2935cc"
+   }
+  }
+ },
+ {
+  "ts": 1791519034.2702594,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_db3962e4cfb2",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519034.7614849,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_db3962e4cfb2",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 0.481
+  }
+ },
+ {
+  "ts": 1791519034.7760434,
+  "actor": "control-plane",
+  "action": "published",
+  "target": "job_db3962e4cfb2",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_1cf51b220897",
+   "artifact": null,
+   "digest": "f384f380c143a131e0a334e8edde4260c73de39cbb464942d6517f84fd0e1383"
+  }
+ },
+ {
+  "ts": 1791519034.7803152,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_4c6f9c8d16a6",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_1cf51b220897",
+   "artifact": null,
+   "adapter": "presentation",
+   "method": "validate",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_d1a4f98fb6a0",
+    "node_id": "deck",
+    "workflow_id": "wf_d5146a2935cc"
+   }
+  }
+ },
+ {
+  "ts": 1791519034.7822893,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_4c6f9c8d16a6",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519036.6586447,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_4c6f9c8d16a6",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 1.867
+  }
+ },
+ {
+  "ts": 1791519036.6704736,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_295b825f3262",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_1cf51b220897",
+   "artifact": null,
+   "adapter": "presentation",
+   "method": "preview",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_d1a4f98fb6a0",
+    "node_id": "deck",
+    "workflow_id": "wf_d5146a2935cc"
+   }
+  }
+ },
+ {
+  "ts": 1791519036.6724524,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_295b825f3262",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519038.7804155,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_295b825f3262",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 2.1
+  }
+ },
+ {
+  "ts": 1791519038.7976074,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_d8fe372ce55e",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_1cf51b220897",
+   "artifact": null,
+   "adapter": "presentation",
+   "method": "diff",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_d1a4f98fb6a0",
+    "node_id": "deck",
+    "workflow_id": "wf_d5146a2935cc"
+   }
+  }
+ },
+ {
+  "ts": 1791519038.7993724,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_d8fe372ce55e",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519039.2672193,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_d8fe372ce55e",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 0.459
+  }
+ },
+ {
+  "ts": 1791519039.299891,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_8d3cf4db591d",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_1cf51b220897",
+   "artifact": null,
+   "adapter": "document",
+   "method": "side_effect_scope",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_d1a4f98fb6a0",
+    "node_id": "deps",
+    "workflow_id": "wf_d5146a2935cc"
+   }
+  }
+ },
+ {
+  "ts": 1791519039.300974,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_8d3cf4db591d",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519039.5669413,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_8d3cf4db591d",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 0.258
+  }
+ },
+ {
+  "ts": 1791519039.5798812,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_995665b97b03",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_1cf51b220897",
+   "artifact": null,
+   "adapter": "document",
+   "method": "apply",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_d1a4f98fb6a0",
+    "node_id": "deps",
+    "workflow_id": "wf_d5146a2935cc"
+   }
+  }
+ },
+ {
+  "ts": 1791519039.5816543,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_995665b97b03",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519039.9600806,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_995665b97b03",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 0.371
+  }
+ },
+ {
+  "ts": 1791519039.9715838,
+  "actor": "control-plane",
+  "action": "published",
+  "target": "job_995665b97b03",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_1cf51b220897",
+   "artifact": null,
+   "digest": "89eec572874bc3aabfdf5ae598b2ef7b5b8f3d0d2df5b9bfb11268f36637f77e"
+  }
+ },
+ {
+  "ts": 1791519039.9748533,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_006fc58f07ef",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_1cf51b220897",
+   "artifact": null,
+   "adapter": "document",
+   "method": "validate",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_d1a4f98fb6a0",
+    "node_id": "deps",
+    "workflow_id": "wf_d5146a2935cc"
+   }
+  }
+ },
+ {
+  "ts": 1791519039.9768887,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_006fc58f07ef",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519041.7041805,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_006fc58f07ef",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 1.716
+  }
+ },
+ {
+  "ts": 1791519041.71866,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_0e9f0e2573f5",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_1cf51b220897",
+   "artifact": null,
+   "adapter": "document",
+   "method": "preview",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_d1a4f98fb6a0",
+    "node_id": "deps",
+    "workflow_id": "wf_d5146a2935cc"
+   }
+  }
+ },
+ {
+  "ts": 1791519041.720476,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_0e9f0e2573f5",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519043.745164,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_0e9f0e2573f5",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 1.999
+  }
+ },
+ {
+  "ts": 1791519043.7622697,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_2ece8bbcd0bf",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_1cf51b220897",
+   "artifact": null,
+   "adapter": "document",
+   "method": "diff",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_d1a4f98fb6a0",
+    "node_id": "deps",
+    "workflow_id": "wf_d5146a2935cc"
+   }
+  }
+ },
+ {
+  "ts": 1791519043.7654655,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_2ece8bbcd0bf",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519044.1348217,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_2ece8bbcd0bf",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 0.359
+  }
+ },
+ {
+  "ts": 1791519044.1520224,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_2ce8cfd04b80",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_1cf51b220897",
+   "artifact": null,
+   "adapter": "presentation",
+   "method": "side_effect_scope",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_d1a4f98fb6a0",
+    "node_id": "deps",
+    "workflow_id": "wf_d5146a2935cc"
+   }
+  }
+ },
+ {
+  "ts": 1791519044.1544945,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_2ce8cfd04b80",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519044.423728,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_2ce8cfd04b80",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 0.258
+  }
+ },
+ {
+  "ts": 1791519044.4356737,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_999309920df8",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_1cf51b220897",
+   "artifact": null,
+   "adapter": "presentation",
+   "method": "apply",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_d1a4f98fb6a0",
+    "node_id": "deps",
+    "workflow_id": "wf_d5146a2935cc"
+   }
+  }
+ },
+ {
+  "ts": 1791519044.4373,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_999309920df8",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519044.8791802,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_999309920df8",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 0.434
+  }
+ },
+ {
+  "ts": 1791519044.8911371,
+  "actor": "control-plane",
+  "action": "published",
+  "target": "job_999309920df8",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_1cf51b220897",
+   "artifact": null,
+   "digest": "318b987e72afd940ab16a12de0ab933ddaa363ae8a1726ec4473968d6a8f4989"
+  }
+ },
+ {
+  "ts": 1791519044.8946135,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_c459ec2550c7",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_1cf51b220897",
+   "artifact": null,
+   "adapter": "presentation",
+   "method": "validate",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_d1a4f98fb6a0",
+    "node_id": "deps",
+    "workflow_id": "wf_d5146a2935cc"
+   }
+  }
+ },
+ {
+  "ts": 1791519044.895627,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_c459ec2550c7",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519046.770006,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_c459ec2550c7",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 1.866
+  }
+ },
+ {
+  "ts": 1791519046.781707,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_0895fdc7397f",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_1cf51b220897",
+   "artifact": null,
+   "adapter": "presentation",
+   "method": "preview",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_d1a4f98fb6a0",
+    "node_id": "deps",
+    "workflow_id": "wf_d5146a2935cc"
+   }
+  }
+ },
+ {
+  "ts": 1791519046.783008,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_0895fdc7397f",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519048.9325461,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_0895fdc7397f",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 2.142
+  }
+ },
+ {
+  "ts": 1791519048.9508731,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_67ee1237cbb8",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_1cf51b220897",
+   "artifact": null,
+   "adapter": "presentation",
+   "method": "diff",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_d1a4f98fb6a0",
+    "node_id": "deps",
+    "workflow_id": "wf_d5146a2935cc"
+   }
+  }
+ },
+ {
+  "ts": 1791519048.953105,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_67ee1237cbb8",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519049.4264271,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_67ee1237cbb8",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 0.463
+  }
+ },
+ {
+  "ts": 1791519050.3704205,
+  "actor": "control-plane",
+  "action": "execution_target_changed",
+  "target": "prj_00f6e59c29f3",
+  "outcome": "ok",
+  "detail": {
+   "value": "cloud_cpu"
+  }
+ },
+ {
+  "ts": 1791519050.3913758,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_9095c6f84047",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_00f6e59c29f3",
+   "artifact": null,
+   "adapter": "code",
+   "method": "create",
+   "requires": "cpu",
+   "origin": {
+    "via": "api"
+   }
+  }
+ },
+ {
+  "ts": 1791519050.3938036,
+  "actor": "wkr_c0ffd45d706b",
+  "action": "job_leased",
+  "target": "job_9095c6f84047",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519050.8907597,
+  "actor": "wkr_c0ffd45d706b",
+  "action": "job_completed",
+  "target": "job_9095c6f84047",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 0.488
+  }
+ },
+ {
+  "ts": 1791519050.908036,
+  "actor": "control-plane",
+  "action": "published",
+  "target": "job_9095c6f84047",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_00f6e59c29f3",
+   "artifact": null,
+   "digest": "1938731e5334f7cb6b45ae3b9ea34b1a6ae7d7e43f22177b52bdcd481f6ff285"
+  }
+ },
+ {
+  "ts": 1791519050.9238892,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_0e8c75ccc2d5",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_00f6e59c29f3",
+   "artifact": null,
+   "adapter": "code",
+   "method": "preview",
+   "requires": "cpu",
+   "origin": {
+    "via": "api"
+   }
+  }
+ },
+ {
+  "ts": 1791519050.9257412,
+  "actor": "wkr_c0ffd45d706b",
+  "action": "job_leased",
+  "target": "job_0e8c75ccc2d5",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519051.2683203,
+  "actor": "wkr_c0ffd45d706b",
+  "action": "job_completed",
+  "target": "job_0e8c75ccc2d5",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 0.33
+  }
+ },
+ {
+  "ts": 1791519051.3224027,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_3cd4ef0906a6",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_00f6e59c29f3",
+   "artifact": null,
+   "adapter": "code",
+   "method": "validate",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_55f6274bb77a",
+    "node_id": "v",
+    "workflow_id": "wf_3c5e03fb9c95"
+   }
+  }
+ },
+ {
+  "ts": 1791519051.3243017,
+  "actor": "wkr_c0ffd45d706b",
+  "action": "job_leased",
+  "target": "job_3cd4ef0906a6",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519052.1573186,
+  "actor": "wkr_c0ffd45d706b",
+  "action": "job_completed",
+  "target": "job_3cd4ef0906a6",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 0.823
+  }
+ },
+ {
+  "ts": 1791519052.3333833,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_9b7c29171cc2",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_00f6e59c29f3",
+   "artifact": null,
+   "adapter": "code",
+   "method": "create",
+   "requires": "cpu",
+   "origin": {
+    "via": "api"
+   }
+  }
+ },
+ {
+  "ts": 1791519052.3358223,
+  "actor": "wkr_c0ffd45d706b",
+  "action": "job_leased",
+  "target": "job_9b7c29171cc2",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519052.698528,
+  "actor": "wkr_c0ffd45d706b",
+  "action": "job_completed",
+  "target": "job_9b7c29171cc2",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 0.355
+  }
+ },
+ {
+  "ts": 1791519052.7128155,
+  "actor": "control-plane",
+  "action": "published",
+  "target": "job_9b7c29171cc2",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_00f6e59c29f3",
+   "artifact": null,
+   "digest": "29902b76f300a09ff66405546cb1dbad33402ab9f2cf4c41415393bdbb9a1137"
+  }
+ },
+ {
+  "ts": 1791519052.7281864,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_9de73b6db0a0",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_00f6e59c29f3",
+   "artifact": null,
+   "adapter": "code",
+   "method": "preview",
+   "requires": "cpu",
+   "origin": {
+    "via": "api"
+   }
+  }
+ },
+ {
+  "ts": 1791519052.7293863,
+  "actor": "wkr_c0ffd45d706b",
+  "action": "job_leased",
+  "target": "job_9de73b6db0a0",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519053.0116048,
+  "actor": "wkr_c0ffd45d706b",
+  "action": "job_completed",
+  "target": "job_9de73b6db0a0",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 0.275
+  }
+ },
+ {
+  "ts": 1791519053.0579848,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_5f39529727d7",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_00f6e59c29f3",
+   "artifact": null,
+   "adapter": "code",
+   "method": "validate",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_340ff77717c1",
+    "node_id": "v",
+    "workflow_id": "wf_028508d5565d"
+   }
+  }
+ },
+ {
+  "ts": 1791519053.0609546,
+  "actor": "wkr_c0ffd45d706b",
+  "action": "job_leased",
+  "target": "job_5f39529727d7",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519053.3369682,
+  "actor": "wkr_c0ffd45d706b",
+  "action": "job_completed",
+  "target": "job_5f39529727d7",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 0.267
+  }
+ },
+ {
+  "ts": 1791519059.688419,
+  "actor": "admin",
+  "action": "worker_credential_created",
+  "target": "wkr_b10bbf9e8150",
+  "outcome": "ok",
+  "detail": {
+   "name": "victim",
+   "adapters": [
+    "spreadsheet",
+    "document",
+    "presentation"
+   ],
+   "capabilities": null
+  }
+ },
+ {
+  "ts": 1791519061.157658,
+  "actor": "wkr_b10bbf9e8150",
+  "action": "worker_registered",
+  "target": "victim",
+  "outcome": "ok",
+  "detail": {
+   "capabilities": [
+    "cpu"
+   ],
+   "adapters": [
+    "spreadsheet",
+    "document",
+    "presentation"
+   ],
+   "credential": "provisioned",
+   "peer": "172.20.0.5",
+   "isolation": "bwrap",
+   "deployment": "container"
+  }
+ },
+ {
+  "ts": 1791519061.856423,
+  "actor": "control-plane",
+  "action": "execution_target_changed",
+  "target": "prj_2f84b8070728",
+  "outcome": "ok",
+  "detail": {
+   "value": "cloud_cpu"
+  }
+ },
+ {
+  "ts": 1791519061.8722856,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_7e15ac00d4a0",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_2f84b8070728",
+   "artifact": null,
+   "adapter": "spreadsheet",
+   "method": "create",
+   "requires": "cpu",
+   "origin": {
+    "via": "api"
+   }
+  }
+ },
+ {
+  "ts": 1791519061.8769753,
+  "actor": "wkr_b10bbf9e8150",
+  "action": "job_leased",
+  "target": "job_7e15ac00d4a0",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519063.1856136,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "worker_registered",
+  "target": "0e3e7d69e0a9-1",
+  "outcome": "ok",
+  "detail": {
+   "capabilities": [
+    "cpu"
+   ],
+   "adapters": [
+    "spreadsheet",
+    "document",
+    "presentation"
+   ],
+   "credential": "provisioned",
+   "peer": "172.20.0.5",
+   "isolation": "bwrap",
+   "deployment": "container"
+  }
+ },
+ {
+  "ts": 1791519083.6736975,
+  "actor": "control-plane",
+  "action": "lease_reaped",
+  "target": "job_7e15ac00d4a0",
+  "outcome": "queued",
+  "detail": {
+   "error": "lease expired: worker wkr_b10bbf9e8150 stopped heartbeating (attempt 1)"
+  }
+ },
+ {
+  "ts": 1791519083.6750264,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_7e15ac00d4a0",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 2
+  }
+ },
+ {
+  "ts": 1791519085.4178696,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_7e15ac00d4a0",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 1.735
+  }
+ },
+ {
+  "ts": 1791519085.4256475,
+  "actor": "control-plane",
+  "action": "published",
+  "target": "job_7e15ac00d4a0",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_2f84b8070728",
+   "artifact": null,
+   "digest": "46ff5a65d53a61ecad24e4680f5de2421a9e85257bbdbc8688682dc2f654b1ec"
+  }
+ },
+ {
+  "ts": 1791519085.4325023,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_b00ee46c215d",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_2f84b8070728",
+   "artifact": null,
+   "adapter": "spreadsheet",
+   "method": "preview",
+   "requires": "cpu",
+   "origin": {
+    "via": "api"
+   }
+  }
+ },
+ {
+  "ts": 1791519085.4337611,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_b00ee46c215d",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519087.144358,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_b00ee46c215d",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 1.702
+  }
+ },
+ {
+  "ts": 1791519097.3676965,
+  "actor": "admin",
+  "action": "worker_credential_created",
+  "target": "wkr_f20fb0f5588b",
+  "outcome": "ok",
+  "detail": {
+   "name": "partitioned",
+   "adapters": [
+    "spreadsheet",
+    "document",
+    "presentation"
+   ],
+   "capabilities": null
+  }
+ },
+ {
+  "ts": 1791519098.8284996,
+  "actor": "wkr_f20fb0f5588b",
+  "action": "worker_registered",
+  "target": "partitioned",
+  "outcome": "ok",
+  "detail": {
+   "capabilities": [
+    "cpu"
+   ],
+   "adapters": [
+    "spreadsheet",
+    "document",
+    "presentation"
+   ],
+   "credential": "provisioned",
+   "peer": "172.20.0.5",
+   "isolation": "bwrap",
+   "deployment": "container"
+  }
+ },
+ {
+  "ts": 1791519099.5186608,
+  "actor": "control-plane",
+  "action": "execution_target_changed",
+  "target": "prj_ebd648a5ee80",
+  "outcome": "ok",
+  "detail": {
+   "value": "cloud_cpu"
+  }
+ },
+ {
+  "ts": 1791519099.533194,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_7f649a36337c",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_ebd648a5ee80",
+   "artifact": null,
+   "adapter": "spreadsheet",
+   "method": "create",
+   "requires": "cpu",
+   "origin": {
+    "via": "api"
+   }
+  }
+ },
+ {
+  "ts": 1791519099.5371408,
+  "actor": "wkr_f20fb0f5588b",
+  "action": "job_leased",
+  "target": "job_7f649a36337c",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519100.797563,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "worker_registered",
+  "target": "0e3e7d69e0a9-1",
+  "outcome": "ok",
+  "detail": {
+   "capabilities": [
+    "cpu"
+   ],
+   "adapters": [
+    "spreadsheet",
+    "document",
+    "presentation"
+   ],
+   "credential": "provisioned",
+   "peer": "172.20.0.5",
+   "isolation": "bwrap",
+   "deployment": "container"
+  }
+ },
+ {
+  "ts": 1791519119.6839178,
+  "actor": "control-plane",
+  "action": "lease_reaped",
+  "target": "job_7f649a36337c",
+  "outcome": "queued",
+  "detail": {
+   "error": "lease expired: worker wkr_f20fb0f5588b stopped heartbeating (attempt 1)"
+  }
+ },
+ {
+  "ts": 1791519119.6865108,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_7f649a36337c",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 2
+  }
+ },
+ {
+  "ts": 1791519121.4822228,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_7f649a36337c",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 1.788
+  }
+ },
+ {
+  "ts": 1791519121.4891596,
+  "actor": "control-plane",
+  "action": "published",
+  "target": "job_7f649a36337c",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_ebd648a5ee80",
+   "artifact": null,
+   "digest": "9e2c1ed5604e868db963acf8e525eb875b21c68732aa22590aaf29eae38d977d"
+  }
+ },
+ {
+  "ts": 1791519121.4953809,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_f46ef175dd28",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_ebd648a5ee80",
+   "artifact": null,
+   "adapter": "spreadsheet",
+   "method": "preview",
+   "requires": "cpu",
+   "origin": {
+    "via": "api"
+   }
+  }
+ },
+ {
+  "ts": 1791519121.4975145,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_f46ef175dd28",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519123.3330638,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_f46ef175dd28",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 1.826
+  }
+ },
+ {
+  "ts": 1791519127.7045448,
+  "actor": "wkr_f20fb0f5588b",
+  "action": "lease_rejected",
+  "target": "job_7f649a36337c",
+  "outcome": "denied",
+  "detail": {
+   "path": "/api/cluster/jobs/job_7f649a36337c/missing",
+   "reason": "lease on job_7f649a36337c is no longer valid (state succeeded)"
+  }
+ },
+ {
+  "ts": 1791519153.599339,
+  "actor": "admin",
+  "action": "worker_credential_created",
+  "target": "wkr_e686c6bb7d96",
+  "outcome": "ok",
+  "detail": {
+   "name": "steady",
+   "adapters": [
+    "spreadsheet",
+    "document",
+    "presentation"
+   ],
+   "capabilities": null
+  }
+ },
+ {
+  "ts": 1791519155.059592,
+  "actor": "wkr_e686c6bb7d96",
+  "action": "worker_registered",
+  "target": "steady",
+  "outcome": "ok",
+  "detail": {
+   "capabilities": [
+    "cpu"
+   ],
+   "adapters": [
+    "spreadsheet",
+    "document",
+    "presentation"
+   ],
+   "credential": "provisioned",
+   "peer": "172.20.0.5",
+   "isolation": "bwrap",
+   "deployment": "container"
+  }
+ },
+ {
+  "ts": 1791519155.768142,
+  "actor": "control-plane",
+  "action": "execution_target_changed",
+  "target": "prj_eac9395be719",
+  "outcome": "ok",
+  "detail": {
+   "value": "cloud_cpu"
+  }
+ },
+ {
+  "ts": 1791519155.8120472,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_84b1dee210ea",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "adapter": "spreadsheet",
+   "method": "create",
+   "requires": "cpu",
+   "origin": {
+    "via": "api"
+   }
+  }
+ },
+ {
+  "ts": 1791519155.8136907,
+  "actor": "wkr_f20fb0f5588b",
+  "action": "job_leased",
+  "target": "job_84b1dee210ea",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519177.6992784,
+  "actor": "control-plane",
+  "action": "lease_reaped",
+  "target": "job_84b1dee210ea",
+  "outcome": "queued",
+  "detail": {
+   "error": "lease expired: worker wkr_f20fb0f5588b stopped heartbeating (attempt 1)"
+  }
+ },
+ {
+  "ts": 1791519177.702994,
+  "actor": "wkr_e686c6bb7d96",
+  "action": "job_leased",
+  "target": "job_84b1dee210ea",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 2
+  }
+ },
+ {
+  "ts": 1791519202.7840962,
+  "actor": "wkr_e686c6bb7d96",
+  "action": "job_completed",
+  "target": "job_84b1dee210ea",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 25.073
+  }
+ },
+ {
+  "ts": 1791519202.7920852,
+  "actor": "control-plane",
+  "action": "published",
+  "target": "job_84b1dee210ea",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "digest": "1dce041aa3f3e15ae2a11817ada51479ac400d03b4d604929649f5d135a8f84d"
+  }
+ },
+ {
+  "ts": 1791519202.8035078,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_278f0832b192",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "adapter": "spreadsheet",
+   "method": "preview",
+   "requires": "cpu",
+   "origin": {
+    "via": "api"
+   }
+  }
+ },
+ {
+  "ts": 1791519202.8060088,
+  "actor": "wkr_e686c6bb7d96",
+  "action": "job_leased",
+  "target": "job_278f0832b192",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519227.8678093,
+  "actor": "wkr_e686c6bb7d96",
+  "action": "job_completed",
+  "target": "job_278f0832b192",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 25.055
+  }
+ },
+ {
+  "ts": 1791519227.8872232,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_c6356dc13199",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "adapter": "document",
+   "method": "create",
+   "requires": "cpu",
+   "origin": {
+    "via": "api"
+   }
+  }
+ },
+ {
+  "ts": 1791519227.8912625,
+  "actor": "wkr_e686c6bb7d96",
+  "action": "job_leased",
+  "target": "job_c6356dc13199",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519252.9459798,
+  "actor": "wkr_e686c6bb7d96",
+  "action": "job_completed",
+  "target": "job_c6356dc13199",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 25.046
+  }
+ },
+ {
+  "ts": 1791519252.9558322,
+  "actor": "control-plane",
+  "action": "published",
+  "target": "job_c6356dc13199",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "digest": "5268d7d47cd3f81656cbba1cb90641275b380e4e549e070e921c5a873452c4bc"
+  }
+ },
+ {
+  "ts": 1791519252.9631276,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_5ae8fbdc7aab",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "adapter": "document",
+   "method": "preview",
+   "requires": "cpu",
+   "origin": {
+    "via": "api"
+   }
+  }
+ },
+ {
+  "ts": 1791519252.9645524,
+  "actor": "wkr_e686c6bb7d96",
+  "action": "job_leased",
+  "target": "job_5ae8fbdc7aab",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519278.0258672,
+  "actor": "wkr_e686c6bb7d96",
+  "action": "job_completed",
+  "target": "job_5ae8fbdc7aab",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 25.05
+  }
+ },
+ {
+  "ts": 1791519278.0432358,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_acf734e77abf",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "adapter": "presentation",
+   "method": "create",
+   "requires": "cpu",
+   "origin": {
+    "via": "api"
+   }
+  }
+ },
+ {
+  "ts": 1791519278.045137,
+  "actor": "wkr_e686c6bb7d96",
+  "action": "job_leased",
+  "target": "job_acf734e77abf",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519303.1026723,
+  "actor": "wkr_e686c6bb7d96",
+  "action": "job_completed",
+  "target": "job_acf734e77abf",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 25.05
+  }
+ },
+ {
+  "ts": 1791519303.110347,
+  "actor": "control-plane",
+  "action": "published",
+  "target": "job_acf734e77abf",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "digest": "d5650210e5e3bd9631388e852286f0dc1a3000fde4493fd3ddfcffccbc150e34"
+  }
+ },
+ {
+  "ts": 1791519303.1154532,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_2a333e213499",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "adapter": "presentation",
+   "method": "preview",
+   "requires": "cpu",
+   "origin": {
+    "via": "api"
+   }
+  }
+ },
+ {
+  "ts": 1791519303.116926,
+  "actor": "wkr_e686c6bb7d96",
+  "action": "job_leased",
+  "target": "job_2a333e213499",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519328.162451,
+  "actor": "wkr_e686c6bb7d96",
+  "action": "job_completed",
+  "target": "job_2a333e213499",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 25.038
+  }
+ },
+ {
+  "ts": 1791519328.2676253,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_52df68d3adfe",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "adapter": "spreadsheet",
+   "method": "apply",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_1f720b3f0c74",
+    "node_id": "wb",
+    "workflow_id": "wf_2008edc8cd7f"
+   }
+  }
+ },
+ {
+  "ts": 1791519328.269978,
+  "actor": "wkr_e686c6bb7d96",
+  "action": "job_leased",
+  "target": "job_52df68d3adfe",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519335.1506279,
+  "actor": "control-plane",
+  "action": "execution_resumed",
+  "target": "exe_1f720b3f0c74",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719"
+  }
+ },
+ {
+  "ts": 1791519335.3609447,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_78d678dc2dae",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "adapter": "spreadsheet",
+   "method": "inspect",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_1f720b3f0c74",
+    "node_id": "wb",
+    "workflow_id": "wf_2008edc8cd7f"
+   }
+  }
+ },
+ {
+  "ts": 1791519345.24747,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "worker_registered",
+  "target": "0e3e7d69e0a9-1",
+  "outcome": "ok",
+  "detail": {
+   "capabilities": [
+    "cpu"
+   ],
+   "adapters": [
+    "spreadsheet",
+    "document",
+    "presentation"
+   ],
+   "credential": "provisioned",
+   "peer": "172.20.0.6",
+   "isolation": "bwrap",
+   "deployment": "container"
+  }
+ },
+ {
+  "ts": 1791519345.2576594,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_78d678dc2dae",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519345.8219075,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_78d678dc2dae",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 0.554
+  }
+ },
+ {
+  "ts": 1791519345.866991,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_19348ae14abd",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "adapter": "spreadsheet",
+   "method": "apply",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_1f720b3f0c74",
+    "node_id": "wb",
+    "workflow_id": "wf_2008edc8cd7f"
+   }
+  }
+ },
+ {
+  "ts": 1791519349.0572813,
+  "actor": "control-plane",
+  "action": "lease_reaped",
+  "target": "job_52df68d3adfe",
+  "outcome": "queued",
+  "detail": {
+   "error": "lease expired: worker wkr_e686c6bb7d96 stopped heartbeating (attempt 1)"
+  }
+ },
+ {
+  "ts": 1791519349.0597696,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_52df68d3adfe",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 2
+  }
+ },
+ {
+  "ts": 1791519350.9983792,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_52df68d3adfe",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 1.93
+  }
+ },
+ {
+  "ts": 1791519351.0185485,
+  "actor": "control-plane",
+  "action": "published",
+  "target": "job_52df68d3adfe",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "digest": "8316e11c3bc498313ffe5727ba0f80fdff8ba0dec0b1edd3a9b6ae33b5e5d35d"
+  }
+ },
+ {
+  "ts": 1791519351.0249531,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_b30a85090c4b",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "adapter": "spreadsheet",
+   "method": "validate",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_1f720b3f0c74",
+    "node_id": "wb",
+    "workflow_id": "wf_2008edc8cd7f"
+   }
+  }
+ },
+ {
+  "ts": 1791519351.0268142,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_b30a85090c4b",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519353.029381,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_b30a85090c4b",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 1.992
+  }
+ },
+ {
+  "ts": 1791519353.0434396,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_33339380cde2",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "adapter": "spreadsheet",
+   "method": "preview",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_1f720b3f0c74",
+    "node_id": "wb",
+    "workflow_id": "wf_2008edc8cd7f"
+   }
+  }
+ },
+ {
+  "ts": 1791519353.0466745,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_33339380cde2",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519355.2985818,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_33339380cde2",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 2.241
+  }
+ },
+ {
+  "ts": 1791519355.3142183,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_bb2af8f86dbe",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "adapter": "spreadsheet",
+   "method": "diff",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_1f720b3f0c74",
+    "node_id": "wb",
+    "workflow_id": "wf_2008edc8cd7f"
+   }
+  }
+ },
+ {
+  "ts": 1791519355.316649,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_bb2af8f86dbe",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519355.7895231,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_bb2af8f86dbe",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 0.462
+  }
+ },
+ {
+  "ts": 1791519355.8145776,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_8bb15f347e2a",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "adapter": "document",
+   "method": "inspect",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_1f720b3f0c74",
+    "node_id": "doc",
+    "workflow_id": "wf_2008edc8cd7f"
+   }
+  }
+ },
+ {
+  "ts": 1791519355.8156364,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_8bb15f347e2a",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519356.1939454,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_8bb15f347e2a",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 0.37
+  }
+ },
+ {
+  "ts": 1791519356.2223346,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_c48c5de14594",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "adapter": "document",
+   "method": "apply",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_1f720b3f0c74",
+    "node_id": "doc",
+    "workflow_id": "wf_2008edc8cd7f"
+   }
+  }
+ },
+ {
+  "ts": 1791519356.2249289,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_c48c5de14594",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519356.6073158,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_c48c5de14594",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 0.374
+  }
+ },
+ {
+  "ts": 1791519356.6190288,
+  "actor": "control-plane",
+  "action": "published",
+  "target": "job_c48c5de14594",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "digest": "b2e938ac1b21afaaf6aa8ce2e548087c73532a94eb0849bd2b60474d563582f9"
+  }
+ },
+ {
+  "ts": 1791519356.6225927,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_3ff86dbe9e26",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "adapter": "document",
+   "method": "validate",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_1f720b3f0c74",
+    "node_id": "doc",
+    "workflow_id": "wf_2008edc8cd7f"
+   }
+  }
+ },
+ {
+  "ts": 1791519356.6244426,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_3ff86dbe9e26",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519358.2576182,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_3ff86dbe9e26",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 1.615
+  }
+ },
+ {
+  "ts": 1791519358.2699034,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_a4eb63dae4ef",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "adapter": "document",
+   "method": "preview",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_1f720b3f0c74",
+    "node_id": "doc",
+    "workflow_id": "wf_2008edc8cd7f"
+   }
+  }
+ },
+ {
+  "ts": 1791519358.2717457,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_a4eb63dae4ef",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519360.1573975,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_a4eb63dae4ef",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 1.878
+  }
+ },
+ {
+  "ts": 1791519360.1699936,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_8921663a2cff",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "adapter": "document",
+   "method": "diff",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_1f720b3f0c74",
+    "node_id": "doc",
+    "workflow_id": "wf_2008edc8cd7f"
+   }
+  }
+ },
+ {
+  "ts": 1791519360.1721244,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_8921663a2cff",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519360.5436127,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_8921663a2cff",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 0.361
+  }
+ },
+ {
+  "ts": 1791519360.569628,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_da3206199dd3",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "adapter": "presentation",
+   "method": "inspect",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_1f720b3f0c74",
+    "node_id": "deck",
+    "workflow_id": "wf_2008edc8cd7f"
+   }
+  }
+ },
+ {
+  "ts": 1791519360.5713496,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_da3206199dd3",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519360.9481583,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_da3206199dd3",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 0.367
+  }
+ },
+ {
+  "ts": 1791519360.9853873,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_62a64c09fd12",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "adapter": "presentation",
+   "method": "apply",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_1f720b3f0c74",
+    "node_id": "deck",
+    "workflow_id": "wf_2008edc8cd7f"
+   }
+  }
+ },
+ {
+  "ts": 1791519360.9869285,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_62a64c09fd12",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519361.4706898,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_62a64c09fd12",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 0.475
+  }
+ },
+ {
+  "ts": 1791519361.4828637,
+  "actor": "control-plane",
+  "action": "published",
+  "target": "job_62a64c09fd12",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "digest": "4cb2aa0678793ae222b8285e76d04e60b0241797b0581cdd10258af8262069c2"
+  }
+ },
+ {
+  "ts": 1791519361.4861627,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_1523a4c37325",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "adapter": "presentation",
+   "method": "validate",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_1f720b3f0c74",
+    "node_id": "deck",
+    "workflow_id": "wf_2008edc8cd7f"
+   }
+  }
+ },
+ {
+  "ts": 1791519361.4879847,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_1523a4c37325",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519363.311356,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_1523a4c37325",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 1.816
+  }
+ },
+ {
+  "ts": 1791519363.3233607,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_bf7aaa90b0ef",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "adapter": "presentation",
+   "method": "preview",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_1f720b3f0c74",
+    "node_id": "deck",
+    "workflow_id": "wf_2008edc8cd7f"
+   }
+  }
+ },
+ {
+  "ts": 1791519363.3269389,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_bf7aaa90b0ef",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519365.371263,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_bf7aaa90b0ef",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 2.034
+  }
+ },
+ {
+  "ts": 1791519365.386738,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_8607975ad6f1",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "adapter": "presentation",
+   "method": "diff",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_1f720b3f0c74",
+    "node_id": "deck",
+    "workflow_id": "wf_2008edc8cd7f"
+   }
+  }
+ },
+ {
+  "ts": 1791519365.3888474,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_8607975ad6f1",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519365.811825,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_8607975ad6f1",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 0.413
+  }
+ },
+ {
+  "ts": 1791519365.8528366,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_08daa2ce7cde",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "adapter": "document",
+   "method": "side_effect_scope",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_1f720b3f0c74",
+    "node_id": "deps",
+    "workflow_id": "wf_2008edc8cd7f"
+   }
+  }
+ },
+ {
+  "ts": 1791519365.8550177,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_08daa2ce7cde",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519366.1857085,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_08daa2ce7cde",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 0.315
+  }
+ },
+ {
+  "ts": 1791519366.2026434,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_0b40483d937f",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "adapter": "document",
+   "method": "apply",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_1f720b3f0c74",
+    "node_id": "deps",
+    "workflow_id": "wf_2008edc8cd7f"
+   }
+  }
+ },
+ {
+  "ts": 1791519366.204027,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_0b40483d937f",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519366.6401181,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_0b40483d937f",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 0.428
+  }
+ },
+ {
+  "ts": 1791519366.6530957,
+  "actor": "control-plane",
+  "action": "published",
+  "target": "job_0b40483d937f",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "digest": "1f61fe92535bda5d65022b9bc9df335526009ebfc45a98b55f7d2c66814327f3"
+  }
+ },
+ {
+  "ts": 1791519366.6566594,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_24efbeef9b9a",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "adapter": "document",
+   "method": "validate",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_1f720b3f0c74",
+    "node_id": "deps",
+    "workflow_id": "wf_2008edc8cd7f"
+   }
+  }
+ },
+ {
+  "ts": 1791519366.6577208,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_24efbeef9b9a",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519368.3309448,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_24efbeef9b9a",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 1.665
+  }
+ },
+ {
+  "ts": 1791519368.344252,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_0b3221a95f03",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "adapter": "document",
+   "method": "preview",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_1f720b3f0c74",
+    "node_id": "deps",
+    "workflow_id": "wf_2008edc8cd7f"
+   }
+  }
+ },
+ {
+  "ts": 1791519368.3458307,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_0b3221a95f03",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519370.1833205,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_0b3221a95f03",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 1.83
+  }
+ },
+ {
+  "ts": 1791519370.19921,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_67041f4a1f6d",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "adapter": "document",
+   "method": "diff",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_1f720b3f0c74",
+    "node_id": "deps",
+    "workflow_id": "wf_2008edc8cd7f"
+   }
+  }
+ },
+ {
+  "ts": 1791519370.2013338,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_67041f4a1f6d",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519370.5708702,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_67041f4a1f6d",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 0.361
+  }
+ },
+ {
+  "ts": 1791519370.5886388,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_5f9a3ca2148f",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "adapter": "presentation",
+   "method": "side_effect_scope",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_1f720b3f0c74",
+    "node_id": "deps",
+    "workflow_id": "wf_2008edc8cd7f"
+   }
+  }
+ },
+ {
+  "ts": 1791519370.590001,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_5f9a3ca2148f",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519370.8585339,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_5f9a3ca2148f",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 0.26
+  }
+ },
+ {
+  "ts": 1791519370.8762424,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_a27a3e3c3197",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "adapter": "presentation",
+   "method": "apply",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_1f720b3f0c74",
+    "node_id": "deps",
+    "workflow_id": "wf_2008edc8cd7f"
+   }
+  }
+ },
+ {
+  "ts": 1791519370.8778877,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_a27a3e3c3197",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519371.3617995,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_a27a3e3c3197",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 0.476
+  }
+ },
+ {
+  "ts": 1791519371.3760827,
+  "actor": "control-plane",
+  "action": "published",
+  "target": "job_a27a3e3c3197",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "digest": "5245ca3ac678565942be993580e5ffc70c63303d84eb8256ad28ba5c7e33e988"
+  }
+ },
+ {
+  "ts": 1791519371.3925486,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_b93ebd514a68",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "adapter": "presentation",
+   "method": "validate",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_1f720b3f0c74",
+    "node_id": "deps",
+    "workflow_id": "wf_2008edc8cd7f"
+   }
+  }
+ },
+ {
+  "ts": 1791519371.3944309,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_b93ebd514a68",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519373.3262413,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_b93ebd514a68",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 1.921
+  }
+ },
+ {
+  "ts": 1791519373.3394992,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_96c0cb6766cb",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "adapter": "presentation",
+   "method": "preview",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_1f720b3f0c74",
+    "node_id": "deps",
+    "workflow_id": "wf_2008edc8cd7f"
+   }
+  }
+ },
+ {
+  "ts": 1791519373.341053,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_96c0cb6766cb",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519375.532164,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_96c0cb6766cb",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 2.184
+  }
+ },
+ {
+  "ts": 1791519375.549905,
+  "actor": "control-plane",
+  "action": "job_submitted",
+  "target": "job_2194029564e4",
+  "outcome": "ok",
+  "detail": {
+   "project": "prj_eac9395be719",
+   "artifact": null,
+   "adapter": "presentation",
+   "method": "diff",
+   "requires": "cpu",
+   "origin": {
+    "execution_id": "exe_1f720b3f0c74",
+    "node_id": "deps",
+    "workflow_id": "wf_2008edc8cd7f"
+   }
+  }
+ },
+ {
+  "ts": 1791519375.553117,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_leased",
+  "target": "job_2194029564e4",
+  "outcome": "ok",
+  "detail": {
+   "attempt": 1
+  }
+ },
+ {
+  "ts": 1791519376.023689,
+  "actor": "wkr_e76f583ddfb1",
+  "action": "job_completed",
+  "target": "job_2194029564e4",
+  "outcome": "succeeded",
+  "detail": {
+   "seconds": 0.461
+  }
+ },
+ {
+  "ts": 1791519376.5184882,
+  "actor": "172.19.0.1",
+  "action": "api_auth_failed",
+  "target": "GET /api/projects",
+  "outcome": "denied",
+  "detail": {
+   "method": "none"
+  }
+ },
+ {
+  "ts": 1791519376.5250165,
+  "actor": "172.19.0.1",
+  "action": "worker_auth_failed",
+  "target": "/api/cluster/workers",
+  "outcome": "denied"
+ },
+ {
+  "ts": 1791519376.5590665,
+  "actor": "control-plane",
+  "action": "execution_target_changed",
+  "target": "prj_729f6757a528",
+  "outcome": "ok",
+  "detail": {
+   "value": "local"
+  }
+ }
+]

@@ -1,0 +1,122 @@
+{
+ "status": {
+  "id": "job_7f649a36337c",
+  "state": "succeeded",
+  "attempt": 2,
+  "max_attempts": 3,
+  "worker_id": "wkr_e76f583ddfb1",
+  "lease_expires_at": null,
+  "progress": 1.0,
+  "message": "",
+  "error": null,
+  "created_at": "2026-10-09T04:11:39.532+00:00",
+  "updated_at": "2026-10-09T04:12:01.486+00:00",
+  "method": "create",
+  "adapter": "spreadsheet",
+  "project_id": "prj_ebd648a5ee80",
+  "artifact_id": null,
+  "requires": "cpu"
+ },
+ "request": {
+  "adapter": "spreadsheet",
+  "method": "create",
+  "requires": "cpu",
+  "files": 0,
+  "base_digest": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "origin": {
+   "via": "api"
+  }
+ },
+ "result": {
+  "ok": true,
+  "error": null,
+  "seconds": 1.788,
+  "worker_id": "wkr_e76f583ddfb1",
+  "timings": {
+   "fetch": 0.0011,
+   "run": 1.7666,
+   "upload": 0.0194,
+   "runner.startup": 0.1897,
+   "runner.method": 1.4014
+  },
+  "bytes_in": 0,
+  "bytes_out": 5195,
+  "isolation": "bwrap",
+  "logs": ""
+ },
+ "publication": {
+  "digest": "9e2c1ed5604e868db963acf8e525eb875b21c68732aa22590aaf29eae38d977d",
+  "files": 2,
+  "republished": false
+ },
+ "events": [
+  {
+   "seq": 252,
+   "ts": 1791519099.53239,
+   "project_id": "prj_ebd648a5ee80",
+   "job_id": "job_7f649a36337c",
+   "kind": "queued",
+   "data": {
+    "method": "create",
+    "adapter": "spreadsheet",
+    "requires": "cpu"
+   }
+  },
+  {
+   "seq": 253,
+   "ts": 1791519099.5365195,
+   "project_id": "prj_ebd648a5ee80",
+   "job_id": "job_7f649a36337c",
+   "kind": "leased",
+   "data": {
+    "worker_id": "wkr_f20fb0f5588b",
+    "attempt": 1
+   }
+  },
+  {
+   "seq": 254,
+   "ts": 1791519119.6828923,
+   "project_id": "prj_ebd648a5ee80",
+   "job_id": "job_7f649a36337c",
+   "kind": "retry",
+   "data": {
+    "error": "lease expired: worker wkr_f20fb0f5588b stopped heartbeating (attempt 1)",
+    "attempt": 1
+   }
+  },
+  {
+   "seq": 255,
+   "ts": 1791519119.685879,
+   "project_id": "prj_ebd648a5ee80",
+   "job_id": "job_7f649a36337c",
+   "kind": "leased",
+   "data": {
+    "worker_id": "wkr_e76f583ddfb1",
+    "attempt": 2
+   }
+  },
+  {
+   "seq": 256,
+   "ts": 1791519121.481507,
+   "project_id": "prj_ebd648a5ee80",
+   "job_id": "job_7f649a36337c",
+   "kind": "succeeded",
+   "data": {
+    "worker_id": "wkr_e76f583ddfb1",
+    "seconds": 1.788
+   }
+  },
+  {
+   "seq": 257,
+   "ts": 1791519121.486291,
+   "project_id": "prj_ebd648a5ee80",
+   "job_id": "job_7f649a36337c",
+   "kind": "published",
+   "data": {
+    "digest": "9e2c1ed5604e868db963acf8e525eb875b21c68732aa22590aaf29eae38d977d",
+    "files": 2,
+    "republished": false
+   }
+  }
+ ]
+}

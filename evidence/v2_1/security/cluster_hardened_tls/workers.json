@@ -1,0 +1,164 @@
+[
+ {
+  "id": "wkr_1edc08df950a",
+  "name": "6766be22eea5-1",
+  "capabilities": [
+   "cpu"
+  ],
+  "adapters": [
+   "blender",
+   "layered2d"
+  ],
+  "version": "0.1.0",
+  "last_seen": 1791518998.9726038,
+  "registered_at": "2026-10-09T04:09:57.958+00:00",
+  "host": "6766be22eea5",
+  "draining": false,
+  "credential_kind": "provisioned",
+  "isolation": {
+   "profile": "bwrap",
+   "verified": true,
+   "controls": {
+    "no_secrets_in_env": true,
+    "private_job_dir": true,
+    "rlimit_memory": true,
+    "no_core_dumps": true,
+    "network_isolated": true,
+    "read_only_root": true,
+    "pid_namespace": true,
+    "no_new_privs": true,
+    "capabilities_dropped": true,
+    "seccomp": true
+   },
+   "limits": {
+    "memory_mb": 3584,
+    "file_mb": 4096,
+    "nofile": 4096,
+    "nproc": null
+   },
+   "uid": 10001,
+   "raw": {
+    "network": false,
+    "pids_visible": 2,
+    "cap_eff": 0,
+    "seccomp": 2,
+    "no_new_privs": 1
+   }
+  },
+  "deployment": "container",
+  "peer": "172.20.0.3",
+  "features": [
+   "post_inspect",
+   "batch_scope"
+  ],
+  "alive": true
+ },
+ {
+  "id": "wkr_c0ffd45d706b",
+  "name": "d4d3258cf7d2-1",
+  "capabilities": [
+   "cpu"
+  ],
+  "adapters": [
+   "code"
+  ],
+  "version": "0.1.0",
+  "last_seen": 1791518999.1869314,
+  "registered_at": "2026-10-09T04:09:58.177+00:00",
+  "host": "d4d3258cf7d2",
+  "draining": false,
+  "credential_kind": "provisioned",
+  "isolation": {
+   "profile": "bwrap",
+   "verified": true,
+   "controls": {
+    "no_secrets_in_env": true,
+    "private_job_dir": true,
+    "rlimit_memory": true,
+    "no_core_dumps": true,
+    "network_isolated": true,
+    "read_only_root": true,
+    "pid_namespace": true,
+    "no_new_privs": true,
+    "capabilities_dropped": true,
+    "seccomp": true
+   },
+   "limits": {
+    "memory_mb": 1024,
+    "file_mb": 4096,
+    "nofile": 4096,
+    "nproc": null
+   },
+   "uid": 10001,
+   "raw": {
+    "network": false,
+    "pids_visible": 2,
+    "cap_eff": 0,
+    "seccomp": 2,
+    "no_new_privs": 1
+   }
+  },
+  "deployment": "container",
+  "peer": "172.20.0.4",
+  "features": [
+   "post_inspect",
+   "batch_scope"
+  ],
+  "alive": true
+ },
+ {
+  "id": "wkr_e76f583ddfb1",
+  "name": "0e3e7d69e0a9-1",
+  "capabilities": [
+   "cpu"
+  ],
+  "adapters": [
+   "spreadsheet",
+   "document",
+   "presentation"
+  ],
+  "version": "0.1.0",
+  "last_seen": 1791518999.3406568,
+  "registered_at": "2026-10-09T04:09:58.330+00:00",
+  "host": "0e3e7d69e0a9",
+  "draining": false,
+  "credential_kind": "provisioned",
+  "isolation": {
+   "profile": "bwrap",
+   "verified": true,
+   "controls": {
+    "no_secrets_in_env": true,
+    "private_job_dir": true,
+    "rlimit_memory": true,
+    "no_core_dumps": true,
+    "network_isolated": true,
+    "read_only_root": true,
+    "pid_namespace": true,
+    "no_new_privs": true,
+    "capabilities_dropped": true,
+    "seccomp": true
+   },
+   "limits": {
+    "memory_mb": 2048,
+    "file_mb": 4096,
+    "nofile": 4096,
+    "nproc": null
+   },
+   "uid": 10001,
+   "raw": {
+    "network": false,
+    "pids_visible": 2,
+    "cap_eff": 0,
+    "seccomp": 2,
+    "no_new_privs": 1
+   }
+  },
+  "deployment": "container",
+  "peer": "172.20.0.5",
+  "features": [
+   "post_inspect",
+   "batch_scope"
+  ],
+  "alive": true
+ }
+]
