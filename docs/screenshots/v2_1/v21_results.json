@@ -1,0 +1,176 @@
+[
+  {
+    "scenario": "1 refusal",
+    "name": "the API refuses requests without credentials (401)",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "scenario": "1 refusal",
+    "name": "a token in the query string is refused (401)",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "scenario": "2 login",
+    "name": "the studio shows the sign-in screen when the backend requires a token",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "scenario": "2 login",
+    "name": "a wrong token is rejected on the sign-in screen",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "scenario": "2 login",
+    "name": "the correct token opens the studio",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "scenario": "2 login",
+    "name": "a session cookie is set",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "scenario": "2 login",
+    "name": "the session cookie is HttpOnly and SameSite=Strict, scoped to /api/",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "scenario": "2 login",
+    "name": "the token is not in localStorage or sessionStorage",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "scenario": "2 login",
+    "name": "the session cookie is not readable from script",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "scenario": "3 live",
+    "name": "a worker enrolled with the join token and authenticates with its own credential",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "scenario": "3 live",
+    "name": "the event stream connects in session mode (cookie, no ticket)",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "scenario": "3 live",
+    "name": "the worker row shows the worker's isolation profile and self-test result",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "scenario": "3 live",
+    "name": "remote jobs arrive live over the cookie-authenticated stream",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "scenario": "4 csrf",
+    "name": "a cookie-authenticated POST without the CSRF header is refused (403)",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "scenario": "4 csrf",
+    "name": "a request with a valid cookie and CSRF token from a foreign Origin is refused (403)",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "scenario": "4 csrf",
+    "name": "no forged workflow was created",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "scenario": "5 preflight",
+    "name": "preflight reports remote execution and requires confirmation",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "scenario": "5 preflight",
+    "name": "the session survives a page reload (no sign-in prompt)",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "scenario": "5 preflight",
+    "name": "the preflight shows where nodes run and the budget limits before running",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "scenario": "5 preflight",
+    "name": "nothing runs until the user confirms",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "scenario": "5 preflight",
+    "name": "the confirmed run completes",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "scenario": "5 preflight",
+    "name": "the execution records its budget usage",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "scenario": "5 preflight",
+    "name": "the run view shows model calls and cost against the budget",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "scenario": "6 leaks",
+    "name": "no request URL carried the API token",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "scenario": "6 leaks",
+    "name": "event-stream URLs carry no ticket in session mode",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "scenario": "6 leaks",
+    "name": "after sign-in the browser sends no bearer token (cookie only)",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "scenario": "7 sign out",
+    "name": "signing out returns to the sign-in screen",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "scenario": "7 sign out",
+    "name": "the old session cookie no longer authenticates (401)",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "scenario": "7 sign out",
+    "name": "no uncaught page errors",
+    "ok": true,
+    "detail": ""
+  }
+]

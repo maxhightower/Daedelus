@@ -165,6 +165,10 @@ try {
   });
   const pf = await api(P(`/workflows/${wf.id}/preflight`));
   check("preflight reports remote execution and requires confirmation", pf.needs_confirmation === true, JSON.stringify(pf).slice(0, 400));
+  await page.reload(); // the explorer lists workflows created elsewhere after a reload
+  await page.locator("select[aria-label=project]").waitFor({ timeout: 20000 });
+  check("the session survives a page reload (no sign-in prompt)", (await page.locator("[data-testid=login]").count()) === 0);
+  await page.selectOption("select[aria-label=project]", PID);
   await page.locator('[data-testid="ex-workflows"] .ex-row', { hasText: "Remote edit" }).first().click();
   await page.getByRole("button", { name: "▶ Run" }).click();
   await page.locator("[data-testid=preflight]").waitFor({ timeout: 15000 });
