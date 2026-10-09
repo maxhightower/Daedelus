@@ -69,6 +69,12 @@ class AdapterError(RuntimeError):
     pass
 
 
+class VersionConflict(AdapterError):
+    """The native files changed while the operation ran; its result was NOT written. The
+    files on disk hold the newer change, so callers must neither roll back to a checkpoint
+    (that would erase the newer change) nor retry on top of it."""
+
+
 class Adapter(ABC):
     name: str = "adapter"
     version: str = "0"

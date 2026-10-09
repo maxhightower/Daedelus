@@ -1,0 +1,47 @@
+published phase {"p":1,"w":[["w-main","a",""]]} (local file)
+PASS [H1 independent hosts] the worker on the other host registered over HTTPS
+FAIL [H1 independent hosts] the worker's network address is not the control host's - ('127.0.0.1', '')
+FAIL [H1 independent hosts] the worker runs on a different machine (host name) - ('vm', 'vm')
+PASS [H1 independent hosts] the worker reports a verified bubblewrap job sandbox
+PASS [H1 independent hosts] the worker authenticated with a provisioned per-worker credential
+PASS [H2-H6 remote Blender] Blender artifact created by the remote worker
+PASS [H2-H6 remote Blender] Blender operations executed on the remote worker
+PASS [H2-H6 remote Blender] every job ran on the remote worker
+PASS [H2-H6 remote Blender] the worker downloaded the hashed inputs (apply job read the native files)
+PASS [H2-H6 remote Blender] native outputs returned and were published atomically (digests recorded)
+PASS [H2-H6 remote Blender] the published revision was validated (file reopens)
+PASS [H2-H6 remote Blender] the render made on the worker is served by the control plane over HTTPS
+PASS [H2-H6 remote Blender] the event stream delivered job progress through the public TLS endpoint
+PASS [E2E agent workflow (deterministic provider)] model created remotely
+PASS [E2E agent workflow (deterministic provider)] agent workflow succeeded with all adapter work on the remote worker
+PASS [E2E agent workflow (deterministic provider)] the node resolved to the remote CPU worker
+PASS [E2E agent workflow (deterministic provider)] the execution recorded its budget and usage
+PASS [E2E agent workflow (deterministic provider)] the targeted component and its siblings exist after publication
+published phase {"p":2,"w":[["w-crash","a","crash_after_lease"]]} (local file)
+PASS [H8 worker shutdown] a worker that will die mid-job is the only worker
+PASS [H8 worker shutdown] the doomed worker leased the job
+published phase {"p":3,"w":[["w-main","b",""]]} (local file)
+PASS [H8 worker shutdown] the request completed after the worker died
+PASS [H8 worker shutdown] lease expired, job retried (attempt 2) on another worker identity
+published phase {"p":4,"w":[["w-slow","a","slow:20"]]} (local file)
+PASS [H9 late result vs newer revision] the late result was refused (version conflict)
+FAIL [H9 late result vs newer revision] the newer change was not overwritten - 
+PASS [H9 late result vs newer revision] the job is marked conflict, nothing published
+PASS [H7 control-plane restart] a remote apply job is in flight when the control plane restarts
+PASS [H7 control-plane restart] control plane back after restart (same volume, same tunnel)
+PASS [H7 control-plane restart] the interrupted execution resumed and succeeded
+PASS [H7 control-plane restart] the in-flight remote job finished and was reused, not recomputed
+published phase {"p":5,"w":[["w-main","b",""]]} (local file)
+PASS [H10 unauthorised access] anonymous API request refused
+PASS [H10 unauthorised access] query-string token refused
+PASS [H10 unauthorised access] forged worker credential refused
+PASS [H10 unauthorised access] worker endpoints refuse an API token
+PASS [H10 unauthorised access] no plaintext control-plane endpoint is public (HTTP is refused or redirected)
+PASS [H10 unauthorised access] URL ingestion of the cloud metadata service is refused on a real cloud host
+PASS [H10 unauthorised access] code artifact created on the remote worker
+PASS [H10 unauthorised access] repository tests on the remote worker find no network, no secrets and no cloud metadata service (all 4 escape attempts fail)
+PASS [Revocation of a live remote worker] credential revoked
+PASS [Revocation of a live remote worker] the revoked remote worker disappeared from the live pool
+published phase {"p":"done","w":[]} (local file)
+HOSTED_REPORT {"passed": false, "metrics": {"hosted_blender_create_edit_seconds": 13.8, "sse_first_event_seconds": 1.03, "job_seconds": [0.32, 3.0, 1.32, 1.76, 0.31, 3.31, 3.51], "hosted_agent_workflow_seconds": 8.0, "hosted_recovery_after_worker_death_seconds": 21.4, "hosted_execution_after_restart_seconds": 98.9}, "n": 39, "failed": 3}
+FAIL: 36/39

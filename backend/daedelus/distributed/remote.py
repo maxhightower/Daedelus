@@ -28,7 +28,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from ..adapters.base import Adapter, AdapterError, AdapterInfo, ApplyResult, InspectResult
+from ..adapters.base import (Adapter, AdapterError, AdapterInfo, ApplyResult, InspectResult,
+                             VersionConflict)
 from ..models import PlannedOperation, ValidationReport
 from . import cas
 from ..budget import current as current_budget
@@ -275,7 +276,7 @@ class RemoteAdapter(Adapter):
             cl.queue.mark_conflict(req.id, detail)
             cl.audit.record("publication_conflict", "rejected", target=req.id,
                             project=req.project_id, artifact=req.artifact_id)
-            raise AdapterError(detail)
+            raise VersionConflict(detail)
         missing = [f.sha256 for f in res.output.files.values() if not cl.blobs.has(f.sha256)]
         if missing:
             raise AdapterError(f"job {req.id}: output blobs missing: {missing[:3]}")

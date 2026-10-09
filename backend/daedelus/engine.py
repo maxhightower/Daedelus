@@ -29,7 +29,7 @@ from typing import Any
 from . import bindings as binding_mod
 from . import features, ingest
 from .adapters import AdapterError, get_adapter
-from .adapters.base import check_schema
+from .adapters.base import VersionConflict, check_schema
 from .artifacts import native_path, record_revision, restore_tree, snapshot
 from .models import (
     Artifact,
@@ -1179,6 +1179,14 @@ class Engine:
                 if result.ok:
                     break
                 last_error = result.error or "operation failed"
+            except VersionConflict as exc:
+                # the artifact changed underneath this node: its result was not written and
+                # the newer files stay; no rollback (it would erase them) and no retry
+                for ui in unit_infos:
+                    ur = next(u for u in nr.units if u.unit == ui["unit"])
+                    ur.status = RunStatus.failed
+                    ur.error = str(exc)
+                raise NodeFailure(f"{exc}; the newer change was kept") from None
             except AdapterError as exc:
                 last_error = str(exc)
                 result = None

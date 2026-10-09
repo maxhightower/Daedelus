@@ -15,6 +15,7 @@ from typing import Any
 
 from . import bindings as binding_mod
 from .adapters import AdapterError, get_adapter
+from .adapters.base import VersionConflict
 from .artifacts import native_path, record_revision, restore_tree, snapshot
 from .models import (
     ArtifactRevision,
@@ -113,6 +114,8 @@ def _apply(store: ProjectStore, artifact_id: str, ops: list[PlannedOperation], m
             res = adapter.apply(native, art.entry, ops, {"message": message or "Manual edit",
                                                          "source_paths": _image_paths(store),
                                                          "files": files or {}})
+        except VersionConflict as exc:  # newer files on disk: keep them, publish nothing
+            raise EditRejected(f"{exc}; the newer change was kept") from None
         except AdapterError as exc:
             res = None
             err = str(exc)

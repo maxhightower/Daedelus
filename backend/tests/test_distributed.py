@@ -310,6 +310,40 @@ def test_corrupted_upload_rejected_and_duplicate_completion_idempotent(cluster):
     assert len({p["target"] for p in pubs}) == len(pubs)  # each job published once
 
 
+def test_version_conflict_on_edit_keeps_the_newer_change(cluster):
+    """V2.1 (found by the hosted harness, H9): a conflicting remote result must not be
+    'rolled back' over the newer files either - the edit fails and the newer change stays."""
+    pid = cluster.project("local")
+    art = _workbook(cluster, pid)
+    cluster.worker("slow", fault="slow:4")
+    cluster.c.put(f"/api/projects/{pid}/execution", json={"target": "cloud_cpu"})
+    st = cluster.app.state.workspace.open(pid)
+    native = st.abs(st.get_artifact(art["id"]).native_dir)
+    revs = len(st.list_revisions(art["id"]))
+    res: dict = {}
+    t = threading.Thread(target=lambda: res.update(r=cluster.c.post(
+        f"/api/projects/{pid}/artifacts/{art['id']}/edit", json={
+            "message": "slow remote edit", "operations": [
+                {"op": "set_cells", "component_id": "data", "params": {"cells": {"D1": 9}}}]})))
+    t.start()
+    for _ in range(100):
+        if any(j.method == "apply" and j.state in ("leased", "running")
+               for j in service_jobs(pid)):
+            break
+        time.sleep(0.1)
+    (native / "concurrent.txt").write_text("someone else edited the artifact")
+    t.join(timeout=120)
+    assert res["r"].status_code >= 400 and "conflict" in res["r"].text, res["r"].text
+    assert (native / "concurrent.txt").exists()  # not erased by a rollback
+    assert len(st.list_revisions(art["id"])) == revs  # nothing recorded
+    assert not [j for j in service_jobs(pid) if j.method == "after_restore"]
+
+
+def service_jobs(pid):
+    from daedelus.distributed import service
+    return service.get_cluster().queue.list(project_id=pid)
+
+
 def test_version_conflict_is_not_published(cluster, monkeypatch):
     from daedelus.adapters import registry
     from daedelus.distributed import remote, service

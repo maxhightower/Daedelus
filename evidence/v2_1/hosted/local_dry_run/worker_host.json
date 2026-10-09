@@ -1,0 +1,14 @@
+{
+ "hostname": "vm",
+ "runner_name": null,
+ "machine_id_sha256": "801452e4fd3b9a26",
+ "boot_id_sha256": "b0b0970eebf279e8",
+ "cloud_vm_id_sha256": "",
+ "cloud_location": null,
+ "cloud_vm_size": null,
+ "public_ip": "",
+ "kernel": "6.18.44-fc-v80",
+ "cpus": 4,
+ "time": 1791517946.3334963,
+ "control_url": "https://localhost:8443"
+}
