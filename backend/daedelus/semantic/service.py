@@ -22,22 +22,52 @@ from .models import SourceAnalysis, Usage, role_category
 
 # USD per million tokens (input, output). Only models whose prices are documented to us are
 # listed; anything else reports cost as unknown rather than guessing.
-PRICES: dict[str, tuple[float, float]] = {
-    "claude-opus-5-5": (4.0, 20.0),
-    "claude-sonnet-5-5": (2.0, 10.0),
-    "claude-haiku-5-5": (0.10, 0.50),
-    "claude-fable-5-1": (10.0, 50.0),
+# USD per million tokens: (input, output, cache read). Source: Anthropic model documentation
+# (claude-api reference, 2026-10). A cache-read price that is not documented is charged at the
+# full input price (overestimates, never underestimates). Cache writes: 1.25x input (5-minute
+# cache, the only one Daedelus uses).
+PRICES: dict[str, tuple[float, float, float]] = {
+    "claude-opus-5-5": (4.0, 20.0, 0.20),
+    "claude-sonnet-5-5": (2.0, 10.0, 0.20),
+    "claude-haiku-5-5": (0.10, 0.50, 0.10),
+    "claude-fable-5-1": (10.0, 50.0, 0.25),
 }
+# prompt-size tiers: above the threshold (total prompt tokens) the whole request is billed at
+# the higher (input, output) rates
+PRICE_TIERS: dict[str, tuple[int, float, float]] = {
+    "claude-haiku-5-5": (100_000, 0.50, 2.50),
+}
+PRICES_AS_OF = "2026-10"
 
 
 def cost_usd(model: str | None, input_tokens: int | None, output_tokens: int | None,
              cache_read: int | None = None, cache_write: int | None = None) -> float | None:
-    """Known list prices only; cache writes at 1.25x and cache reads at 0.1x input price."""
+    """Known list prices only (None when the model's price is not known)."""
     p = PRICES.get(model or "")
     if p is None or input_tokens is None or output_tokens is None:
         return None
-    return round((input_tokens + 1.25 * (cache_write or 0) + 0.1 * (cache_read or 0)) / 1e6
-                 * p[0] + output_tokens / 1e6 * p[1], 6)
+    inp, out, cr = p
+    tier = PRICE_TIERS.get(model or "")
+    prompt = input_tokens + (cache_read or 0) + (cache_write or 0)
+    if tier and prompt > tier[0]:
+        inp, out = tier[1], tier[2]
+        cr = max(cr, inp)
+    return round((input_tokens * inp + 1.25 * (cache_write or 0) * inp + (cache_read or 0) * cr
+                  + output_tokens * out) / 1e6, 6)
+
+
+def worst_case_call_usd(model: str | None, max_output_tokens: int, max_input_tokens: int,
+                        attempts: int) -> float | None:
+    """Upper bound for one logical call: every attempt (SDK retries included) billed at full
+    input and output size. None when the price is unknown."""
+    p = PRICES.get(model or "")
+    if p is None:
+        return None
+    inp, out, _ = p
+    tier = PRICE_TIERS.get(model or "")
+    if tier and max_input_tokens > tier[0]:
+        inp, out = tier[1], tier[2]
+    return round(attempts * (max_input_tokens * inp + max_output_tokens * out) / 1e6, 4)
 
 
 def make_usage(model: str | None, input_tokens: int | None, output_tokens: int | None,

@@ -213,12 +213,6 @@ class AnthropicProvider(Provider):
                 raise ProviderRateLimited(f"Anthropic API overloaded (529): {exc.message}") \
                     from exc
             raise ProviderError(f"Anthropic API error {exc.status_code}: {exc.message}") from exc
-        if resp.stop_reason == "refusal":
-            cat = getattr(getattr(resp, "stop_details", None), "category", None)
-            raise ProviderError(f"model declined (refusal, category={cat})")
-        if resp.stop_reason == "max_tokens":
-            raise ProviderError("response truncated (max_tokens reached)")
-        text = next((b.text for b in resp.content if getattr(b, "type", "") == "text"), None)
         usage = getattr(resp, "usage", None)
         used_model = getattr(resp, "model", None) or model
         u = make_usage(used_model, getattr(usage, "input_tokens", None),
@@ -229,6 +223,13 @@ class AnthropicProvider(Provider):
         fb = [b for b in resp.content if getattr(b, "type", "") == "fallback"]
         if fb or used_model != model:
             u.fallback_from = model
+        lc.bill(u)  # billed even if the response turns out unusable below
+        if resp.stop_reason == "refusal":
+            cat = getattr(getattr(resp, "stop_details", None), "category", None)
+            raise ProviderError(f"model declined (refusal, category={cat})")
+        if resp.stop_reason == "max_tokens":
+            raise ProviderError("response truncated (max_tokens reached)")
+        text = next((b.text for b in resp.content if getattr(b, "type", "") == "text"), None)
         return lc.parse_json(text), u, used_model
 
     # ------------------------------------------------------------------ analyze

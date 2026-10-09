@@ -1,0 +1,231 @@
+{
+ "schema": "daedelus.live-results/1",
+ "run": {
+  "commit": null,
+  "ref": null,
+  "workflow_run": null,
+  "seconds": 1.5
+ },
+ "request": {
+  "providers": [
+   "claude",
+   "gemini"
+  ],
+  "stages": [
+   "smoke",
+   "bench"
+  ],
+  "tasks": "ABCDE",
+  "video_url": null,
+  "connectors": [],
+  "allow_unpriced": false,
+  "campaign": {
+   "max_model_calls": 60,
+   "max_cost_usd": 5.0,
+   "max_tokens": 1500000,
+   "max_seconds": 3600
+  }
+ },
+ "gates": [
+  {
+   "id": "claude.smoke",
+   "requested": true,
+   "outcome": "BLOCKED",
+   "reason": "credentials unavailable: no Anthropic credentials detected in the environment (ANTHROPIC_API_KEY / ANTHROPIC_AUTH_TOKEN / ANTHROPIC_PROFILE)",
+   "failure_kind": "credentials",
+   "retriable": false,
+   "seconds": null,
+   "evidence": null,
+   "details": {}
+  },
+  {
+   "id": "claude.bench.A",
+   "requested": true,
+   "outcome": "BLOCKED",
+   "reason": "credentials unavailable: no Anthropic credentials detected in the environment (ANTHROPIC_API_KEY / ANTHROPIC_AUTH_TOKEN / ANTHROPIC_PROFILE)",
+   "failure_kind": "credentials",
+   "retriable": false,
+   "seconds": null,
+   "evidence": null,
+   "details": {}
+  },
+  {
+   "id": "claude.bench.B",
+   "requested": true,
+   "outcome": "BLOCKED",
+   "reason": "credentials unavailable: no Anthropic credentials detected in the environment (ANTHROPIC_API_KEY / ANTHROPIC_AUTH_TOKEN / ANTHROPIC_PROFILE)",
+   "failure_kind": "credentials",
+   "retriable": false,
+   "seconds": null,
+   "evidence": null,
+   "details": {}
+  },
+  {
+   "id": "claude.bench.C",
+   "requested": true,
+   "outcome": "BLOCKED",
+   "reason": "credentials unavailable: no Anthropic credentials detected in the environment (ANTHROPIC_API_KEY / ANTHROPIC_AUTH_TOKEN / ANTHROPIC_PROFILE)",
+   "failure_kind": "credentials",
+   "retriable": false,
+   "seconds": null,
+   "evidence": null,
+   "details": {}
+  },
+  {
+   "id": "claude.bench.D",
+   "requested": true,
+   "outcome": "BLOCKED",
+   "reason": "credentials unavailable: no Anthropic credentials detected in the environment (ANTHROPIC_API_KEY / ANTHROPIC_AUTH_TOKEN / ANTHROPIC_PROFILE)",
+   "failure_kind": "credentials",
+   "retriable": false,
+   "seconds": null,
+   "evidence": null,
+   "details": {}
+  },
+  {
+   "id": "claude.bench.E",
+   "requested": true,
+   "outcome": "BLOCKED",
+   "reason": "credentials unavailable: no Anthropic credentials detected in the environment (ANTHROPIC_API_KEY / ANTHROPIC_AUTH_TOKEN / ANTHROPIC_PROFILE)",
+   "failure_kind": "credentials",
+   "retriable": false,
+   "seconds": null,
+   "evidence": null,
+   "details": {}
+  },
+  {
+   "id": "gemini.smoke",
+   "requested": true,
+   "outcome": "BLOCKED",
+   "reason": "credentials unavailable: no Gemini credentials in the environment (GEMINI_API_KEY / GOOGLE_API_KEY, or Vertex AI configuration)",
+   "failure_kind": "credentials",
+   "retriable": false,
+   "seconds": null,
+   "evidence": null,
+   "details": {}
+  },
+  {
+   "id": "gemini.bench.A",
+   "requested": true,
+   "outcome": "BLOCKED",
+   "reason": "credentials unavailable: no Gemini credentials in the environment (GEMINI_API_KEY / GOOGLE_API_KEY, or Vertex AI configuration)",
+   "failure_kind": "credentials",
+   "retriable": false,
+   "seconds": null,
+   "evidence": null,
+   "details": {}
+  },
+  {
+   "id": "gemini.bench.B",
+   "requested": true,
+   "outcome": "BLOCKED",
+   "reason": "credentials unavailable: no Gemini credentials in the environment (GEMINI_API_KEY / GOOGLE_API_KEY, or Vertex AI configuration)",
+   "failure_kind": "credentials",
+   "retriable": false,
+   "seconds": null,
+   "evidence": null,
+   "details": {}
+  },
+  {
+   "id": "gemini.bench.C",
+   "requested": true,
+   "outcome": "BLOCKED",
+   "reason": "credentials unavailable: no Gemini credentials in the environment (GEMINI_API_KEY / GOOGLE_API_KEY, or Vertex AI configuration)",
+   "failure_kind": "credentials",
+   "retriable": false,
+   "seconds": null,
+   "evidence": null,
+   "details": {}
+  },
+  {
+   "id": "gemini.bench.D",
+   "requested": true,
+   "outcome": "BLOCKED",
+   "reason": "credentials unavailable: no Gemini credentials in the environment (GEMINI_API_KEY / GOOGLE_API_KEY, or Vertex AI configuration)",
+   "failure_kind": "credentials",
+   "retriable": false,
+   "seconds": null,
+   "evidence": null,
+   "details": {}
+  },
+  {
+   "id": "gemini.bench.E",
+   "requested": true,
+   "outcome": "BLOCKED",
+   "reason": "credentials unavailable: no Gemini credentials in the environment (GEMINI_API_KEY / GOOGLE_API_KEY, or Vertex AI configuration)",
+   "failure_kind": "credentials",
+   "retriable": false,
+   "seconds": null,
+   "evidence": null,
+   "details": {}
+  },
+  {
+   "id": "connector.google",
+   "requested": false,
+   "outcome": "NOT RUN",
+   "reason": "",
+   "failure_kind": null,
+   "retriable": false,
+   "seconds": null,
+   "evidence": null,
+   "details": {}
+  },
+  {
+   "id": "connector.msgraph",
+   "requested": false,
+   "outcome": "NOT RUN",
+   "reason": "",
+   "failure_kind": null,
+   "retriable": false,
+   "seconds": null,
+   "evidence": null,
+   "details": {}
+  }
+ ],
+ "campaign": {
+  "limits": {
+   "max_model_calls": 60,
+   "max_cost_usd": 5.0,
+   "max_tokens": 1500000,
+   "max_seconds": 3600
+  },
+  "used": {
+   "model_calls": 0,
+   "tokens": 0,
+   "known_cost_usd": 0.0,
+   "unpriced_calls": 0,
+   "failed_calls": 0,
+   "seconds": 1.5
+  },
+  "cost_complete": true,
+  "runs": []
+ },
+ "cost_bounds": {
+  "prices_as_of": "2026-10",
+  "claude": {
+   "model": "claude-opus-5-5",
+   "price_known": true,
+   "max_output_tokens": 16000,
+   "worst_case_one_call_usd": 1.68,
+   "worst_case_campaign_usd": 6.68,
+   "note": "known-price cap: spending stops before a call once the cap is reached; the last call can overshoot by at most one call (<= $1.68 with 3 attempts at 16000 output and an assumed 60000 input tokens)"
+  },
+  "gemini": {
+   "model": "gemini-3.8-flash",
+   "price_known": false,
+   "max_output_tokens": 16000,
+   "worst_case_one_call_usd": null,
+   "worst_case_campaign_usd": null,
+   "note": "price unknown: NO monetary guarantee. Cost is bounded only by the call cap (60) and token cap (1500000)"
+  }
+ },
+ "summary": {
+  "infrastructure": "completed",
+  "live_evaluation": "BLOCKED",
+  "requested": 12,
+  "pass": 0,
+  "fail": 0,
+  "blocked": 12,
+  "exit_code": 1
+ }
+}

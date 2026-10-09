@@ -63,8 +63,11 @@ def _sha(p: Path) -> str:
 
 
 class Run:
-    def __init__(self, task: str, mode: str, provider: str):
+    def __init__(self, task: str, mode: str, provider: str, budget: dict[str, Any] | None = None,
+                 campaign: Any = None):
         self.task, self.mode, self.provider = task, mode, provider
+        self.budget = dict(budget or BUDGET)  # this run's limits (capped by the campaign)
+        self.campaign = campaign
         self.checks: list[dict[str, Any]] = []
         self.record: dict[str, Any] = {"task": task, "mode": mode, "provider": provider}
         self.rubric: dict[str, dict[str, Any]] = {k: {"score": None, "basis": "needs review"}
@@ -105,7 +108,7 @@ def _bindings(bs: list[SourceBinding]) -> list[dict[str, Any]]:
 def _execute(st: ProjectStore, run: Run, art_id: str, cfg: dict[str, Any],
              validate: list[str] | None = None):
     wf = _wf(st, f"{run.task}-{run.mode}", art_id, cfg, validate=validate)
-    wf.parameters = {"budget": BUDGET}
+    wf.parameters = {"budget": run.budget}
     st.save_workflow(wf)
     t0 = time.perf_counter()
     ex = Engine(st).execute(wf.id)
@@ -176,7 +179,7 @@ def _states(st: ProjectStore, art_id: str) -> dict[str, Any]:
 
 # ---------------------------------------------------------------------------- tasks
 def task_a(st: ProjectStore, out: Path, provider: str, mode: str) -> Run:
-    run = Run("A", mode, provider)
+    run = _new_run("A", mode, provider)
     photo = ingest.register_file(st, ASSETS / "coffee_photo.png", name="Cafe photograph")
     style = ingest.register_file(st, ASSETS / "stylized_mug_illustration.png",
                                  name="Stylized illustration")
@@ -244,7 +247,7 @@ ROCKET = [
 
 
 def task_b(st: ProjectStore, out: Path, provider: str, mode: str) -> Run:
-    run = Run("B", mode, provider)
+    run = _new_run("B", mode, provider)
     art, _ = create_artifact(st, name="Launch scene", adapter="blender", template="components",
                              params={"components": ROCKET})
     photo = ingest.register_file(st, ASSETS / "rocket_launch_photo.jpg", name="Launch photo")
@@ -286,7 +289,7 @@ POSTER = [
 
 
 def task_c(st: ProjectStore, out: Path, provider: str, mode: str) -> Run:
-    run = Run("C", mode, provider)
+    run = _new_run("C", mode, provider)
     art, _ = create_artifact(st, name="Poster", adapter="layered2d", template="layers",
                              params={"width": 320, "height": 400, "root_id": "poster",
                                      "layers": POSTER})
@@ -336,7 +339,7 @@ REQUIREMENT = ("# Requirement: URL slugs\n"
 
 
 def task_d(st: ProjectStore, out: Path, provider: str, mode: str) -> Run:
-    run = Run("D", mode, provider)
+    run = _new_run("D", mode, provider)
     proj = st.get_project()
     proj.settings.allowed_commands = list({*proj.settings.allowed_commands, "python -m pytest"})
     st.save_project(proj)
@@ -380,7 +383,7 @@ def task_d(st: ProjectStore, out: Path, provider: str, mode: str) -> Run:
 
 
 def task_e(st: ProjectStore, out: Path, provider: str, mode: str, video: str | None) -> Run:
-    run = Run("E", mode, provider)
+    run = _new_run("E", mode, provider)
     prov = get_provider(provider)
     paths = set(prov.pathways)
     can = any("video" in p and "frames" not in p for p in paths) and prov.live
@@ -400,7 +403,13 @@ def task_e(st: ProjectStore, out: Path, provider: str, mode: str, video: str | N
         src = ingest.register_url(st, video, name="Technique video")
     else:
         src = ingest.register_file(st, Path(video), name="Technique video")
-    ana = semsvc.analyze_source(st, src, provider)
+    from .budget import ExecutionBudget, use_budget
+    with use_budget(ExecutionBudget.from_config(run.budget)) as ab:
+        ana = semsvc.analyze_source(st, src, provider)
+    run.record["analysis_budget"] = ab.snapshot()
+    if run.campaign is not None:  # the direct analysis counts toward the campaign too
+        run.campaign.absorb(f"E/{mode} video analysis", ab.snapshot())
+        run.budget = run.campaign.run_limits(BUDGET)
     timed = [o for o in ana.observations if o.location and o.location.start_seconds is not None]
     run.record["sources"] = _sources(st, [src])
     _analyses(st, [src], run)
@@ -425,8 +434,19 @@ def task_e(st: ProjectStore, out: Path, provider: str, mode: str, video: str | N
 TASKS = {"A": task_a, "B": task_b, "C": task_c, "D": task_d}
 
 
+_CURRENT: dict[str, Any] = {}
+
+
+def _new_run(task: str, mode: str, provider: str) -> Run:
+    camp = _CURRENT.get("campaign")
+    r = Run(task, mode, provider, camp.run_limits(BUDGET) if camp else BUDGET, camp)
+    _CURRENT["last"] = r
+    return r
+
+
 def run(out: Path, provider: str = "heuristic", tasks: str = "ABCDE",
-        video: str | None = None, evaluator: str | None = None) -> dict[str, Any]:
+        video: str | None = None, evaluator: str | None = None,
+        campaign: Any = None) -> dict[str, Any]:
     out = Path(out)
     out.mkdir(parents=True, exist_ok=True)
     prov = get_provider(provider)
@@ -446,27 +466,46 @@ def run(out: Path, provider: str = "heuristic", tasks: str = "ABCDE",
         print(f"BLOCKED: {rep['blocked_by']}")
         return rep
     ws = Workspace(out / "workspace")
-    for t in tasks:
-        for mode in ("single", "iterative"):
-            _, st = ws.create_project(f"bench {t} {mode}")
-            print(f"== task {t} ({mode})", flush=True)
-            try:
-                r = task_e(st, out, provider, mode, video) if t == "E" else \
-                    TASKS[t](st, out, provider, mode)
-            except Exception as exc:  # a crash is a result too
-                r = Run(t, mode, provider)
-                r.check("task completed without exceptions", False, repr(exc))
-            d = r.dump()
-            d["verification"] = ("blocked" if d.get("blocked_by") else
-                                 "live" if d.get("live_calls") else "deterministic")
-            if d.get("blocked_by"):
-                d["passed"] = None
-            rep["runs"].append(d)
+    _CURRENT["campaign"] = campaign
+    try:
+        for t in tasks:
+            for mode in ("single", "iterative"):
+                _one(rep, ws, out, provider, t, mode, video, campaign)
+    finally:
+        _CURRENT.pop("campaign", None)
     rep["seconds"] = round(time.time() - rep.pop("started"), 1)
     rep["status"] = "live" if any(r["verification"] == "live" for r in rep["runs"]) else \
         "deterministic"
+    if campaign is not None:
+        rep["campaign"] = campaign.snapshot()
     _write(out, rep)
     return rep
+
+
+def _one(rep, ws, out, provider, t, mode, video, campaign) -> None:
+    exhausted = campaign.exhausted() if campaign is not None else None
+    if exhausted:  # never start a run the approved budget cannot cover
+        r = Run(t, mode, provider)
+        r.record["blocked_by"] = exhausted
+    else:
+        _, st = ws.create_project(f"bench {t} {mode}")
+        print(f"== task {t} ({mode})", flush=True)
+        _CURRENT.pop("last", None)
+        try:
+            r = task_e(st, out, provider, mode, video) if t == "E" else \
+                TASKS[t](st, out, provider, mode)
+        except Exception as exc:  # a crash is a result too; keep what the run recorded
+            r = _CURRENT.get("last") or _new_run(t, mode, provider)
+            r.check("task completed without exceptions", False, repr(exc))
+            r.record["exception"] = f"{type(exc).__name__}: {exc}"
+        if campaign is not None:
+            campaign.absorb(f"{t}/{mode}", r.record.get("budget"))
+    d = r.dump()
+    d["verification"] = ("blocked" if d.get("blocked_by") else
+                         "live" if d.get("live_calls") else "deterministic")
+    if d.get("blocked_by"):
+        d["passed"] = None
+    rep["runs"].append(d)
 
 
 def _write(out: Path, rep: dict[str, Any]) -> None:

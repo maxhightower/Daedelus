@@ -104,6 +104,10 @@ def main(argv: list[str] | None = None) -> int:
         from .distributed.worker import main as worker_main
 
         return worker_main(argv[1:])
+    if argv[:1] == ["live-run"]:
+        from .live_runner import main as live_main
+
+        return live_main(argv[1:])
     ap = argparse.ArgumentParser(prog="daedelus")
     ap.add_argument("--workspace", help="workspace directory (default ~/.daedelus/workspace)")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -154,6 +158,8 @@ def main(argv: list[str] | None = None) -> int:
     b21.add_argument("--provider", default="heuristic")
     b21.add_argument("--tasks", default="ABCDE")
     b21.add_argument("--video", default=None, help="video file path or public URL for task E")
+    sub.add_parser("live-run", help="V2.1.1 authoritative live verification (see --help after "
+                   "'live-run')", add_help=False)
     cl = sub.add_parser("connectors-live", help="opt-in live Microsoft/Google connector test")
     cl.add_argument("--connector", required=True, choices=["google", "msgraph"])
     cl.add_argument("--out", default="evidence/v2_1/connectors")

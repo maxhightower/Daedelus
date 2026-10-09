@@ -1,46 +1,120 @@
-# V2.1 opt-in live verification: real model APIs and real Microsoft/Google test accounts.
+# V2.1.1 authoritative live verification: real model APIs and real Microsoft/Google test
+# accounts. See docs/LIVE_AI_TESTING.md for the required GitHub settings.
 #
-# Manual trigger only (never on push or pull_request), and every secret lives in the protected
-# GitHub environment "daedelus-live" (configure required reviewers there). Untrusted code from
-# forks never runs with these secrets. Each run is bounded by the benchmark budget
-# (24 model calls / $2 per task run; see backend/daedelus/bench_v21.py) and the connector
-# harness only touches files it creates inside the designated test folder.
-#
-# Secrets (set only those you have):
-#   ANTHROPIC_API_KEY, GEMINI_API_KEY,
-#   DAEDELUS_GOOGLE_TOKEN + DAEDELUS_LIVE_GOOGLE_FOLDER (+ optional DAEDELUS_LIVE_GOOGLE_NATIVE_ID),
-#   DAEDELUS_MSGRAPH_TOKEN + DAEDELUS_LIVE_MSGRAPH_FOLDER
+# Security properties of this file (each one is load-bearing):
+# * Manual trigger only (workflow_dispatch). Never push, pull_request or pull_request_target, so
+#   code from forks or unreviewed branches cannot run with these secrets.
+# * Every dispatch input reaches the runner through an environment variable and is validated by
+#   `daedelus live-run` against fixed allowlists. No `${{ inputs.* }}` expression appears inside
+#   a `run:` script, so no input can become shell source.
+# * Inputs are validated in a first job that holds no secrets and no environment; the second job
+#   (environment "daedelus-live", where the secrets and the required reviewers live) starts only
+#   for a well-formed request.
+# * Secrets are given only to the single step that needs them, never to setup steps.
+# * No failure is swallowed: `daedelus live-run` exits nonzero unless every requested gate
+#   PASSED (a missing credential is BLOCKED and fails the job). The evidence upload runs
+#   `if: always()` but cannot change the job's result.
+# * Bounded: a campaign budget across all requested runs (calls, known-price cost, tokens, time),
+#   one live run at a time, a job timeout, short artifact retention.
 name: Live verification (opt-in)
 
 on:
   workflow_dispatch:
     inputs:
-      what:
-        description: "claude | gemini | connectors | all"
+      providers:
+        description: "model providers: none | claude | gemini | claude,gemini"
         required: true
-        default: "all"
+        default: "claude"
+      stages:
+        description: "smoke | bench | smoke,bench (the benchmark only starts after a passing smoke test)"
+        required: true
+        default: "smoke"
       tasks:
-        description: "benchmark tasks (A-E)"
+        description: "benchmark tasks, 1-5 of A B C D E, e.g. ABCD (E needs video_url)"
         required: false
-        default: "ABCDE"
-      video:
-        description: "public video URL for task E (licensed for this use)"
+        default: "ABCD"
+      video_url:
+        description: "task E: https URL of a licensed technique video on an approved host (YouTube, upload.wikimedia.org)"
         required: false
         default: ""
+      connectors:
+        description: "live connector tests: none | google | msgraph | google,msgraph"
+        required: false
+        default: "none"
+      allow_unpriced:
+        description: "allow providers whose model price is unknown (cost then bounded only by the call/token caps)"
+        type: boolean
+        required: false
+        default: false
+      max_model_calls:
+        description: "campaign cap: model calls across all runs (1-200)"
+        required: false
+        default: "60"
+      max_cost_usd:
+        description: "campaign cap: known-price cost in USD (0.01-25; see docs on uncertainty)"
+        required: false
+        default: "5"
 
-permissions: {contents: read}
+permissions:
+  contents: read
+
+concurrency:
+  group: live-verification
+  cancel-in-progress: false  # never kill a paid run halfway; queue the next one
 
 env:
   BLENDER_VERSION: "4.5.14"
   BLENDER_SERIES: "4.5"
 
 jobs:
-  live:
+  validate:
+    name: Validate the request (no secrets)
     runs-on: ubuntu-24.04
-    timeout-minutes: 90
-    environment: daedelus-live
+    timeout-minutes: 10
+    env:
+      LIVE_PROVIDERS: ${{ inputs.providers }}
+      LIVE_STAGES: ${{ inputs.stages }}
+      LIVE_TASKS: ${{ inputs.tasks }}
+      LIVE_VIDEO_URL: ${{ inputs.video_url }}
+      LIVE_CONNECTORS: ${{ inputs.connectors }}
+      LIVE_ALLOW_UNPRICED: ${{ inputs.allow_unpriced }}
+      LIVE_MAX_MODEL_CALLS: ${{ inputs.max_model_calls }}
+      LIVE_MAX_COST_USD: ${{ inputs.max_cost_usd }}
     steps:
       - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install -e backend
+      - name: Validate inputs
+        run: daedelus live-run --from-env --validate-only --out request
+
+  live:
+    name: Live gates (protected environment)
+    needs: validate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 100
+    environment: daedelus-live
+    env:
+      LIVE_PROVIDERS: ${{ inputs.providers }}
+      LIVE_STAGES: ${{ inputs.stages }}
+      LIVE_TASKS: ${{ inputs.tasks }}
+      LIVE_VIDEO_URL: ${{ inputs.video_url }}
+      LIVE_CONNECTORS: ${{ inputs.connectors }}
+      LIVE_ALLOW_UNPRICED: ${{ inputs.allow_unpriced }}
+      LIVE_MAX_MODEL_CALLS: ${{ inputs.max_model_calls }}
+      LIVE_MAX_COST_USD: ${{ inputs.max_cost_usd }}
+    steps:
+      - name: Refuse unapproved refs
+        env:
+          REF: ${{ github.ref }}
+        run: |
+          case "$REF" in
+            refs/heads/main|refs/heads/opus/*) echo "ref $REF allowed" ;;
+            *) echo "live verification runs only from main or opus/* branches (got $REF)"; exit 1 ;;
+          esac
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
       - uses: actions/setup-python@v5
         with: {python-version: "3.12"}
       - name: System packages
@@ -51,41 +125,28 @@ jobs:
       - name: Blender
         run: |
           mkdir -p ~/blender
-          curl -sSL -o /tmp/blender.tar.xz https://download.blender.org/release/Blender${BLENDER_SERIES}/blender-${BLENDER_VERSION}-linux-x64.tar.xz
+          curl -sSfL -o /tmp/blender.tar.xz "https://download.blender.org/release/Blender${BLENDER_SERIES}/blender-${BLENDER_VERSION}-linux-x64.tar.xz"
           tar xf /tmp/blender.tar.xz -C ~/blender --strip-components=1
       - run: pip install -e "backend[dev,anthropic,gemini]"
-      - name: Live Claude (benchmark + live tests)
-        if: inputs.what == 'claude' || inputs.what == 'all'
+      - name: Live gates
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          DAEDELUS_BLENDER: /home/runner/blender/blender
-          DAEDELUS_RECORD_DIR: evidence-live/fixtures/claude
-        run: |
-          daedelus bench-v21 --provider anthropic --tasks "${{ inputs.tasks }}" --out evidence-live/claude ${{ inputs.video && format('--video {0}', inputs.video) || '' }}
-          cd backend && DAEDELUS_LIVE_CLAUDE=1 DAEDELUS_LIVE_SEMANTIC=1 pytest -q -rs tests/test_live_claude.py tests/test_live_semantic.py || true
-      - name: Live Gemini (benchmark incl. video)
-        if: inputs.what == 'gemini' || inputs.what == 'all'
-        env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          DAEDELUS_BLENDER: /home/runner/blender/blender
-          DAEDELUS_RECORD_DIR: evidence-live/fixtures/gemini
-        run: daedelus bench-v21 --provider gemini --tasks "${{ inputs.tasks }}" --out evidence-live/gemini ${{ inputs.video && format('--video {0}', inputs.video) || '' }}
-      - name: Live connectors
-        if: inputs.what == 'connectors' || inputs.what == 'all'
-        env:
-          DAEDELUS_LIVE_CONNECTORS: "1"
           DAEDELUS_GOOGLE_TOKEN: ${{ secrets.DAEDELUS_GOOGLE_TOKEN }}
           DAEDELUS_LIVE_GOOGLE_FOLDER: ${{ secrets.DAEDELUS_LIVE_GOOGLE_FOLDER }}
           DAEDELUS_LIVE_GOOGLE_NATIVE_ID: ${{ secrets.DAEDELUS_LIVE_GOOGLE_NATIVE_ID }}
           DAEDELUS_MSGRAPH_TOKEN: ${{ secrets.DAEDELUS_MSGRAPH_TOKEN }}
           DAEDELUS_LIVE_MSGRAPH_FOLDER: ${{ secrets.DAEDELUS_LIVE_MSGRAPH_FOLDER }}
-        run: |
-          daedelus connectors-live --connector google --out evidence-live/connectors/google || true
-          daedelus connectors-live --connector msgraph --out evidence-live/connectors/msgraph || true
-      - uses: actions/upload-artifact@v4
+          DAEDELUS_BLENDER: /home/runner/blender/blender
+          DAEDELUS_RECORD_DIR: evidence-live/recorded_responses
+        run: daedelus live-run --from-env --out evidence-live
+      - name: Upload evidence (secrets already scrubbed by the runner)
         if: always()
+        uses: actions/upload-artifact@v4
         with:
           name: live-evidence
+          retention-days: 14
+          if-no-files-found: warn
           path: |
             evidence-live/
             !evidence-live/**/workspace/

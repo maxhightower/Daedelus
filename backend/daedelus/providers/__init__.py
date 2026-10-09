@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from .base import Plan, PlanRequest, Provider, ProviderError, ProviderOverBudget
+from .base import Plan, PlanRequest, Provider, ProviderError, ProviderOverBudget, ProviderTimeout
 
 
 def providers() -> dict[str, Provider]:
@@ -15,6 +15,12 @@ def providers() -> dict[str, Provider]:
 
     return {p.name: p for p in (HeuristicProvider(), AnthropicProvider(), GeminiProvider(),
                                 ReplayProvider())}
+
+
+def _usage_dict(usage: Any) -> dict:
+    if hasattr(usage, "model_dump"):
+        usage = usage.model_dump()
+    return dict(usage or {})
 
 
 class BudgetedProvider(Provider):
@@ -40,16 +46,30 @@ class BudgetedProvider(Provider):
 
     def _call(self, contract: str, req: Any):
         from ..budget import BudgetExceeded
+        from . import llm_common as lc
         if self.inner.live:
             try:
                 self.budget.before_call(self.inner.name, contract)
             except BudgetExceeded as exc:
                 raise ProviderOverBudget(str(exc)) from None
-        out = getattr(self.inner, contract)(req)
-        usage = getattr(out, "usage", None)
-        if hasattr(usage, "model_dump"):
-            usage = usage.model_dump()
-        usage = dict(usage or {})
+        with lc.billing() as billed:
+            try:
+                out = getattr(self.inner, contract)(req)
+            except Exception as exc:
+                if self.inner.live:
+                    for u in billed:  # responses received before the failure were billed
+                        self.budget.charge(self.inner.name, _usage_dict(u), live=True,
+                                           failed=True)
+                    if not billed and isinstance(exc, ProviderTimeout):
+                        # no response, but the server may have generated (and billed) one
+                        self.budget.charge(self.inner.name, {"calls": 1}, live=True,
+                                           failed=True)
+                raise
+        if self.inner.live and billed:
+            for u in billed:
+                self.budget.charge(self.inner.name, _usage_dict(u), live=True)
+            return out
+        usage = _usage_dict(getattr(out, "usage", None))
         if not usage.get("model"):
             usage["model"] = getattr(out, "model", None)
         if self.inner.live or usage.get("calls"):

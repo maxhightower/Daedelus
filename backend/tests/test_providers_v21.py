@@ -75,8 +75,8 @@ def test_anthropic_usage_cost_fallback_and_request_id(store):
     p = AnthropicProvider().plan(req, client=c)
     u = p.usage
     assert u["model"] == "claude-opus-5-5" and u["request_id"] == "req_1"
-    # 1000 in @ $4 + 1000 cache-read @ $0.4 + 200 out @ $20 per million tokens
-    assert u["cost_usd"] == pytest.approx(0.004 + 0.0004 + 0.004)
+    # 1000 in @ $4 + 1000 cache-read @ $0.20 (documented Opus 5.5 rate) + 200 out @ $20 / MTok
+    assert u["cost_usd"] == pytest.approx(0.004 + 0.0002 + 0.004)
     assert u["input_tokens"] == 2000 and u["cache_read_tokens"] == 1000
     # a refusal fallback served by another model is reported, and an unknown price stays
     # unknown rather than becoming zero

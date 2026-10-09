@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import base64
 import io
+import contextlib
+import contextvars
 import json
 from typing import Any
 
@@ -207,6 +209,30 @@ def revise_instructions(req: ReviseRequest) -> str:
             "\nFindings to address:\n" + json.dumps(failed, indent=1))
 
 
+# ---------------------------------------------------------------------------- billing ledger
+# Every response a provider receives is billed by the API whether or not Daedelus can use it
+# (refusals, truncated output, malformed JSON, schema violations). Providers report each
+# response here the moment it arrives; the budget wrapper charges these entries even when the
+# contract then fails, so failed calls are never free in the accounting.
+_LEDGER: "contextvars.ContextVar[list | None]" = contextvars.ContextVar("dd_billing",
+                                                                        default=None)
+
+
+def bill(usage: Any) -> None:
+    led = _LEDGER.get()
+    if led is not None:
+        led.append(usage)
+
+
+@contextlib.contextmanager
+def billing():
+    tok = _LEDGER.set([])
+    try:
+        yield _LEDGER.get()
+    finally:
+        _LEDGER.reset(tok)
+
+
 def parse_json(text: str | None) -> dict[str, Any]:
     if not text:
         raise ProviderError("model returned no content")
@@ -245,5 +271,9 @@ def record(contract: str, provider: str, model: str | None, req: Any, raw: dict[
                           .encode()).hexdigest()[:16]
     Path(d).mkdir(parents=True, exist_ok=True)
     (Path(d) / f"{contract}_{name}.json").write_text(json.dumps({
-        "contract": contract, "origin": "recorded", "provider": provider, "model": model,
+        "contract": contract, "origin": "recorded",
+        "note": "a recorded LIVE response kept as a replay fixture; replaying it is not a live call",
+        "recorded_at": __import__("time").strftime("%Y-%m-%dT%H:%M:%SZ",
+                                                   __import__("time").gmtime()),
+        "provider": provider, "model": model,
         "match": m, "response": raw, "usage": usage.model_dump()}, indent=1, default=str))

@@ -30,6 +30,8 @@ from .base import (AnalyzeRequest, EvaluateRequest, NotSupported, Plan, PlanRequ
                    ProviderError, ProviderRateLimited, ProviderTimeout, ReviseRequest)
 
 DEFAULT_MODEL = os.environ.get("DAEDELUS_GEMINI_MODEL", "gemini-3.8-flash")
+# output cap per call (thinking included); without it a reply is bounded only by the model
+MAX_TOKENS = int(os.environ.get("DAEDELUS_GEMINI_MAX_TOKENS", "16000"))
 IMAGE_MODEL = os.environ.get("DAEDELUS_GEMINI_IMAGE_MODEL", "gemini-2.5-flash-image")
 INLINE_LIMIT = 20 * 1024 * 1024  # inline request bytes; larger media goes through the Files API
 FILES_API_MAX = 2 * 1024 ** 3  # free-tier Files API limit (paid tiers allow more)
@@ -88,7 +90,8 @@ class GeminiProvider(Provider):
                 model=model, contents=parts,
                 config=types.GenerateContentConfig(system_instruction=system,
                                                    response_mime_type="application/json",
-                                                   response_json_schema=schema))
+                                                   response_json_schema=schema,
+                                                   max_output_tokens=MAX_TOKENS))
         except errors.APIError as exc:
             raise self._map_error(exc) from exc
         except httpx.TimeoutException as exc:
@@ -106,6 +109,7 @@ class GeminiProvider(Provider):
                       model=getattr(resp, "model_version", None) or model,
                       request_id=getattr(resp, "response_id", None),
                       cache_read_tokens=getattr(um, "cached_content_token_count", None))
+        lc.bill(usage)  # billed even if the response turns out unusable below
         text = getattr(resp, "text", None)
         if not text:
             fb = getattr(resp, "prompt_feedback", None)

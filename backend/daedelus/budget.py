@@ -56,6 +56,7 @@ class ExecutionBudget:
     output_tokens: int = 0
     cost_usd: float = 0.0  # known-price spend
     unpriced_calls: int = 0  # calls whose cost is unknown
+    failed_calls: int = 0  # billed calls whose response was unusable (refusal, malformed...)
     started: float = field(default_factory=time.monotonic)
     refusals: list[str] = field(default_factory=list)
     by_provider: dict[str, dict[str, Any]] = field(default_factory=dict)
@@ -94,10 +95,13 @@ class ExecutionBudget:
                 self.input_tokens + self.output_tokens >= int(lim["max_tokens"]):
             self._refuse(f"token budget exhausted; {provider}.{contract} not called")
 
-    def charge(self, provider: str, usage: dict[str, Any] | None, *, live: bool) -> None:
+    def charge(self, provider: str, usage: dict[str, Any] | None, *, live: bool,
+               failed: bool = False) -> None:
         u = usage or {}
         n = int(u.get("calls") or (1 if live else 0))
         self.calls += n
+        if failed:
+            self.failed_calls += n
         self.input_tokens += int(u.get("input_tokens") or 0)
         self.output_tokens += int(u.get("output_tokens") or 0)
         if u.get("cost_usd") is not None:
@@ -147,7 +151,8 @@ class ExecutionBudget:
             "cost": ("unknown" if self.unpriced_calls and not self.cost_usd else
                      f"${self.cost_usd:.4f}" + (f" + {self.unpriced_calls} call(s) of unknown "
                                                  "price" if self.unpriced_calls else "")),
-            "unpriced_calls": self.unpriced_calls, "seconds": round(self.elapsed(), 2)},
+            "unpriced_calls": self.unpriced_calls, "failed_calls": self.failed_calls,
+            "seconds": round(self.elapsed(), 2)},
             "by_provider": self.by_provider, "refusals": self.refusals}
 
     def as_dict(self) -> dict[str, Any]:
@@ -178,3 +183,77 @@ def call_settings() -> dict[str, Any]:
     return {"timeout": float(lim.get("call_timeout_s") or DEFAULTS["call_timeout_s"]),
             "max_retries": int(lim.get("max_retries") if lim.get("max_retries") is not None
                                else DEFAULTS["max_retries"])}
+
+
+# ---------------------------------------------------------------------------- campaign
+# A live verification campaign (several providers, tasks and modes) is bounded as a whole: each
+# run's budget is the smaller of its own limits and what is left of the campaign, and every
+# run's actual usage is absorbed afterwards. Conservative defaults; the live workflow sets them
+# explicitly.
+CAMPAIGN_DEFAULTS: dict[str, Any] = {"max_model_calls": 60, "max_cost_usd": 5.0,
+                                     "max_tokens": 1_500_000, "max_seconds": 3600}
+
+
+@dataclass
+class CampaignBudget:
+    limits: dict[str, Any] = field(default_factory=lambda: dict(CAMPAIGN_DEFAULTS))
+    calls: int = 0
+    tokens: int = 0
+    cost_usd: float = 0.0
+    unpriced_calls: int = 0
+    failed_calls: int = 0
+    started: float = field(default_factory=time.monotonic)
+    runs: list[dict[str, Any]] = field(default_factory=list)
+
+    @classmethod
+    def from_config(cls, cfg: dict[str, Any] | None) -> "CampaignBudget":
+        lim = dict(CAMPAIGN_DEFAULTS)
+        for k, v in (cfg or {}).items():
+            if k in CAMPAIGN_DEFAULTS and v is not None:
+                lim[k] = v
+        return cls(limits=lim)
+
+    def remaining(self) -> dict[str, Any]:
+        lim = self.limits
+        return {"max_model_calls": int(lim["max_model_calls"]) - self.calls,
+                "max_cost_usd": round(float(lim["max_cost_usd"]) - self.cost_usd, 6),
+                "max_tokens": int(lim["max_tokens"]) - self.tokens,
+                "max_seconds": round(float(lim["max_seconds"])
+                                     - (time.monotonic() - self.started), 1)}
+
+    def exhausted(self) -> str | None:
+        r = self.remaining()
+        for k, label in (("max_model_calls", "model calls"), ("max_cost_usd", "known-price cost"),
+                         ("max_tokens", "tokens"), ("max_seconds", "time")):
+            if r[k] <= 0:
+                return f"campaign {label} budget exhausted ({self.limits[k]})"
+        return None
+
+    def run_limits(self, per_run: dict[str, Any]) -> dict[str, Any]:
+        """The budget for the next run: per-run limits capped by what the campaign has left."""
+        out = dict(per_run)
+        for k, v in self.remaining().items():
+            if out.get(k) is None:
+                out[k] = v
+            else:
+                out[k] = min(out[k], v) if k != "max_model_calls" else min(int(out[k]), int(v))
+        return out
+
+    def absorb(self, label: str, snapshot: dict[str, Any] | None) -> None:
+        u = (snapshot or {}).get("used") or {}
+        self.calls += int(u.get("model_calls") or 0)
+        self.tokens += int(u.get("input_tokens") or 0) + int(u.get("output_tokens") or 0)
+        self.cost_usd += float(u.get("cost_usd") or 0.0)
+        self.unpriced_calls += int(u.get("unpriced_calls") or 0)
+        self.failed_calls += int(u.get("failed_calls") or 0)
+        self.runs.append({"run": label, "model_calls": int(u.get("model_calls") or 0),
+                          "cost_usd": float(u.get("cost_usd") or 0.0),
+                          "unpriced_calls": int(u.get("unpriced_calls") or 0)})
+
+    def snapshot(self) -> dict[str, Any]:
+        return {"limits": self.limits, "used": {
+            "model_calls": self.calls, "tokens": self.tokens,
+            "known_cost_usd": round(self.cost_usd, 6), "unpriced_calls": self.unpriced_calls,
+            "failed_calls": self.failed_calls,
+            "seconds": round(time.monotonic() - self.started, 1)},
+            "cost_complete": self.unpriced_calls == 0, "runs": self.runs}

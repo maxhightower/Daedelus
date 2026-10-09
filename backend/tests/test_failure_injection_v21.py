@@ -117,7 +117,14 @@ def test_model_timeout_and_rate_limit_change_nothing(store, tmp_path, hostile, e
     img, _, wf = _setup(store, tmp_path)
     hostile.behaviour = {"raise": exc}
     ex = _run_and_expect_unchanged(store, img, wf, match)
-    assert ex.budget["used"]["model_calls"] == 0  # the failed call returned no usage
+    used = ex.budget["used"]
+    if isinstance(exc, ProviderTimeout):
+        # V2.1.1: a timed-out request may still have been generated and billed server-side,
+        # so it counts as one call of unknown cost (conservative), never as free
+        assert used["model_calls"] == 1 and used["unpriced_calls"] == 1 and \
+            used["failed_calls"] == 1 and used["cost"] == "unknown"
+    else:  # a 429 is refused before any generation: not billed
+        assert used["model_calls"] == 0
 
 
 def test_invalid_model_operation_is_rejected(store, tmp_path, hostile):

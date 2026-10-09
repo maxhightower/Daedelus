@@ -21,7 +21,7 @@ dependencies = [
 anthropic = ["anthropic>=0.40"]
 gemini = ["google-genai>=1.0"]
 hosted = ["cryptography>=42"]  # deploy/hosted/handoff.py (credential sealing)
-dev = ["pytest>=8.0", "pytest-timeout>=2.3", "reportlab>=4.0"]
+dev = ["pytest>=8.0", "pytest-timeout>=2.3", "reportlab>=4.0", "pyyaml>=6.0"]
 
 [project.scripts]
 daedelus = "daedelus.cli:main"
