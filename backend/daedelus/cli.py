@@ -149,6 +149,11 @@ def main(argv: list[str] | None = None) -> int:
                      help="also run live gates with this provider (needs credentials)")
     sub.add_parser("worker", help="run a V2 execution worker (see --help after 'worker')",
                    add_help=False)
+    b21 = sub.add_parser("bench-v21", help="V2.1 creative benchmark A-E (deterministic or live)")
+    b21.add_argument("--out", default="evidence/v2_1/live_ai/deterministic")
+    b21.add_argument("--provider", default="heuristic")
+    b21.add_argument("--tasks", default="ABCDE")
+    b21.add_argument("--video", default=None, help="video file path or public URL for task E")
     d12 = sub.add_parser("demo-v12", help="V1.2 research analysis & presentation pipeline")
     d12.add_argument("--out", default="evidence/v1_2")
     r = sub.add_parser("run", help="execute a workflow")
@@ -227,6 +232,13 @@ def main(argv: list[str] | None = None) -> int:
             print(f"{d['id']}: {d['status'].upper()} ({d['verification']})"
                   + (f" - blocked by: {d['blocked_by']}" if d["blocked_by"] else ""))
         return 1 if bad else 0
+    if args.cmd == "bench-v21":
+        from .bench_v21 import run as run_bench
+
+        rep = run_bench(Path(args.out).resolve(), provider=args.provider, tasks=args.tasks,
+                        video=args.video)
+        print(f"benchmark status: {rep.get('status')}; report: {Path(args.out) / 'bench_report.md'}")
+        return 0 if rep.get("status") in ("deterministic", "live", "blocked") else 1
     if args.cmd == "demo-v12":
         from .scenarios_v12 import run as run_v12
 

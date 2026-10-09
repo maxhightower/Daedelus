@@ -1,0 +1,7 @@
+{
+ "coffee_photo.png": {"title": "Coffee cup", "author": "Rachel Michetti (courtesy of Pikolo Espresso Bar)", "source": "scikit-image sample data, skimage.data.coffee()", "license": "CC0 1.0", "notes": "real photograph; unmodified pixels re-encoded as PNG"},
+ "rocket_launch_photo.jpg": {"title": "Launch photo of DSCOVR on Falcon 9", "author": "SpaceX", "source": "https://www.flickr.com/photos/spacexphotos/16511594820 via scikit-image sample data (skimage.data.rocket())", "license": "Public domain (released by SpaceX)", "notes": "real photograph; re-encoded JPEG q90"},
+ "cat_photo.png": {"title": "Chelsea the cat", "author": "Stefan van der Walt", "source": "scikit-image sample data, skimage.data.chelsea()", "license": "CC0 1.0", "notes": "real photograph"},
+ "brick_texture.png": {"title": "Brick wall (Bricks25)", "author": "CC0Textures, transformed by scikit-image", "source": "scikit-image sample data, skimage.data.brick()", "license": "CC0 1.0", "notes": "real photographic texture, greyscale"},
+ "stylized_mug_illustration.png": {"title": "Flat stylized mug", "author": "Daedelus project (drawn procedurally for the V2.1 benchmark)", "source": "this repository", "license": "same as the repository (owner to decide; see docs/LICENSING_BRIEF.md)", "notes": "a stylized illustration authored for the benchmark, not an external asset"}
+}

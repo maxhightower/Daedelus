@@ -1,0 +1,5 @@
+spatial exit=0 seconds=123
+semantic exit=0 seconds=23
+office exit=0 seconds=127
+execution exit=0 seconds=88
+perf exit=0 seconds=19

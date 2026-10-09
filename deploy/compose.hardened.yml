@@ -1,0 +1,69 @@
+# Hardened containers (V2.1). Use on top of compose.yml:
+#
+#   python deploy/provision.py --hardened            # per-worker credentials -> deploy/secrets/
+#   docker compose -f deploy/compose.yml -f deploy/compose.hardened.yml --env-file deploy/.env up -d
+#
+# Workers: no Linux capabilities, no-new-privileges, read-only root filesystem, writable
+# tmpfs only, PID/memory/CPU limits, the seccomp profile in seccomp/worker-sandbox.json
+# (Docker's default + unprivileged user namespaces for bubblewrap) and a per-job bubblewrap
+# sandbox (no network, private filesystem, own PID namespace) that the worker verifies at
+# start and reports. Each worker has its own revocable credential (no shared token).
+# "systempaths=unconfined" lets bubblewrap mount a fresh /proc for the job's PID namespace;
+# the worker runs as uid 10001 with no capabilities, so the unmasked root-only /proc files
+# stay inaccessible to it.
+x-worker-hardening: &worker-hardening
+  read_only: true
+  cap_drop: [ALL]
+  security_opt:
+    - no-new-privileges:true
+    - seccomp=./seccomp/worker-sandbox.json
+    - systempaths=unconfined
+  pids_limit: 512
+  cpus: 2
+
+services:
+  control:
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    tmpfs: ["/tmp:size=512m"]
+    pids_limit: 512
+    mem_limit: 2g
+    environment:
+      DAEDELUS_WORKER_TOKENS: ""  # no join tokens: only provisioned worker credentials
+
+  worker-office:
+    <<: *worker-hardening
+    mem_limit: 3g
+    tmpfs: ["/tmp:size=2g"]
+    environment: &hardened-env
+      DAEDELUS_WORKER_TOKEN: ""
+      DAEDELUS_WORKER_CREDENTIAL_FILE: /run/secrets/worker_credential
+      DAEDELUS_JOB_ISOLATION: bwrap
+      DAEDELUS_REQUIRE_SANDBOX: code
+      DAEDELUS_JOB_MEMORY_MB: "2048"
+    secrets: [{source: worker_office_credential, target: worker_credential}]
+
+  worker-blender:
+    <<: *worker-hardening
+    mem_limit: 4g
+    tmpfs: ["/tmp:size=3g"]
+    environment:
+      <<: *hardened-env
+      DAEDELUS_JOB_MEMORY_MB: "3584"
+    secrets: [{source: worker_blender_credential, target: worker_credential}]
+
+  worker-code:
+    <<: *worker-hardening
+    mem_limit: 2g
+    tmpfs: ["/tmp:size=1g"]
+    environment:
+      <<: *hardened-env
+      DAEDELUS_JOB_MEMORY_MB: "1024"
+      DAEDELUS_WORKER_ALLOWED_COMMANDS: python -m pytest
+    secrets: [{source: worker_code_credential, target: worker_credential}]
+
+secrets:
+  worker_office_credential: {file: ./secrets/worker-office.cred}
+  worker_blender_credential: {file: ./secrets/worker-blender.cred}
+  worker_code_credential: {file: ./secrets/worker-code.cred}

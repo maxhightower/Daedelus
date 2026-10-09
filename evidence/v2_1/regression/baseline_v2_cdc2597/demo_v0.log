@@ -1,0 +1,51 @@
+S0 initial execution
+  [PASS] S0 initial run: execution succeeded
+  [PASS] S0 initial run: Table has a new revision
+  [PASS] S0 initial run: Background has a new revision
+  [PASS] S0 initial run: Scene manifest has a new revision
+  [PASS] S0 initial run: legs height preserved (hard constraint)
+  [PASS] S0 initial run: manifest tests executed and passed
+  [PASS] S0 initial run: manifest change has a reviewable diff
+  [PASS] S0 initial run: immediate re-run executes nothing (all units up to date)
+S1 change the leg inspiration source
+  [PASS] S1 leg source: impact: only the legs unit of the 3D agent is stale
+  [PASS] S1 leg source: execution succeeded
+  [PASS] S1 leg source: only leg components changed in the table
+  [PASS] S1 leg source: tabletop and table root untouched
+  [PASS] S1 leg source: background not rebuilt (no new revision, unit skipped)
+  [PASS] S1 leg source: manifest re-ran because an upstream revision changed
+S2 change the background inspiration
+  [PASS] S2 background: impact: only the sky unit of the 2D agent is stale
+  [PASS] S2 background: execution succeeded
+  [PASS] S2 background: table not rebuilt
+  [PASS] S2 background: only the sky layer changed
+S3 change the global style guide
+  [PASS] S3 global guideline: impact: table AND background identified as affected
+  [PASS] S3 global guideline: execution succeeded
+  [PASS] S3 global guideline: both artifacts received new revisions
+S4 change a source's role (inspiration -> reference)
+  [PASS] S4 role change: impact: only the legs unit is stale
+  [PASS] S4 role change: execution succeeded
+  [PASS] S4 role change: source media unchanged
+  [PASS] S4 role change: interpretation now uses 'reference (drive)'
+  [PASS] S4 role change: only leg components changed
+S5 conflicting hard constraints are reported, not silently resolved
+  [PASS] S5 conflict: 3D agent failed with an explicit conflict
+  [PASS] S5 conflict: table left untouched
+  [PASS] S5 conflict: downstream nodes reported as blocked
+S6 failures are reported accurately (test command not permitted)
+  [PASS] S6 failure: validation fails because tests were not permitted to run
+S7 reproduce executions from saved inputs
+  [PASS] S7 reproducibility: initial: re-plan + re-apply reproduce identical states
+  [PASS] S7 reproducibility: leg change: re-plan + re-apply reproduce identical states
+  [PASS] S7 reproducibility: guideline change: re-plan + re-apply reproduce identical states
+S8 persistence and workflow round trip
+  [PASS] S8 persistence: project reopens with sources, bindings and artifacts
+  [PASS] S8 persistence: workflow export/import is lossless
+  [PASS] S8 persistence: saving creates a new workflow version
+  [PASS] S8 persistence: at least one source carries multiple independent bindings
+  [PASS] S8 persistence: editable native file exists for Table
+  [PASS] S8 persistence: editable native file exists for Background
+  [PASS] S8 persistence: editable native file exists for Scene manifest
+
+PASS: 40/40 checks; report: /tmp/base/out-demo/demo_report.md

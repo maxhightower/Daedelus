@@ -30,18 +30,25 @@ PRICES: dict[str, tuple[float, float]] = {
 }
 
 
-def cost_usd(model: str | None, input_tokens: int | None, output_tokens: int | None) -> float | None:
+def cost_usd(model: str | None, input_tokens: int | None, output_tokens: int | None,
+             cache_read: int | None = None, cache_write: int | None = None) -> float | None:
+    """Known list prices only; cache writes at 1.25x and cache reads at 0.1x input price."""
     p = PRICES.get(model or "")
     if p is None or input_tokens is None or output_tokens is None:
         return None
-    return round(input_tokens / 1e6 * p[0] + output_tokens / 1e6 * p[1], 6)
+    return round((input_tokens + 1.25 * (cache_write or 0) + 0.1 * (cache_read or 0)) / 1e6
+                 * p[0] + output_tokens / 1e6 * p[1], 6)
 
 
 def make_usage(model: str | None, input_tokens: int | None, output_tokens: int | None,
-               started: float) -> Usage:
-    return Usage(calls=1, input_tokens=input_tokens, output_tokens=output_tokens,
+               started: float, cache_read: int | None = None,
+               cache_write: int | None = None) -> Usage:
+    total_in = None if input_tokens is None else \
+        input_tokens + (cache_read or 0) + (cache_write or 0)
+    return Usage(calls=1, input_tokens=total_in, output_tokens=output_tokens,
                  latency_ms=round((time.perf_counter() - started) * 1000, 1),
-                 cost_usd=cost_usd(model, input_tokens, output_tokens))
+                 cost_usd=cost_usd(model, input_tokens, output_tokens, cache_read, cache_write),
+                 model=model, cache_read_tokens=cache_read)
 
 
 def seg_key(segment: SourceSegment | None) -> str:

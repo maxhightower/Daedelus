@@ -1,0 +1,110 @@
+board: 152 items, 200 stored + 52 derived connections (setup 1.9s)
+{
+ "environment": {
+  "browser": "Chromium (Playwright) headless",
+  "gl": "SwiftShader software rendering, no GPU",
+  "viewport": "1680x1000"
+ },
+ "board": {
+  "items": 152,
+  "stored_connections": 200,
+  "derived_connections": 52,
+  "total_connections": 252,
+  "setup_seconds": 1.9
+ },
+ "measurements": {
+  "open_project_to_board_ms": 1381,
+  "fit_all": {
+   "nodes": 152,
+   "edges": 252,
+   "elements": 3538,
+   "heapMB": 34.6,
+   "zoom": "11% · far"
+  },
+  "pan_far": {
+   "long_tasks": {
+    "count": 0,
+    "total_ms": 0,
+    "max_ms": 0
+   },
+   "duration_ms": 2115,
+   "frame_interval_ms": {
+    "n": 126,
+    "mean": 16.67,
+    "p50": 16.7,
+    "p95": 16.7,
+    "max": 16.8
+   },
+   "frames_over_50ms": 0
+  },
+  "zoom_cycle": {
+   "long_tasks": {
+    "count": 3,
+    "total_ms": 187,
+    "max_ms": 71
+   },
+   "duration_ms": 2950,
+   "frame_interval_ms": {
+    "n": 166,
+    "mean": 17.57,
+    "p50": 16.7,
+    "p95": 16.8,
+    "max": 66.6
+   },
+   "frames_over_50ms": 2,
+   "dom_when_zoomed_in": {
+    "nodes": 2,
+    "edges": 0,
+    "elements": 730,
+    "heapMB": 43.4,
+    "zoom": "400% · close"
+   }
+  },
+  "close_view": {
+   "nodes": 4,
+   "edges": 52,
+   "elements": 1045,
+   "heapMB": 35.5,
+   "zoom": "192% · close"
+  },
+  "pan_close": {
+   "long_tasks": {
+    "count": 0,
+    "total_ms": 0,
+    "max_ms": 0
+   },
+   "duration_ms": 2677,
+   "frame_interval_ms": {
+    "n": 160,
+    "mean": 16.67,
+    "p50": 16.7,
+    "p95": 16.7,
+    "max": 16.8
+   },
+   "frames_over_50ms": 0,
+   "dom_after": {
+    "nodes": 0,
+    "edges": 0,
+    "elements": 689,
+    "heapMB": 37.2,
+    "zoom": "192% · close"
+   }
+  },
+  "drag": {
+   "moved": true,
+   "drag_gesture_ms": 1146,
+   "release_to_saved_ms": 574,
+   "note": "release_to_saved includes the 500 ms autosave debounce"
+  },
+  "save_payload_kb": 111,
+  "final": {
+   "nodes": 1,
+   "edges": 32,
+   "elements": 812,
+   "heapMB": 31.7,
+   "zoom": "337% · close"
+  }
+ },
+ "page_errors": []
+}
+PERF RUN COMPLETE

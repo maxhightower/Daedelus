@@ -23,10 +23,17 @@ from ..semantic.models import Evaluation, SourceAnalysis
 from ..semantic.service import make_usage
 from . import llm_common as lc
 from .base import (AnalyzeRequest, EvaluateRequest, NotSupported, Plan, PlanRequest, Provider,
-                   ProviderError, ReviseRequest)
+                   ProviderError, ProviderRateLimited, ProviderTimeout, ReviseRequest)
 
+# V2.1 compatibility audit (2026-10): model ids, adaptive thinking, effort, structured output
+# via output_config.format and server-side refusal fallbacks checked against the current
+# Claude API. Everything is configurable without code changes.
 DEFAULT_MODEL = os.environ.get("DAEDELUS_CLAUDE_MODEL", "claude-opus-5-5")
+EFFORT = os.environ.get("DAEDELUS_CLAUDE_EFFORT", "medium")  # Opus 5.5 default; set explicitly
+MAX_TOKENS = int(os.environ.get("DAEDELUS_CLAUDE_MAX_TOKENS", "16000"))
+FALLBACKS = os.environ.get("DAEDELUS_CLAUDE_FALLBACKS", "default")  # "off" disables
 MAX_IMAGES = 6
+PDF_MAX_BYTES = 23 * 1024 * 1024  # 32 MB request limit after base64 (+33%) and the prompt
 
 SYSTEM = """You are the planning agent inside Daedelus, a multimodal creation studio.
 You receive ONE unit of work: a target (a whole artifact or one component of it), the
@@ -170,24 +177,41 @@ class AnthropicProvider(Provider):
 
     # ------------------------------------------------------------------ transport
     def _call(self, *, system: str, content: list[dict[str, Any]], schema: dict[str, Any],
-              model: str, client: Any = None, max_tokens: int = 16000):
+              model: str, client: Any = None, max_tokens: int | None = None):
         import anthropic
 
-        client = client or anthropic.Anthropic()
+        from ..budget import call_settings
+        if client is None:
+            cs = call_settings()
+            client = anthropic.Anthropic(timeout=cs["timeout"], max_retries=cs["max_retries"])
         started = time.perf_counter()
+        kw: dict[str, Any] = {}
+        if FALLBACKS != "off":
+            kw.update(betas=["server-side-fallback-2026-07-01"], fallbacks=FALLBACKS)
         try:
             resp = client.beta.messages.create(
-                model=model, max_tokens=max_tokens, system=system,
+                model=model, max_tokens=max_tokens or MAX_TOKENS, system=system,
                 messages=[{"role": "user", "content": content}],
                 thinking={"type": "adaptive"},
-                output_config={"effort": "medium",
+                output_config={"effort": EFFORT,
                                "format": {"type": "json_schema", "schema": schema}},
-                betas=["server-side-fallback-2026-07-01"],
-                fallbacks="default",
-            )
+                **kw)
+        except anthropic.APITimeoutError as exc:
+            raise ProviderTimeout(f"Anthropic API timed out: {exc}") from exc
+        except anthropic.RateLimitError as exc:
+            ra = None
+            try:
+                ra = float(exc.response.headers.get("retry-after"))
+            except (TypeError, ValueError, AttributeError):
+                pass
+            raise ProviderRateLimited(f"Anthropic API rate limit (429): {exc.message}",
+                                      retry_after=ra) from exc
         except anthropic.APIConnectionError as exc:
             raise ProviderError(f"Anthropic API unreachable: {exc}") from exc
         except anthropic.APIStatusError as exc:
+            if exc.status_code == 529:
+                raise ProviderRateLimited(f"Anthropic API overloaded (529): {exc.message}") \
+                    from exc
             raise ProviderError(f"Anthropic API error {exc.status_code}: {exc.message}") from exc
         if resp.stop_reason == "refusal":
             cat = getattr(getattr(resp, "stop_details", None), "category", None)
@@ -196,9 +220,15 @@ class AnthropicProvider(Provider):
             raise ProviderError("response truncated (max_tokens reached)")
         text = next((b.text for b in resp.content if getattr(b, "type", "") == "text"), None)
         usage = getattr(resp, "usage", None)
-        used_model = getattr(resp, "model", model)
+        used_model = getattr(resp, "model", None) or model
         u = make_usage(used_model, getattr(usage, "input_tokens", None),
-                       getattr(usage, "output_tokens", None), started)
+                       getattr(usage, "output_tokens", None), started,
+                       cache_read=getattr(usage, "cache_read_input_tokens", None),
+                       cache_write=getattr(usage, "cache_creation_input_tokens", None))
+        u.request_id = getattr(resp, "_request_id", None)
+        fb = [b for b in resp.content if getattr(b, "type", "") == "fallback"]
+        if fb or used_model != model:
+            u.fallback_from = model
         return lc.parse_json(text), u, used_model
 
     # ------------------------------------------------------------------ analyze
@@ -217,6 +247,9 @@ class AnthropicProvider(Provider):
             content.append({"type": "image", "source": {"type": "base64",
                                                         "media_type": "image/png", "data": data}})
         elif mt == "pdf" and req.file_path:
+            if os.path.getsize(req.file_path) > PDF_MAX_BYTES:
+                raise NotSupported(f"PDF is larger than {PDF_MAX_BYTES // 2**20} MB, the most "
+                                   "that fits a Claude request after encoding")
             with open(req.file_path, "rb") as f:
                 data = base64.standard_b64encode(f.read()).decode("ascii")
             content.append({"type": "document", "source": {

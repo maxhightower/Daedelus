@@ -475,6 +475,8 @@ class Execution(_Model):
     error: str | None = None
     selected_nodes: list[str] | None = None
     replay_of: str | None = None
+    # V2.1: limits applied to this execution and what it consumed (budget.py)
+    budget: dict[str, Any] = Field(default_factory=dict)
 
     def run(self, node_id: str) -> NodeRun:
         return next(r for r in self.node_runs if r.node_id == node_id)

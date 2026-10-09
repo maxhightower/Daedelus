@@ -191,3 +191,24 @@ def path_source_refusal(p) -> str | None:
     if not any(rp == r or r in rp.parents for r in roots):
         return "path is outside DAEDELUS_PATH_SOURCE_ROOTS"
     return None
+
+
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    """Response headers for browser-facing deployments (V2.1).
+
+    ``Referrer-Policy: no-referrer`` keeps ticket URLs out of Referer headers; HSTS is sent
+    only over HTTPS (or behind a TLS proxy) so plain loopback development is unaffected."""
+
+    async def dispatch(self, request: Request, call_next):
+        resp = await call_next(request)
+        h = resp.headers
+        h.setdefault("X-Content-Type-Options", "nosniff")
+        h.setdefault("Referrer-Policy", "no-referrer")
+        h.setdefault("X-Frame-Options", "DENY")
+        h.setdefault("Cross-Origin-Opener-Policy", "same-origin")
+        if request.url.scheme == "https" or request.headers.get("x-forwarded-proto") == "https":
+            h.setdefault("Strict-Transport-Security", "max-age=31536000")
+        if request.url.path.startswith("/api/") and \
+                h.get("content-type", "").startswith("application/json"):
+            h.setdefault("Cache-Control", "no-store")  # API data, not files/previews
+        return resp

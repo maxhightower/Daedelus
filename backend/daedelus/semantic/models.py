@@ -68,16 +68,34 @@ class Usage(BaseModel):
     output_tokens: int | None = None
     latency_ms: float | None = None
     cost_usd: float | None = None  # None = provider/model price unknown
+    # V2.1 provenance of a live call (absent on deterministic/replayed results)
+    model: str | None = None
+    request_id: str | None = None
+    fallback_from: str | None = None  # the requested model when another one served the call
+    cache_read_tokens: int | None = None
+    unpriced_calls: int = 0  # calls included above whose price is unknown (cost not zero!)
 
     def add(self, other: "Usage") -> "Usage":
         def s(a, b):
             return None if a is None and b is None else (a or 0) + (b or 0)
 
+        def unpriced(u: "Usage") -> int:
+            return u.calls if u.cost_usd is None else u.unpriced_calls
+
         return Usage(calls=self.calls + other.calls,
                      input_tokens=s(self.input_tokens, other.input_tokens),
                      output_tokens=s(self.output_tokens, other.output_tokens),
                      latency_ms=s(self.latency_ms, other.latency_ms),
-                     cost_usd=s(self.cost_usd, other.cost_usd))
+                     cost_usd=s(self.cost_usd, other.cost_usd),
+                     unpriced_calls=unpriced(self) + unpriced(other))
+
+    @property
+    def cost_label(self) -> str:
+        if self.calls and self.cost_usd is None:
+            return "unknown"
+        base = f"${(self.cost_usd or 0):.4f}"
+        return base + (f" + {self.unpriced_calls} call(s) of unknown price"
+                       if self.unpriced_calls else "")
 
 
 class SourceAnalysis(BaseModel):

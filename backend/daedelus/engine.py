@@ -49,7 +49,9 @@ from .models import (
     now_iso,
 )
 from .nodes import NODE_TYPES, compatible
+from .budget import BudgetExceeded, ExecutionBudget, use_budget
 from .providers import PlanRequest, ProviderError, get_provider, providers
+from .providers.base import Plan
 from .providers.base import EvaluateRequest, ReviseRequest
 from .distributed import remote
 from .distributed.service import get_cluster
@@ -226,6 +228,7 @@ class Engine:
         self.store = store
         self._cancel: set[str] = set()
         self._run_lock = threading.RLock()
+        self._budgets: dict[str, ExecutionBudget] = {}
 
     # -- public API ---------------------------------------------------------
     def start(self, workflow_id: str, *, version: int | None = None, mode: str = "incremental",
@@ -269,9 +272,17 @@ class Engine:
                         restore_tree(ckpt, native_path(self.store, art))
                         nr.logs.append(f"{now_iso()} restored checkpoint after interruption")
                 nr.status = RunStatus.pending
+                # V2.1: keep the plans already obtained (a model call costs money and need not
+                # give the same answer twice); they are reused if the unit is unchanged
+                plans = {u.unit: {"fingerprint": u.fingerprint, "plan": u.plan}
+                         for u in nr.units if u.plan and u.status != RunStatus.failed}
+                if plans:
+                    nr.outputs = {**(nr.outputs or {}), "resume_plans": plans}
                 nr.units = []
                 nr.logs.append(f"{now_iso()} control plane restarted while this node ran; "
-                               "resuming (remote jobs are reused by idempotency key)")
+                               "resuming (remote jobs are reused by idempotency key"
+                               + (f"; {len(plans)} recorded plan(s) kept" if plans else "")
+                               + ")")
             self.store.save_execution(ex)
             out.append(ex.id)
         return out
@@ -295,7 +306,44 @@ class Engine:
         self.store.save_execution(ex)
         order = topo_order(wf)
         nodes = {n.id: n for n in wf.nodes}
+        bud = ExecutionBudget.from_config((wf.parameters or {}).get("budget"))
+        if ex.budget.get("used"):  # resumed after a restart: keep counting from where it was
+            u = ex.budget["used"]
+            bud.calls, bud.input_tokens = u.get("model_calls", 0), u.get("input_tokens", 0)
+            bud.output_tokens, bud.cost_usd = u.get("output_tokens", 0), u.get("cost_usd", 0.0)
+            bud.unpriced_calls = u.get("unpriced_calls", 0)
+            bud.started -= float(u.get("seconds") or 0)
+        self._budgets[ex.id] = bud
         try:
+            with use_budget(bud):
+                self._run_nodes(ex, wf, order, nodes, bud)
+        except ExecutionPaused:
+            ex.budget = bud.snapshot()
+            ex.status = RunStatus.waiting_approval
+            self.store.save_execution(ex)
+            return ex
+        except NodeFailure as exc:
+            if str(exc) == "cancelled":
+                ex.status = RunStatus.cancelled
+                for r in ex.node_runs:
+                    if r.status in (RunStatus.pending, RunStatus.running):
+                        r.status = RunStatus.cancelled
+        finally:
+            self._budgets.pop(ex.id, None)
+        ex.budget = bud.snapshot()
+        statuses = {r.status for r in ex.node_runs}
+        if ex.status != RunStatus.cancelled:
+            ex.status = RunStatus.failed if statuses & {RunStatus.failed, RunStatus.blocked} \
+                else RunStatus.succeeded
+            failed = [r for r in ex.node_runs if r.status == RunStatus.failed]
+            if failed:
+                ex.error = "; ".join(f"{r.node_id}: {r.error}" for r in failed)
+        ex.finished_at = now_iso()
+        self.store.save_execution(ex)
+        return ex
+
+    def _run_nodes(self, ex, wf, order, nodes, bud) -> None:
+        if True:
             for nid in order:
                 if ex.id in self._cancel:
                     raise NodeFailure("cancelled")
@@ -318,27 +366,16 @@ class Engine:
                     nr.error = f"blocked by failed upstream node(s): {bad}"
                     self.store.save_execution(ex)
                     continue
+                try:
+                    bud.check_time()
+                except BudgetExceeded as exc:
+                    nr.status = RunStatus.failed
+                    nr.error = f"execution budget: {exc}"
+                    self.store.save_execution(ex)
+                    continue
                 self._run_node(ex, wf, nodes[nid])
-        except ExecutionPaused:
-            ex.status = RunStatus.waiting_approval
-            self.store.save_execution(ex)
-            return ex
-        except NodeFailure as exc:
-            if str(exc) == "cancelled":
-                ex.status = RunStatus.cancelled
-                for r in ex.node_runs:
-                    if r.status in (RunStatus.pending, RunStatus.running):
-                        r.status = RunStatus.cancelled
-        statuses = {r.status for r in ex.node_runs}
-        if ex.status != RunStatus.cancelled:
-            ex.status = RunStatus.failed if statuses & {RunStatus.failed, RunStatus.blocked} \
-                else RunStatus.succeeded
-            failed = [r for r in ex.node_runs if r.status == RunStatus.failed]
-            if failed:
-                ex.error = "; ".join(f"{r.node_id}: {r.error}" for r in failed)
-        ex.finished_at = now_iso()
-        self.store.save_execution(ex)
-        return ex
+                ex.budget = bud.snapshot()
+                self.store.save_execution(ex)
 
     def execute(self, workflow_id: str, **kw: Any) -> Execution:
         ex = self.start(workflow_id, **kw)
@@ -801,8 +838,15 @@ class Engine:
                     source_extracts=self._source_extracts(info["ctx"], adapter))
                 (self.store.execution_dir(ex.id) / f"plan_request_{node.id}_"
                  f"{_h(info['unit'])[:10]}.json").write_text(req.model_dump_json(indent=1))
+                kept = ((nr.outputs or {}).get("resume_plans") or {}).get(info["unit"])
                 try:
-                    plan = provider.plan(req)
+                    if kept and kept["fingerprint"] == info["fingerprint"]:
+                        plan = Plan(**kept["plan"])
+                        plan.notes.append("reused the plan recorded before the control-plane "
+                                          "restart (no new model call)")
+                        self._log(ex, nr, f"reusing the recorded plan for {info['unit']}")
+                    else:
+                        plan = provider.plan(req)
                 except ProviderError as exc:
                     ur.status = RunStatus.failed
                     ur.error = str(exc)
@@ -829,6 +873,8 @@ class Engine:
                                            "units": unit_infos}}
                 raise ExecutionPaused()
 
+        if nr.outputs and nr.outputs.get("resume_plans"):
+            nr.outputs = {k: v for k, v in nr.outputs.items() if k != "resume_plans"}
         self._apply_units(ex, wf, node, nr, cfg, art, adapter, planned, unit_infos)
         if (cfg.get("loop") or {}).get("enabled"):
             self._agent_loop(ex, wf, node, nr, cfg, art.id, adapter, provider, planned,
@@ -918,6 +964,9 @@ class Engine:
         loop = {"max_iterations": 3, "max_seconds": 900, "max_calls": 24, "max_cost_usd": 5.0,
                 "evaluator": "", "evaluator_model": "", "criteria": [],
                 **(cfg.get("loop") or {})}
+        from .budget import current as current_budget
+        if current_budget() is not None:  # the workflow budget caps the node's own setting
+            loop["max_iterations"] = current_budget().iterations_cap(loop["max_iterations"])
         evaluator = get_provider(loop.get("evaluator") or provider.name)
         started = time.monotonic()
         usage = Usage()

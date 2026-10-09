@@ -253,6 +253,7 @@ def create_app(workspace_root: str | Path | None = None,
     app.add_middleware(CORSMiddleware, allow_origins=sec.cors_origins(), allow_methods=["*"],
                        allow_headers=["*"])
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=sec.allowed_hosts())
+    app.add_middleware(sec.SecurityHeadersMiddleware)
     app.include_router(build_cluster_router())
 
     def _publish_execution(st: ProjectStore, e) -> None:

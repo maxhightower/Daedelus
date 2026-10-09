@@ -101,6 +101,22 @@ class NotSupported(ProviderError):
     """The provider does not implement this contract (or this media pathway)."""
 
 
+class ProviderTimeout(ProviderError):
+    """The model API did not answer within the call timeout (after the SDK's retries)."""
+
+
+class ProviderRateLimited(ProviderError):
+    """The model API refused the call for rate/quota reasons (after the SDK's retries)."""
+
+    def __init__(self, msg: str, retry_after: float | None = None):
+        super().__init__(msg)
+        self.retry_after = retry_after
+
+
+class ProviderOverBudget(ProviderError):
+    """The execution budget does not allow this call; nothing was sent to the provider."""
+
+
 class Provider(ABC):
     name = "provider"
     description = ""

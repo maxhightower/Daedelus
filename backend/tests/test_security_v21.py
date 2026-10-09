@@ -405,6 +405,8 @@ def test_manifest_structure_checks_and_modes(tmp_path):
             cas.materialize(Manifest(files=files), bs, tmp_path / "o1")
     m = Manifest(files={"suid": _fe(bs, b"s", 0o4777), "exe": _fe(bs, b"e", 0o775)})
     cas.materialize(m, bs, tmp_path / "o2")
+    if os.name == "nt":
+        return  # POSIX permission bits do not exist on Windows
     assert (tmp_path / "o2" / "suid").stat().st_mode & 0o7777 == 0o755
     assert (tmp_path / "o2" / "exe").stat().st_mode & 0o7777 == 0o755
     m = Manifest(files={"plain": _fe(bs, b"p", 0o666)})
@@ -554,11 +556,17 @@ def test_process_sandbox_strips_secrets_and_limits_resources(tmp_path, monkeypat
     rep = sb.probe()
     assert rep["verified"]
     c = rep["controls"]
-    assert c["no_secrets_in_env"] and c["rlimit_memory"] and c["no_core_dumps"]
+    assert c["no_secrets_in_env"]
+    if os.name != "nt":  # Windows has no POSIX rlimits: the probe reports them as absent
+        assert c["rlimit_memory"] and c["no_core_dumps"]
+    else:
+        assert not c["rlimit_memory"]
     # the process profile does not claim what it cannot do
     assert rep["profile"] == "process"
 
 
+@pytest.mark.skipif(os.name == "nt", reason="POSIX rlimits; Windows workers have no per-job "
+                    "memory limit (documented in SECURITY_MODEL.md)")
 def test_process_sandbox_enforces_memory_limit(tmp_path):
     from daedelus.distributed.sandbox import Limits, Sandbox
     sb = Sandbox(tmp_path, "process", limits=Limits(memory_mb=256))

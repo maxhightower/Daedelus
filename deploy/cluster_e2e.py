@@ -1,6 +1,11 @@
-"""V2 container end-to-end: control plane + Blender/Office/code workers via docker compose.
+"""V2/V2.1 container end-to-end: control plane + Blender/Office/code workers via compose.
 
     python deploy/cluster_e2e.py --env-file deploy/.env --out evidence/v2/cluster [--no-build]
+    python deploy/cluster_e2e.py ... --hardened [--tls]        # V2.1 topology + S9-S11
+
+``--hardened`` adds compose.hardened.yml (per-worker credentials, no capabilities, read-only
+root, seccomp, bubblewrap job sandbox); ``--tls`` adds compose.tls.yml (Caddy TLS edge with a
+private CA; the control plane is reachable only through it; hosted profile).
 
 Everything runs on ONE Docker host (a CI runner or a cloud container). This verifies the
 distributed protocol between containers on separate networks; it is NOT a hosted multi-machine
@@ -20,6 +25,14 @@ Scenarios
      apply job is reused through its idempotency key (not recomputed).
   S8 security: API token required, worker endpoints reject bad tokens, SSRF guard refuses
      internal URLs.
+  S9 (V2.1, --hardened) worker identity: distinct provisioned credentials; forged credential
+     and join token refused; a worker revoked mid-job stops, its job completes elsewhere.
+  S10 (V2.1, --hardened) isolation: container controls (capabilities, no-new-privileges,
+     seccomp, read-only root, limits) and the per-job sandbox verified from inside; repository
+     tests that try to escape (network, credentials, other jobs, system files) are contained;
+     a memory bomb fails the job, not the worker.
+  S11 (V2.1, --tls) transport: only HTTPS is exposed; certificates verified; a worker with
+     the wrong CA cannot register; SSE streams through the proxy; Secure session cookies.
 """
 
 from __future__ import annotations
@@ -40,9 +53,13 @@ ASSETS = ROOT / "backend" / "daedelus" / "demo_assets" / "v12"
 
 
 class Run:
-    def __init__(self, out: Path, env_file: Path):
+    def __init__(self, out: Path, env_file: Path, hardened: bool = False, tls: bool = False):
         self.out = out
         self.env_file = env_file
+        self.hardened = hardened
+        self.tls = tls
+        self.files = ["compose.yml"] + (["compose.hardened.yml"] if hardened else []) + \
+            (["compose.tls.yml"] if tls else [])
         self.checks: list[dict] = []
         self.scenario = "setup"
         self.metrics: dict = {}
@@ -50,7 +67,15 @@ class Run:
                    if "=" in line and not line.lstrip().startswith("#"))
         self.token = env["DAEDELUS_API_TOKENS"].split(",")[0].split(":")[0]
         self.port = int(env.get("DAEDELUS_PORT", "8765"))
-        self.c = httpx.Client(base_url=f"http://127.0.0.1:{self.port}", timeout=600,
+        if tls:
+            import ssl
+            self.port = int(env.get("DAEDELUS_TLS_PORT", "8443"))
+            self.base = f"https://localhost:{self.port}"
+            self.verify = ssl.create_default_context(cafile=str(ROOT / "deploy/tls/ca.crt"))
+        else:
+            self.base = f"http://127.0.0.1:{self.port}"
+            self.verify = True
+        self.c = httpx.Client(base_url=self.base, timeout=600, verify=self.verify,
                               headers={"Authorization": f"Bearer {self.token}"})
 
     def check(self, name: str, ok, detail="") -> bool:
@@ -61,8 +86,10 @@ class Run:
         return bool(ok)
 
     def dc(self, *args: str, check: bool = True, capture: bool = True) -> str:
-        cmd = ["docker", "compose", "-f", str(ROOT / "deploy" / "compose.yml"), "--env-file",
-               str(self.env_file), *args]
+        cmd = ["docker", "compose"]
+        for f in self.files:
+            cmd += ["-f", str(ROOT / "deploy" / f)]
+        cmd += ["--env-file", str(self.env_file), *args]
         r = subprocess.run(cmd, capture_output=capture, text=True)
         if check and r.returncode != 0:
             raise RuntimeError(f"{' '.join(args)} failed: {(r.stderr or '')[-2000:]}")
@@ -143,9 +170,14 @@ def s1_topology(r: Run):
                  "import socket,sys\ntry:\n socket.create_connection(('1.1.1.1',443),3);"
                  "print('reachable')\nexcept OSError as e: print('blocked', e)", check=False)
     r.check("workers cannot reach the internet", "blocked" in probe, probe)
-    ports = r.docker("port", r.dc("ps", "-q", "control").strip())
-    r.check("published port binds to 127.0.0.1 only", ports.strip() and all(
+    front = "edge" if r.tls else "control"
+    ports = r.docker("port", r.dc("ps", "-q", front).strip())
+    r.check(f"published port ({front}) binds to 127.0.0.1 only", ports.strip() and all(
         "127.0.0.1" in line for line in ports.strip().splitlines()), ports)
+    if r.tls:
+        cports = r.docker("port", r.dc("ps", "-q", "control").strip(), check=False)
+        r.check("the control plane itself publishes no port (TLS edge only)",
+                cports.strip() == "", cports)
     ws = r.wait_workers({"blender", "spreadsheet", "document", "presentation", "code"})
     r.check("Blender, Office and code workers registered", ws, r.workers())
     r.dump("workers.json", r.workers())
@@ -305,10 +337,17 @@ def s4_code(r: Run):
             "not executed" in rep2 and pwned == "no", (rep2[:600], pwned))
 
 
-def _slow_worker(r: Run, name: str, fault: str) -> str:
+def _slow_worker(r: Run, name: str, fault: str, cred: str | None = None) -> str:
     r.docker("rm", "-f", name, check=False)
+    extra = []
+    if r.hardened:  # every extra worker gets its own identity
+        if cred is None:
+            cred = r.c.post("/api/cluster/credentials", json={
+                "name": name, "adapters": ["spreadsheet", "document", "presentation"]}
+            ).json()["credential"]
+        extra = ["-e", f"DAEDELUS_WORKER_CREDENTIAL={cred}"]
     r.dc("run", "-d", "--name", name, "-e", f"DAEDELUS_WORKER_FAULT={fault}",
-         "-e", f"DAEDELUS_WORKER_NAME={name}", "worker-office")
+         "-e", f"DAEDELUS_WORKER_NAME={name}", *extra, "worker-office")
     t0 = time.time()
     while time.time() - t0 < 120:
         if any(w["name"] == name and w["alive"] for w in r.workers()):
@@ -441,12 +480,13 @@ def s7_restart(r: Run):
 
 def s8_security(r: Run):
     r.scenario = "S8 security"
-    anon = httpx.Client(base_url=f"http://127.0.0.1:{r.port}", timeout=30)
+    anon = httpx.Client(base_url=r.base, timeout=30, verify=r.verify)
     r.check("API rejects requests without a token",
             anon.get("/api/projects").status_code == 401)
     r.check("worker endpoint rejects a bad worker token", anon.post(
         "/api/cluster/workers", json={"name": "x"},
-        headers={"Authorization": "Bearer not-a-worker-token-123"}).status_code == 401)
+        headers={"Authorization": "Bearer not-a-worker-token-123"}).status_code in
+        ((401, 403) if r.hardened else (401,)))
     r.check("Host header outside the allowlist is rejected (DNS rebinding)", anon.get(
         "/api/health", headers={"Host": "attacker.example"}).status_code == 400)
     pid = r.project("ssrf", "local")
@@ -463,6 +503,251 @@ def s8_security(r: Run):
     r.dump("audit_tail.json", aud[-300:])
 
 
+# ---------------------------------------------------------------------------- V2.1 scenarios
+def s9_identity(r: Run):
+    r.scenario = "S9 worker identity"
+    ws = [w for w in r.workers() if w["alive"]]
+    r.check("every worker registered with its own provisioned credential",
+            ws and all(w.get("credential_kind") == "provisioned" for w in ws) and
+            len({w["id"] for w in ws}) == len(ws), [(w["name"], w["id"],
+                                                    w.get("credential_kind")) for w in ws])
+    anon = httpx.Client(base_url=r.base, timeout=30, verify=r.verify)
+    forged = "ddw1.wkr_000000000000." + "A" * 43
+    r.check("a forged worker credential cannot register", anon.post(
+        "/api/cluster/workers", json={"name": "forged", "adapters": ["code"]},
+        headers={"Authorization": f"Bearer {forged}"}).status_code == 401)
+    env = dict(line.split("=", 1) for line in r.env_file.read_text().splitlines()
+               if "=" in line and not line.lstrip().startswith("#"))
+    join = env.get("DAEDELUS_WORKER_TOKEN", "")
+    if join:
+        code = anon.post("/api/cluster/workers", json={"name": "joiner"},
+                         headers={"Authorization": f"Bearer {join}"}).status_code
+        r.check("the old shared join token no longer enrols workers", code in (401, 403), code)
+    # revoke a worker while it holds a job
+    r.dc("stop", "worker-office")
+    rec = r.c.post("/api/cluster/credentials", json={
+        "name": "rogue", "adapters": ["spreadsheet", "document", "presentation"]}).json()
+    _slow_worker(r, "rogue", "slow:40", cred=rec["credential"])
+    pid = r.project("revoke")
+    res: dict = {}
+    t = _bg_create(r, pid, res)
+    job = _leased_by(r, pid, "rogue")
+    r.check("the soon-to-be-revoked worker leased the job", job)
+    rv = r.c.post(f"/api/cluster/credentials/{rec['id']}/revoke",
+                  json={"reason": "cluster e2e S9"}).json()
+    r.check("revocation revoked the worker's lease", job and job["id"] in rv.get(
+        "leases_revoked", []), rv)
+    code = subprocess.run(["docker", "wait", "rogue"], capture_output=True, text=True,
+                          timeout=120).stdout.strip()
+    r.check("the revoked worker stopped (exit code 3)", code == "3", code)
+    r.dc("start", "worker-office")
+    t.join(timeout=600)
+    r.check("the job completed on a legitimate worker",
+            res.get("r") is not None and res["r"].status_code == 200,
+            res.get("r") and res["r"].text)
+    jobs = r.c.get(f"/api/projects/{pid}/jobs").json()
+    r.check("nothing was accepted from the revoked worker",
+            jobs and all(j["state"] == "succeeded" and j["worker_id"] != rec["id"]
+                         for j in jobs), jobs)
+    aud = r.c.get("/api/cluster/audit?n=3000").json()
+    r.check("revocation audited", any(a["action"] == "worker_revoked" and
+                                      a["target"] == rec["id"] for a in aud))
+    r.dump("identity_workers.json", r.workers())
+    r.docker("rm", "-f", "rogue", check=False)
+
+
+ESCAPE_TESTS = {
+    "test_escape.py": """import os, socket, pathlib, pytest
+
+MARKERS = ("TOKEN", "SECRET", "PASSWORD", "CREDENTIAL", "API_KEY", "PRIVATE")
+
+
+def _connect(host, port):
+    socket.create_connection((host, port), timeout=3).close()
+
+
+@pytest.mark.parametrize("host,port", [("1.1.1.1", 443), ("control", 8765),
+                                       ("control.daedelus.internal", 8443)])
+def test_no_network(host, port):
+    with pytest.raises(OSError):
+        _connect(host, port)
+
+
+def test_worker_credential_not_visible():
+    p = pathlib.Path("/run/secrets/worker_credential")
+    with pytest.raises(OSError):
+        p.read_text()
+
+
+def test_no_secrets_in_environment():
+    assert not [k for k in os.environ if any(m in k.upper() for m in MARKERS)]
+
+
+def test_cannot_modify_system_files():
+    with pytest.raises(OSError):
+        open("/opt/venv/pwned", "w").write("x")
+
+
+def test_cannot_see_worker_processes():
+    assert len([d for d in os.listdir("/proc") if d.isdigit()]) <= 6
+
+
+def test_cannot_see_other_jobs_or_blob_cache():
+    work = pathlib.Path(os.environ.get("DAEDELUS_WORKER_DIR", "/tmp/daedelus-worker"))
+    here = pathlib.Path.cwd()
+    visible = [p for p in work.iterdir()] if work.exists() else []
+    assert all(p == here or p in here.parents or here in p.parents for p in visible), visible
+""",
+}
+
+
+def _code_validation(r: Run, pid: str, name: str, files: dict) -> tuple[dict, str]:
+    a = r.c.post(f"/api/projects/{pid}/artifacts", json={
+        "name": name, "adapter": "code", "template": "files", "params": {"files": files},
+        "metadata": {"test_command": "python -m pytest -q"}})
+    a.raise_for_status()
+    aid = a.json()["artifact"]["id"]
+    wf = r.c.post(f"/api/projects/{pid}/workflows", json={"name": name, "nodes": [
+        {"id": "a", "type": "artifact", "label": "a", "config": {"artifact_id": aid}},
+        {"id": "v", "type": "validate", "label": "v", "config": {"checks": ["tests"],
+                                                                 "fail_on_error": False}}],
+        "edges": [{"id": "e", "source": "a", "source_port": "artifact", "target": "v",
+                   "target_port": "revision"}]}).json()
+    ex = r.wait_execution(pid, r.c.post(f"/api/projects/{pid}/workflows/{wf['id']}/execute",
+                                        json={}).json()["id"])
+    return ex, json.dumps(ex["node_runs"][-1].get("outputs", {}))
+
+
+def s10_isolation(r: Run):
+    r.scenario = "S10 isolation"
+    report = {}
+    for svc in ("worker-office", "worker-blender", "worker-code"):
+        cid = r.dc("ps", "-q", svc).strip()
+        info = json.loads(r.docker("inspect", cid))[0]["HostConfig"]
+        st = r.dc("exec", "-T", svc, "python", "-c",
+                  "import json;s=dict(l.split(':',1) for l in open('/proc/1/status') if ':' in l);"
+                  "print(json.dumps({k:s[k].strip() for k in ('Uid','CapEff','NoNewPrivs',"
+                  "'Seccomp')}))", check=False)
+        try:
+            proc = json.loads(st.strip().splitlines()[-1])
+        except Exception:
+            proc = {"error": st[-300:]}
+        report[svc] = {"ReadonlyRootfs": info.get("ReadonlyRootfs"), "CapDrop": info.get("CapDrop"),
+                       "SecurityOpt": info.get("SecurityOpt"), "PidsLimit": info.get("PidsLimit"),
+                       "Memory": info.get("Memory"), "NanoCpus": info.get("NanoCpus"),
+                       "proc1": proc}
+        ok = (info.get("ReadonlyRootfs") and "ALL" in (info.get("CapDrop") or []) and
+              any("no-new-privileges" in x for x in info.get("SecurityOpt") or []) and
+              any(x.startswith("seccomp") for x in info.get("SecurityOpt") or []) and
+              (info.get("PidsLimit") or 0) > 0 and (info.get("Memory") or 0) > 0 and
+              proc.get("CapEff") == "0000000000000000" and proc.get("NoNewPrivs") == "1" and
+              proc.get("Seccomp") == "2" and not proc.get("Uid", "0").startswith("0"))
+        r.check(f"{svc}: non-root, no capabilities, no-new-privileges, seccomp filter, "
+                "read-only root, PID and memory limits (inspected and seen from /proc)", ok,
+                report[svc])
+    for w in r.workers():
+        if not w["alive"]:
+            continue
+        iso = w.get("isolation") or {}
+        c = iso.get("controls") or {}
+        r.check(f"worker {w['name']}: per-job bubblewrap sandbox verified by its self-test",
+                iso.get("profile") == "bwrap" and iso.get("verified") and all(
+                    c.get(k) for k in ("network_isolated", "private_job_dir", "read_only_root",
+                                       "pid_namespace", "no_secrets_in_env",
+                                       "capabilities_dropped", "no_new_privs")), iso)
+        report[f"sandbox:{w['name']}"] = iso
+    pid = r.project("escape")
+    ex, rep = _code_validation(r, pid, "escape", ESCAPE_TESTS)
+    r.check("repository tests that try to escape the sandbox all find it closed "
+            "(network, credentials, environment, system files, processes, other jobs)",
+            ex["status"] == "succeeded" and "8 passed" in rep and " failed" not in rep,
+            rep[:1500])
+    report["escape_validation"] = rep[:4000]
+    ex2, rep2 = _code_validation(r, pid, "membomb", {
+        "test_mem.py": "def test_allocate_3gb():\n    b = bytearray(3 * 1024 ** 3)\n"
+                       "    assert len(b)\n"})
+    r.check("a memory bomb fails the job's tests, not the worker",
+            "MemoryError" in rep2 or "Killed" in rep2 or "failed" in rep2, rep2[:800])
+    ws = r.wait_workers({"code"}, timeout=60)
+    r.check("the code worker is still alive after the memory bomb", ws)
+    r.dump("isolation_report.json", report)
+
+
+def s11_tls(r: Run):
+    r.scenario = "S11 TLS"
+    import ssl
+    ok = httpx.get(f"{r.base}/api/health", verify=r.verify, timeout=20)
+    r.check("HTTPS with the deployment CA verifies and serves the API", ok.status_code == 200)
+    r.check("HSTS header present", "strict-transport-security" in ok.headers, dict(ok.headers))
+    try:
+        httpx.get(f"{r.base}/api/health", timeout=20,
+                  verify=ssl.create_default_context())
+        bad = "connected without the private CA"
+    except httpx.ConnectError as exc:
+        bad = str(exc)
+    r.check("a client without the deployment CA refuses the connection",
+            "CERTIFICATE_VERIFY_FAILED" in bad or "certificate" in bad.lower(), bad)
+    try:
+        httpx.get("http://127.0.0.1:8765/api/health", timeout=5)
+        plain = "plaintext control plane reachable"
+    except httpx.HTTPError as exc:
+        plain = f"refused: {type(exc).__name__}"
+    r.check("no plaintext control-plane endpoint on the host", plain.startswith("refused"),
+            plain)
+    probe = r.dc("exec", "-T", "worker-office", "python", "-c",
+                 "import socket\ntry:\n socket.create_connection(('control',8765),3);"
+                 "print('reachable')\nexcept OSError as e: print('blocked', e)", check=False)
+    r.check("workers cannot reach the control plane's plaintext port", "blocked" in probe, probe)
+    ws = [w for w in r.workers() if w["alive"]]
+    r.check("workers registered over HTTPS through the edge", ws)
+    # a worker trusting the wrong CA cannot connect
+    from provision import make_pki
+    wrong = ROOT / "deploy" / "tls" / "wrong"
+    if not (wrong / "ca.crt").exists():
+        make_pki(wrong)
+    rec = r.c.post("/api/cluster/credentials", json={
+        "name": "wrong-ca", "adapters": ["spreadsheet"]}).json()
+    r.docker("rm", "-f", "wrong-ca", check=False)
+    r.dc("run", "-d", "--name", "wrong-ca", "-v", f"{wrong / 'ca.crt'}:/etc/wrong-ca.crt:ro",
+         "-e", "DAEDELUS_CONTROL_CA=/etc/wrong-ca.crt",
+         "-e", f"DAEDELUS_WORKER_CREDENTIAL={rec['credential']}",
+         "-e", "DAEDELUS_WORKER_NAME=wrong-ca", "worker-office")
+    time.sleep(12)
+    logs = r.docker("logs", "wrong-ca", check=False) + subprocess.run(
+        ["docker", "logs", "wrong-ca"], capture_output=True, text=True).stderr
+    r.check("a worker with the wrong CA fails certificate verification and never registers",
+            "CERTIFICATE_VERIFY_FAILED" in logs and not any(
+                w["name"] == "wrong-ca" for w in r.workers()), logs[-600:])
+    r.docker("rm", "-f", "wrong-ca", check=False)
+    s = r.c.post("/api/auth/session").headers.get("set-cookie", "")
+    r.check("browser session cookie is Secure, HttpOnly and SameSite=Strict (hosted profile)",
+            "Secure" in s and "HttpOnly" in s and "strict" in s.lower(), s)
+    # server-sent events stream through the proxy without buffering
+    pid = r.project("sse-tls")
+    got: list[tuple[float, str]] = []
+    t0 = time.time()
+
+    def listen():
+        with httpx.stream("GET", f"{r.base}/api/projects/{pid}/events?since=0", timeout=120,
+                          verify=r.verify,
+                          headers={"Authorization": f"Bearer {r.token}"}) as resp:
+            for line in resp.iter_lines():
+                if line.startswith("event: "):
+                    got.append((round(time.time() - t0, 2), line[7:]))
+                if any(k == "published" for _, k in got):
+                    return
+    th = threading.Thread(target=listen, daemon=True)
+    th.start()
+    time.sleep(1)
+    r.c.post(f"/api/projects/{pid}/artifacts", json={
+        "name": "B", "adapter": "spreadsheet", "template": "blank", "params": {}})
+    th.join(timeout=120)
+    first = next((t for t, k in got if k == "queued"), None)
+    r.check("job events stream to the client through the TLS proxy as they happen",
+            first is not None and first < 15 and any(k == "published" for _, k in got), got)
+    r.metrics["sse_first_event_seconds_via_tls"] = first
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--env-file", default=str(ROOT / "deploy" / ".env"))
@@ -470,13 +755,25 @@ def main() -> int:
     ap.add_argument("--no-build", action="store_true")
     ap.add_argument("--keep", action="store_true", help="leave the cluster running")
     ap.add_argument("--only", default="")
+    ap.add_argument("--hardened", action="store_true", help="V2.1 hardened containers + S9/S10")
+    ap.add_argument("--tls", action="store_true", help="V2.1 TLS edge + S11 (needs --hardened)")
     a = ap.parse_args()
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
-    r = Run(out, Path(a.env_file))
+    sys.path.insert(0, str(ROOT / "deploy"))
+    from provision import make_pki, provision_credentials
+    if a.tls and not (ROOT / "deploy" / "tls" / "server.crt").exists():
+        make_pki(ROOT / "deploy" / "tls")
+    if a.hardened:
+        for w in ("worker-office", "worker-blender", "worker-code"):
+            (ROOT / "deploy" / "secrets" / f"{w}.cred").touch()
+    r = Run(out, Path(a.env_file), hardened=a.hardened, tls=a.tls)
     t0 = time.time()
     try:
         r.dc("down", "-v", "--remove-orphans", check=False)
+        if a.hardened:
+            ids = provision_credentials(r.env_file, r.files)
+            r.metrics["provisioned_credentials"] = sorted(ids)
         try:
             r.dc("up", "-d", *([] if a.no_build else ["--build"]), "--wait", capture=False)
             up = True
@@ -486,6 +783,10 @@ def main() -> int:
         r.check("compose stack healthy", up and r.wait_health())
         steps = [s1_topology, s2_blender, s3_office, s4_code, s5_worker_crash, s6_partition,
                  s7_restart, s8_security]
+        if a.hardened:
+            steps += [s9_identity, s10_isolation]
+        if a.tls:
+            steps += [s11_tls]
         for fn in (steps if up else []):
             if a.only and a.only not in fn.__name__:
                 continue
@@ -502,9 +803,11 @@ def main() -> int:
     rep = {"seconds": round(time.time() - t0, 1), "passed": not failed,
            "checks": r.checks, "metrics": r.metrics,
            "scope": "single Docker host: control plane and workers as containers on separate "
-                    "networks; not a hosted multi-machine deployment; no GPU"}
+                    "networks; not a hosted multi-machine deployment; no GPU",
+           "topology": r.files}
     r.dump("cluster_e2e_report.json", rep)
-    lines = ["# V2 container end-to-end", "", rep["scope"], "",
+    lines = ["# Container end-to-end", "", rep["scope"], "",
+             "Compose files: " + ", ".join(r.files), "",
              f"Result: **{'PASSED' if not failed else 'FAILED'}** "
              f"({len(r.checks) - len(failed)}/{len(r.checks)}), {rep['seconds']} s", ""]
     sc = None

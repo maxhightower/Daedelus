@@ -1,0 +1,19 @@
+{
+ "provider": "gemini",
+ "provider_live": true,
+ "provider_available": false,
+ "provider_detail": "no Gemini credentials in the environment (GEMINI_API_KEY / GOOGLE_API_KEY, or Vertex AI configuration)",
+ "budget_per_run": {
+  "max_model_calls": 24,
+  "max_cost_usd": 2.0,
+  "max_tokens": 600000,
+  "max_seconds": 900,
+  "max_iterations": 3,
+  "call_timeout_s": 180,
+  "max_retries": 2
+ },
+ "runs": [],
+ "started": 1791514307.076062,
+ "status": "blocked",
+ "blocked_by": "live provider 'gemini' unavailable: no Gemini credentials in the environment (GEMINI_API_KEY / GOOGLE_API_KEY, or Vertex AI configuration). Required: GEMINI_API_KEY / GOOGLE_API_KEY (or Vertex AI settings) and the google-genai SDK"
+}

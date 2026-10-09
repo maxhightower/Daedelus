@@ -1,0 +1,81 @@
+# TLS edge (V2.1). Use on top of compose.yml and compose.hardened.yml:
+#
+#   python deploy/provision.py --hardened --tls      # private CA + server cert -> deploy/tls/
+#   docker compose -f deploy/compose.yml -f deploy/compose.hardened.yml -f deploy/compose.tls.yml \
+#       --env-file deploy/.env up -d
+#
+# Topology:
+#   host 127.0.0.1:8443 --HTTPS--> edge (Caddy) --HTTP, private network--> control:8765
+#   workers --HTTPS (cert verified against the private CA)--> edge
+# The control plane publishes no port and is not on the workers' network: the only way in
+# is TLS through the edge. The control plane runs the hosted profile (HTTPS-only cookies,
+# no join-token enrolment, no server-side path sources, code jobs only in a verified sandbox).
+# For a public deployment replace the private CA with a real certificate (see
+# docs/CLOUD_DEPLOYMENT.md; Caddy can obtain one automatically).
+networks:
+  backend:
+    internal: true
+
+services:
+  control:
+    ports: !reset []
+    networks: !override [backend]
+    environment:
+      DAEDELUS_PROFILE: hosted
+      DAEDELUS_BEHIND_TLS_PROXY: "1"
+      DAEDELUS_FORWARDED_ALLOW_IPS: "*"  # only the edge can reach this network
+      DAEDELUS_ALLOWED_HOSTS: localhost,127.0.0.1,control.daedelus.internal,control
+    command: ["daedelus", "serve", "--host", "0.0.0.0", "--port", "8765", "--behind-tls-proxy"]
+
+  edge:
+    image: ${CADDY_IMAGE:-caddy:2.8}
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    tmpfs: ["/data", "/config"]
+    volumes:
+      - ./tls/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./tls/server.crt:/certs/server.crt:ro
+      - ./tls/server.key:/certs/server.key:ro
+    ports: ["127.0.0.1:${DAEDELUS_TLS_PORT:-8443}:8443"]
+    networks:
+      edge: {}
+      backend: {}
+      jobs:
+        aliases: [control.daedelus.internal]
+    depends_on: {control: {condition: service_healthy}}
+    restart: unless-stopped
+
+  worker-office:
+    environment:
+      DAEDELUS_CONTROL_URL: https://control.daedelus.internal:8443
+      DAEDELUS_CONTROL_CA: /run/secrets/control_ca
+      DAEDELUS_ALLOW_INSECURE_CONTROL: ""
+      DAEDELUS_PROFILE: hosted
+    secrets:
+      - {source: worker_office_credential, target: worker_credential}
+      - {source: control_ca, target: control_ca}
+    depends_on: !override {edge: {condition: service_started}}
+  worker-blender:
+    environment:
+      DAEDELUS_CONTROL_URL: https://control.daedelus.internal:8443
+      DAEDELUS_CONTROL_CA: /run/secrets/control_ca
+      DAEDELUS_ALLOW_INSECURE_CONTROL: ""
+      DAEDELUS_PROFILE: hosted
+    secrets:
+      - {source: worker_blender_credential, target: worker_credential}
+      - {source: control_ca, target: control_ca}
+    depends_on: !override {edge: {condition: service_started}}
+  worker-code:
+    environment:
+      DAEDELUS_CONTROL_URL: https://control.daedelus.internal:8443
+      DAEDELUS_CONTROL_CA: /run/secrets/control_ca
+      DAEDELUS_ALLOW_INSECURE_CONTROL: ""
+      DAEDELUS_PROFILE: hosted
+    secrets:
+      - {source: worker_code_credential, target: worker_credential}
+      - {source: control_ca, target: control_ca}
+    depends_on: !override {edge: {condition: service_started}}
+
+secrets:
+  control_ca: {file: ./tls/ca.crt}

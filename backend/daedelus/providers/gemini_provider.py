@@ -5,8 +5,14 @@ documentation) public YouTube URLs as ``file_data`` parts, so a video source can
 for steps, operations and narration with timestamps - not just sampled frames.
 
 Credentials come from the environment (``GEMINI_API_KEY`` / ``GOOGLE_API_KEY``, or Vertex AI
-settings understood by the SDK). The model id is configurable; the default must be checked
-against Google's current model list when credentials are available.
+settings understood by the SDK). The model id is configurable.
+
+V2.1 compatibility audit (2026-10, from Google's published model and deprecation pages; not yet
+confirmed by a live call here): ``gemini-2.5-flash`` - the V1.1 default - is scheduled to shut
+down on 2026-10-16, so the default is now the stable ``gemini-3.8-flash``. Videos above ~20 MB
+go through the Files API (upload, wait until ACTIVE, reference by URI, delete afterwards);
+smaller ones are sent inline. Public YouTube URLs are passed as ``file_data``. The image
+generation model id was not re-verified and is configurable.
 """
 
 from __future__ import annotations
@@ -21,11 +27,12 @@ from . import llm_common as lc
 from .anthropic_provider import SYSTEM as PLAN_SYSTEM
 from .anthropic_provider import _plan_schema, _to_plan, build_prompt
 from .base import (AnalyzeRequest, EvaluateRequest, NotSupported, Plan, PlanRequest, Provider,
-                   ProviderError, ReviseRequest)
+                   ProviderError, ProviderRateLimited, ProviderTimeout, ReviseRequest)
 
-DEFAULT_MODEL = os.environ.get("DAEDELUS_GEMINI_MODEL", "gemini-2.5-flash")
+DEFAULT_MODEL = os.environ.get("DAEDELUS_GEMINI_MODEL", "gemini-3.8-flash")
 IMAGE_MODEL = os.environ.get("DAEDELUS_GEMINI_IMAGE_MODEL", "gemini-2.5-flash-image")
-INLINE_LIMIT = 18 * 1024 * 1024  # inline request bytes; larger media needs the Files API
+INLINE_LIMIT = 20 * 1024 * 1024  # inline request bytes; larger media goes through the Files API
+FILES_API_MAX = 2 * 1024 ** 3  # free-tier Files API limit (paid tiers allow more)
 
 
 class GeminiProvider(Provider):
@@ -48,12 +55,33 @@ class GeminiProvider(Provider):
         return True, "credentials detected"
 
     # ------------------------------------------------------------------ transport
+    @staticmethod
+    def _client():
+        from google import genai
+        from google.genai import types
+
+        from ..budget import call_settings
+        cs = call_settings()
+        return genai.Client(http_options=types.HttpOptions(
+            timeout=int(cs["timeout"] * 1000),
+            retry_options=types.HttpRetryOptions(attempts=cs["max_retries"] + 1)))
+
+    @staticmethod
+    def _map_error(exc: Exception) -> ProviderError:
+        code = getattr(exc, "code", None)
+        status = str(getattr(exc, "status", "") or "")
+        if code == 429 or status == "RESOURCE_EXHAUSTED":
+            return ProviderRateLimited(f"Gemini API rate limit/quota (429): {exc}")
+        if code in (408, 504) or status == "DEADLINE_EXCEEDED":
+            return ProviderTimeout(f"Gemini API timed out: {exc}")
+        return ProviderError(f"Gemini API error {code or ''}: {exc}")
+
     def _call(self, *, system: str, parts: list[Any], schema: dict[str, Any], model: str,
               client: Any = None):
-        from google import genai
+        import httpx
         from google.genai import errors, types
 
-        client = client or genai.Client()
+        client = client or self._client()
         started = time.perf_counter()
         try:
             resp = client.models.generate_content(
@@ -62,8 +90,10 @@ class GeminiProvider(Provider):
                                                    response_mime_type="application/json",
                                                    response_json_schema=schema))
         except errors.APIError as exc:
-            raise ProviderError(f"Gemini API error {getattr(exc, 'code', '')}: {exc}") from exc
-        except OSError as exc:
+            raise self._map_error(exc) from exc
+        except httpx.TimeoutException as exc:
+            raise ProviderTimeout(f"Gemini API timed out: {exc}") from exc
+        except (OSError, httpx.HTTPError) as exc:
             raise ProviderError(f"Gemini API unreachable: {exc}") from exc
         um = getattr(resp, "usage_metadata", None)
         out_tokens = None
@@ -72,12 +102,32 @@ class GeminiProvider(Provider):
         usage = Usage(calls=1, input_tokens=getattr(um, "prompt_token_count", None),
                       output_tokens=out_tokens,
                       latency_ms=round((time.perf_counter() - started) * 1000, 1),
-                      cost_usd=None)  # Gemini prices are not tracked here: reported unknown
+                      cost_usd=None,  # Gemini prices are not verified here: reported unknown
+                      model=getattr(resp, "model_version", None) or model,
+                      request_id=getattr(resp, "response_id", None),
+                      cache_read_tokens=getattr(um, "cached_content_token_count", None))
         text = getattr(resp, "text", None)
         if not text:
             fb = getattr(resp, "prompt_feedback", None)
             raise ProviderError(f"Gemini returned no content (prompt_feedback={fb})")
         return lc.parse_json(text), usage, getattr(resp, "model_version", None) or model
+
+    _uploaded: list[Any] = []
+
+    def _upload(self, client: Any, path: str, mime: str, wait_s: float | None = None):
+        """Files API upload; waits (bounded) until the file is ACTIVE."""
+        from ..budget import call_settings
+        f = client.files.upload(file=path, config={"mime_type": mime})
+        self._uploaded = [*self._uploaded, f]
+        deadline = time.time() + (wait_s or min(call_settings()["timeout"], 600))
+        while str(getattr(f, "state", "ACTIVE")).split(".")[-1] == "PROCESSING":
+            if time.time() > deadline:
+                raise ProviderTimeout("Gemini Files API: upload still processing at deadline")
+            time.sleep(2)
+            f = client.files.get(name=f.name)
+        if str(getattr(f, "state", "ACTIVE")).split(".")[-1] == "FAILED":
+            raise ProviderError("Gemini Files API: the uploaded video failed processing")
+        return f
 
     @staticmethod
     def _image_part(path: str):
@@ -113,14 +163,21 @@ class GeminiProvider(Provider):
                 parts.append(types.Part.from_bytes(data=f.read(), mime_type="application/pdf"))
         elif mt == "video" and req.file_path:
             size = os.path.getsize(req.file_path)
-            if size > INLINE_LIMIT:
-                raise NotSupported(f"video is {size} bytes; inline limit is {INLINE_LIMIT} "
-                                   "(Files API upload not implemented)")
             mime = req.source.mime_type or mimetypes.guess_type(req.file_path)[0] or "video/mp4"
-            with open(req.file_path, "rb") as f:
-                parts.append(types.Part(inline_data=types.Blob(data=f.read(), mime_type=mime),
+            if size > INLINE_LIMIT:
+                if size > FILES_API_MAX:
+                    raise NotSupported(f"video is {size} bytes; above the Files API limit")
+                client = client or self._client()
+                uploaded = self._upload(client, req.file_path, mime)
+                parts.append(types.Part(file_data=types.FileData(file_uri=uploaded.uri,
+                                                                 mime_type=mime),
                                         video_metadata=video_meta))
-            pathway = "video_file"
+                pathway = "video_file (Files API)"
+            else:
+                with open(req.file_path, "rb") as f:
+                    parts.append(types.Part(inline_data=types.Blob(data=f.read(), mime_type=mime),
+                                            video_metadata=video_meta))
+                pathway = "video_file"
         elif mt == "video_url" and req.url:
             parts.append(types.Part(file_data=types.FileData(file_uri=req.url),
                                     video_metadata=video_meta))
@@ -131,8 +188,17 @@ class GeminiProvider(Provider):
         else:
             raise NotSupported(f"Gemini pathway unavailable for {mt} (no file, URL or text)")
         parts.append("Analyse this source. Details: " + lc.analysis_brief(req))
-        data, usage, used = self._call(system=lc.ANALYZE_SYSTEM, parts=parts,
-                                       schema=lc.ANALYSIS_SCHEMA, model=model, client=client)
+        try:
+            data, usage, used = self._call(system=lc.ANALYZE_SYSTEM, parts=parts,
+                                           schema=lc.ANALYSIS_SCHEMA, model=model,
+                                           client=client)
+        finally:
+            for f in self._uploaded:  # do not leave user media in the provider's storage
+                try:
+                    client.files.delete(name=f.name)
+                except Exception:
+                    pass
+            self._uploaded = []
         lc.record("analyze", self.name, used, req, data, usage)
         return lc.to_analysis(data, req, provider=self.name, model=used, pathway=pathway,
                               usage=usage)
@@ -183,7 +249,7 @@ class GeminiProvider(Provider):
         from google import genai
         from google.genai import errors, types
 
-        client = client or genai.Client()
+        client = client or self._client()
         parts: list[Any] = [self._image_part(r) for r in (references or [])] + [prompt]
         started = time.perf_counter()
         try:
