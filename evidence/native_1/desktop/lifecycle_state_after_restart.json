@@ -1,0 +1,182 @@
+{
+ "project": {
+  "id": "prj_efa5aa27af5c",
+  "name": "N1 Lifecycle Test"
+ },
+ "boards": [
+  {
+   "id": "board_ce1f28681964",
+   "name": "Main board",
+   "items": [
+    {
+     "id": "item_04b2654ab8ac",
+     "type": "source",
+     "ref": {
+      "kind": "source",
+      "id": "src_6979459b444f",
+      "workflow_id": null,
+      "node_id": null
+     },
+     "position": {
+      "x": 1210.0,
+      "y": 0.0
+     },
+     "size": {
+      "width": 240.0,
+      "height": 210.0
+     }
+    },
+    {
+     "id": "item_05a3484a172d",
+     "type": "frame",
+     "ref": {
+      "kind": "frame",
+      "id": null,
+      "workflow_id": null,
+      "node_id": null
+     },
+     "position": {
+      "x": 0.0,
+      "y": 0.0
+     },
+     "size": {
+      "width": 500.0,
+      "height": 450.0
+     }
+    },
+    {
+     "id": "item_35f2c2e8c948",
+     "type": "operation",
+     "ref": {
+      "kind": "workflow_node",
+      "id": null,
+      "workflow_id": "wf_2eaa51d3c606",
+      "node_id": "agent_gqfcm9cff69"
+     },
+     "position": {
+      "x": 885.0,
+      "y": 605.0
+     },
+     "size": {
+      "width": 230.0,
+      "height": 150.0
+     }
+    },
+    {
+     "id": "item_93584dd5d216",
+     "type": "frame",
+     "ref": {
+      "kind": "frame",
+      "id": null,
+      "workflow_id": null,
+      "node_id": null
+     },
+     "position": {
+      "x": 0.0,
+      "y": 510.0
+     },
+     "size": {
+      "width": 1130.0,
+      "height": 320.0
+     }
+    },
+    {
+     "id": "item_c932d0f2664c",
+     "type": "operation",
+     "ref": {
+      "kind": "workflow_node",
+      "id": null,
+      "workflow_id": "wf_2eaa51d3c606",
+      "node_id": "artifact_z12l80yennm"
+     },
+     "position": {
+      "x": 885.0,
+      "y": 415.0
+     },
+     "size": {
+      "width": 230.0,
+      "height": 150.0
+     }
+    },
+    {
+     "id": "item_dfefee599d7b",
+     "type": "source",
+     "ref": {
+      "kind": "source",
+      "id": "src_2101034f048e",
+      "workflow_id": null,
+      "node_id": null
+     },
+     "position": {
+      "x": 1446.0,
+      "y": -113.0
+     },
+     "size": {
+      "width": 435.0,
+      "height": 409.0
+     }
+    }
+   ],
+   "connections": 0,
+   "saved_views": 0
+  }
+ ],
+ "sources": [
+  {
+   "id": "src_6979459b444f",
+   "name": "style_guideline.txt",
+   "media_type": "text",
+   "sha256": null
+  },
+  {
+   "id": "src_2101034f048e",
+   "name": "tapered_legs_reference.png",
+   "media_type": "image",
+   "sha256": null
+  }
+ ],
+ "bindings": [
+  {
+   "id": "bind_1f3ed872cfe1",
+   "source": "src_2101034f048e",
+   "role": "reference",
+   "target": {
+    "scope": "component",
+    "artifact_id": "art_a80799f0e273",
+    "component_id": "legs"
+   },
+   "aspects": [
+    "geometry",
+    "proportions"
+   ]
+  }
+ ],
+ "artifacts": [
+  {
+   "id": "art_a80799f0e273",
+   "name": "Table",
+   "adapter": "blender",
+   "head": "rev_a399ebc6c7bb",
+   "components": [
+    "leg_bl",
+    "leg_br",
+    "leg_fl",
+    "leg_fr",
+    "legs",
+    "table",
+    "tabletop"
+   ]
+  }
+ ],
+ "workflows": [
+  {
+   "id": "wf_2eaa51d3c606",
+   "name": "Board workflow",
+   "version": 3,
+   "nodes": [
+    "agent",
+    "artifact"
+   ]
+  }
+ ]
+}

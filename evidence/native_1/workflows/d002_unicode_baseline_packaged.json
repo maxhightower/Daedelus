@@ -1,0 +1,71 @@
+{
+ "project": "prj_5da5bd7f485c",
+ "execution": "exe_ac70a7a24989",
+ "status": "failed",
+ "node_runs": [
+  {
+   "node": "sources",
+   "type": "sources",
+   "status": "succeeded",
+   "error": "",
+   "unit_errors": []
+  },
+  {
+   "node": "table",
+   "type": "artifact",
+   "status": "succeeded",
+   "error": "",
+   "unit_errors": []
+  },
+  {
+   "node": "background",
+   "type": "artifact",
+   "status": "succeeded",
+   "error": "",
+   "unit_errors": []
+  },
+  {
+   "node": "manifest",
+   "type": "artifact",
+   "status": "succeeded",
+   "error": "",
+   "unit_errors": []
+  },
+  {
+   "node": "model_agent",
+   "type": "agent",
+   "status": "failed",
+   "error": "UnicodeEncodeError: 'charmap' codec can't encode character '\\u2192' in position 17238: character maps to <undefined>",
+   "unit_errors": []
+  },
+  {
+   "node": "paint_agent",
+   "type": "agent",
+   "status": "failed",
+   "error": "UnicodeEncodeError: 'charmap' codec can't encode character '\\u2192' in position 10466: character maps to <undefined>",
+   "unit_errors": []
+  },
+  {
+   "node": "code_agent",
+   "type": "agent",
+   "status": "blocked",
+   "error": "blocked by failed upstream node(s): ['model_agent', 'paint_agent']",
+   "unit_errors": []
+  },
+  {
+   "node": "validate",
+   "type": "validate",
+   "status": "blocked",
+   "error": "blocked by failed upstream node(s): ['model_agent', 'paint_agent', 'code_agent']",
+   "unit_errors": []
+  },
+  {
+   "node": "export",
+   "type": "export",
+   "status": "blocked",
+   "error": "blocked by failed upstream node(s): ['model_agent', 'paint_agent']",
+   "unit_errors": []
+  }
+ ],
+ "source_text_roundtrip_ok": true
+}

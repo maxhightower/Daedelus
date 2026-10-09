@@ -1,0 +1,110 @@
+{
+    "schema":  "daedelus.native_1.environment/1",
+    "captured_utc":  "2026-10-09T11:14:37Z",
+    "windows":  {
+                    "caption":  "Microsoft Windows 11 Home",
+                    "version":  "10.0.26200",
+                    "build":  "26200",
+                    "arch":  "64-bit",
+                    "webview2_runtime_machine":  "155.0.4283.45",
+                    "webview2_runtime_user":  null,
+                    "defender_realtime":  true,
+                    "smartscreen":  null,
+                    "execution_policy_effective":  "Bypass",
+                    "long_paths_enabled":  0,
+                    "system_drive_free_gb":  77.5
+                },
+    "hardware":  {
+                     "cpu":  "Intel(R) Core(TM) i9-10900F CPU @ 2.80GHz",
+                     "cores":  10,
+                     "threads":  20,
+                     "ram_gb":  31.9,
+                     "gpus":  [
+                                  {
+                                      "name":  "NVIDIA GeForce RTX 3070",
+                                      "driver":  "32.0.15.9186",
+                                      "mode":  "2560x1080@180Hz"
+                                  }
+                              ],
+                     "nvidia":  {
+                                    "vram_total_mib":  8192,
+                                    "name":  "NVIDIA GeForce RTX 3070",
+                                    "driver":  "591.86",
+                                    "vram_used_mib_at_audit":  3296
+                                },
+                     "displays":  [
+                                      {
+                                          "dpi":  96,
+                                          "scale_pct":  100,
+                                          "primary":  true,
+                                          "bounds":  "2560x1080",
+                                          "origin":  "0,0"
+                                      },
+                                      {
+                                          "dpi":  96,
+                                          "scale_pct":  100,
+                                          "primary":  false,
+                                          "bounds":  "2560x1440",
+                                          "origin":  "-2560,-365"
+                                      }
+                                  ]
+                 },
+    "software":  {
+                     "blender":  [
+                                     {
+                                         "version":  "Blender 4.4.3",
+                                         "path":  "C:\\Program Files\\Blender Foundation\\Blender 4.4\\blender.exe"
+                                     },
+                                     {
+                                         "version":  "Blender 5.1.2",
+                                         "path":  "C:\\Program Files\\Blender Foundation\\Blender 5.1\\blender.exe"
+                                     }
+                                 ],
+                     "python_launcher":  [
+                                             "-V:3.12 *        %USERPROFILE%\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+                                             "-V:3.11          %USERPROFILE%\\AppData\\Local\\Programs\\Python\\Python311\\python.exe"
+                                         ],
+                     "python_on_path_is_store_stub":  true,
+                     "git":  {
+                                 "path":  "C:\\Program Files\\Git\\cmd\\git.exe",
+                                 "version":  "git version 2.42.0.windows.2",
+                                 "present":  true
+                             },
+                     "node":  {
+                                  "path":  "C:\\Program Files\\nodejs\\node.exe",
+                                  "version":  "v22.15.0",
+                                  "present":  true
+                              },
+                     "cargo":  {
+                                   "path":  "%USERPROFILE%\\.cargo\\bin\\cargo.exe",
+                                   "version":  "cargo 1.93.0 (083ac5135 2025-12-15)",
+                                   "present":  true
+                               },
+                     "rustc":  {
+                                   "path":  "%USERPROFILE%\\.cargo\\bin\\rustc.exe",
+                                   "version":  "rustc 1.93.0 (254b59607 2026-01-19)",
+                                   "present":  true
+                               },
+                     "gh":  {
+                                "path":  "C:\\Program Files\\GitHub CLI\\gh.exe",
+                                "version":  "gh version 2.89.0 (2026-03-26)",
+                                "present":  true
+                            },
+                     "libreoffice":  {
+                                         "present":  false
+                                     },
+                     "microsoft_office":  {
+                                              "POWERPNT.EXE":  "16.0.20430.20092",
+                                              "WINWORD.EXE":  "16.0.20430.20092",
+                                              "EXCEL.EXE":  "16.0.20430.20092"
+                                          },
+                     "presentmon":  {
+                                        "present":  false
+                                    },
+                     "wpr":  {
+                                 "path":  "C:\\Windows\\system32\\wpr.exe",
+                                 "version":  "",
+                                 "present":  true
+                             }
+                 }
+}

@@ -1,0 +1,12 @@
+board revision 12
+frame         item_a4c64e0a7e01      group=None                   pos=(0,0) size=(1400x450) z=-10 Artifacts
+frame         item_b653ece26390      group=item_tdukkd2x1h        pos=(0,696) size=(1130x560) z=-10 References
+source        item_fddf686f0960      group=item_b653ece26390      pos=(40,766) size=(240x210) z=0 Project style guide
+source        item_1874baee4cce      group=item_b653ece26390      pos=(310,766) size=(240x210) z=0 Table reference photo
+source        item_54c78b6e4551      group=item_b653ece26390      pos=(580,766) size=(240x210) z=0 Leg inspiration (tapered)
+source        item_e3f6a1fdeeac      group=item_b653ece26390      pos=(850,766) size=(240x210) z=0 Leg inspiration (flared)
+source        item_d109d3a4e929      group=item_tdukkd2x1h        pos=(40,820) size=(240x210) z=0 Background inspiration (sunset)
+source        item_30c5ddde601f      group=item_tdukkd2x1h        pos=(310,820) size=(240x210) z=0 Background inspiration (dawn)
+source        item_6c8a0f0d4dc1      group=item_b653ece26390      pos=(580,1006) size=(240x210) z=0 Manifest conventions
+source        item_c6e68543731a      group=item_b653ece26390      pos=(850,1006) size=(240x210) z=0 Unicode guideline
+frame         item_tdukkd2x1h        group=None                   pos=(11,760) size=(569x300) z=-10 New frame

@@ -1,0 +1,101 @@
+﻿{
+    "captured":  "2026-10-09T06:49:44",
+    "processes":  [
+                      {
+                          "pid":  21884,
+                          "parent":  12152,
+                          "name":  "daedelus-studio.exe",
+                          "cmdline":  "\"%USERPROFILE%\\AppData\\Local\\Daedelus Studio\\daedelus-studio.exe\" ",
+                          "exe":  "%USERPROFILE%\\AppData\\Local\\Daedelus Studio\\daedelus-studio.exe",
+                          "started":  "2026-10-09T06:49:36",
+                          "working_set_mb":  34.3,
+                          "listening":  [
+
+                                        ]
+                      },
+                      {
+                          "pid":  22200,
+                          "parent":  21884,
+                          "name":  "daedelus-server.exe",
+                          "cmdline":  "\"\\\\?\\%USERPROFILE%\\AppData\\Local\\Daedelus Studio\\daedelus-server.exe\" --workspace %USERPROFILE%\\AppData\\Roaming\\org.daedelus.studio\\workspace serve --host 127.0.0.1 --port 50063 --parent-pid 21884",
+                          "exe":  "%USERPROFILE%\\AppData\\Local\\Daedelus Studio\\daedelus-server.exe",
+                          "started":  "2026-10-09T06:49:37",
+                          "working_set_mb":  8.6,
+                          "listening":  [
+
+                                        ]
+                      },
+                      {
+                          "pid":  30592,
+                          "parent":  22200,
+                          "name":  "daedelus-server.exe",
+                          "cmdline":  "\"\\\\?\\%USERPROFILE%\\AppData\\Local\\Daedelus Studio\\daedelus-server.exe\" --workspace %USERPROFILE%\\AppData\\Roaming\\org.daedelus.studio\\workspace serve --host 127.0.0.1 --port 50063 --parent-pid 21884",
+                          "exe":  "%USERPROFILE%\\AppData\\Local\\Daedelus Studio\\daedelus-server.exe",
+                          "started":  "2026-10-09T06:49:38",
+                          "working_set_mb":  142.9,
+                          "listening":  [
+                                            "127.0.0.1:50063"
+                                        ]
+                      }
+                  ],
+    "webview2_processes":  6,
+    "webview2_mb":  324.2,
+    "backend_url":  "http://127.0.0.1:50063",
+    "health":  {
+                   "ok":  true,
+                   "version":  "0.1.0",
+                   "workspace":  "%USERPROFILE%\\AppData\\Roaming\\org.daedelus.studio\\workspace",
+                   "adapters":  [
+                                    {
+                                        "name":  "blender",
+                                        "available":  true,
+                                        "reason":  null,
+                                        "environment":  {
+                                                            "requires":  "Blender 4.2+ executable",
+                                                            "executable":  "C:\\Program Files\\Blender Foundation\\Blender 5.1\\blender.exe"
+                                                        }
+                                    },
+                                    {
+                                        "name":  "layered2d",
+                                        "available":  true,
+                                        "reason":  null,
+                                        "environment":  {
+                                                            "requires":  "Pillow (bundled)"
+                                                        }
+                                    },
+                                    {
+                                        "name":  "code",
+                                        "available":  true,
+                                        "reason":  null,
+                                        "environment":  {
+                                                            "requires":  "git"
+                                                        }
+                                    },
+                                    {
+                                        "name":  "spreadsheet",
+                                        "available":  true,
+                                        "reason":  null,
+                                        "environment":  {
+                                                            "requires":  "openpyxl (LibreOffice optional for recalculation)",
+                                                            "libreoffice":  null
+                                                        }
+                                    },
+                                    {
+                                        "name":  "document",
+                                        "available":  true,
+                                        "reason":  null,
+                                        "environment":  {
+                                                            "requires":  "python-docx (LibreOffice optional for previews)"
+                                                        }
+                                    },
+                                    {
+                                        "name":  "presentation",
+                                        "available":  true,
+                                        "reason":  null,
+                                        "environment":  {
+                                                            "requires":  "python-pptx (LibreOffice optional for thumbnails)"
+                                                        }
+                                    }
+                                ]
+               }
+}
