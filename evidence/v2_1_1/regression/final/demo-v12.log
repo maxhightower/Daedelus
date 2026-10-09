@@ -1,0 +1,29 @@
+  [PASS] P pipeline workflow succeeded
+  [PASS] P node build_wb succeeded
+  [PASS] P node build_doc succeeded
+  [PASS] P node build_deck succeeded
+  [PASS] P node deps succeeded
+  [PASS] P node validate succeeded
+  [PASS] P workbook hierarchy: sheets, table, named ranges, charts
+  [PASS] P summary values are live formulas in the native file
+  [PASS] P formula results (LibreOffice recalculation) match decade means computed independently from the CSV
+  [PASS] P two native Excel charts in the workbook package
+  [PASS] P report hierarchy: title, sections, paragraphs, results table, figure, references
+  [PASS] P report table carries the workbook's calculated values
+  [PASS] P results sentence filled from the named range
+  [PASS] P report body paragraphs are quoted from the research notes (no generated prose)
+  [PASS] P 4 slides built from editable objects (text frames, native chart, shapes; no slide is a picture)
+  [PASS] P slide chart data comes from the workbook (data-driven, editable)
+  [PASS] P theme from the visual guide applied (title colour and font)
+  [PASS] P 5 component dependencies, all synced after the run
+  [PASS] P native validation of CO2 analysis (workbook.xlsx)
+  [PASS] P native validation of CO2 report (document.docx)
+  [PASS] P native validation of CO2 briefing (presentation.pptx)
+  [PASS] P data range edit is a checked revision of the workbook
+  [PASS] P exactly the dependents of the changed range went stale
+  [PASS] P update created one revision per dependent artifact
+  [PASS] P report: only the table, figure and results sentence changed
+  [PASS] P deck: only the data chart changed (findings text untouched)
+  [PASS] P updated sentence shows the recalculated 2020s mean
+  [PASS] P all dependencies synced again
+P: PASSED (integration)

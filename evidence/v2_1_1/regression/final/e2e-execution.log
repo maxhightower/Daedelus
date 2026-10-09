@@ -1,0 +1,17 @@
+PASS [setup] a real worker process registered with the control plane
+PASS [1 target] the event stream is connected (live updates)
+PASS [1 target] choosing Cloud CPU in the UI sets the project's execution target
+PASS [1 target] the connected worker is listed with its capabilities and adapters
+PASS [1 target] an artifact created under Cloud CPU
+PASS [1 target] remote jobs appear live in the job list (pushed over SSE)
+PASS [2 workflow] node run records the resolved target and the worker
+PASS [2 workflow] the run view shows where the node executed (target, reason, worker jobs)
+PASS [3 no fallback] Cloud GPU without a GPU worker is flagged before running
+PASS [3 no fallback] work under Cloud GPU fails explicitly instead of running locally
+PASS [4 cancel] cancel in the UI stops the running job (state cancelled)
+PASS [4 cancel] the cancelled request created nothing
+PASS [5 events not polling] no API polling while idle for 10 s (updates arrive over the event stream)
+PASS [5 events not polling] one event-stream connection per project view
+PASS [5 events not polling] no uncaught page errors
+
+PASS: 15/15

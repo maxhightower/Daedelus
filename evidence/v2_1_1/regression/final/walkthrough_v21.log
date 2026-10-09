@@ -1,0 +1,33 @@
+PASS [1 refusal] the API refuses requests without credentials (401)
+PASS [1 refusal] a token in the query string is refused (401)
+PASS [2 login] the studio shows the sign-in screen when the backend requires a token
+PASS [2 login] a wrong token is rejected on the sign-in screen
+PASS [2 login] the correct token opens the studio
+PASS [2 login] a session cookie is set
+PASS [2 login] the session cookie is HttpOnly and SameSite=Strict, scoped to /api/
+PASS [2 login] the token is not in localStorage or sessionStorage
+PASS [2 login] the session cookie is not readable from script
+PASS [3 live] a worker enrolled with the join token and authenticates with its own credential
+PASS [3 live] the event stream connects in session mode (cookie, no ticket)
+PASS [3 live] the worker row shows the worker's isolation profile and self-test result
+PASS [3 live] remote jobs arrive live over the cookie-authenticated stream
+PASS [4 csrf] a cookie-authenticated POST without the CSRF header is refused (403)
+PASS [4 csrf] a request with a valid cookie and CSRF token from a foreign Origin is refused (403)
+PASS [4 csrf] no forged workflow was created
+PASS [5 preflight] preflight reports remote execution and requires confirmation
+PASS [5 preflight] the session survives a page reload (no sign-in prompt)
+PASS [5 preflight] the preflight shows where nodes run and the budget limits before running
+PASS [5 preflight] nothing runs until the user confirms
+PASS [5 preflight] the confirmed run completes
+PASS [5 preflight] the execution records its budget usage
+PASS [5 preflight] the run view shows model calls and cost against the budget
+PASS [6 leaks] no request URL carried the API token
+PASS [6 leaks] event-stream URLs carry no ticket in session mode
+PASS [6 leaks] after sign-in the browser sends no bearer token (cookie only)
+PASS [6b long-poll fallback] without server-sent events the studio falls back to long-polling
+PASS [6b long-poll fallback] remote jobs still arrive live through the long-poll fallback
+PASS [7 sign out] signing out returns to the sign-in screen
+PASS [7 sign out] the old session cookie no longer authenticates (401)
+PASS [7 sign out] no uncaught page errors
+
+31/31 checks passed

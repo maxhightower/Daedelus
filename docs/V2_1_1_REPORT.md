@@ -51,7 +51,7 @@ No merge into `main`, no pull request.
 | Per-task and aggregate budgets enforced | **met**. Per-run budget, `CampaignBudget` across runs and the assessment pass, failed calls charged, unpriced models blocked unless approved. Limits of the dollar guarantee stated |
 | Live provider failures distinguished from infrastructure failures | **met**: `failure_kind` `provider` / `evaluation` / `infrastructure`, `retriable`, and `summary.infrastructure` separate from `summary.live_evaluation` |
 | Failure-injection tests pass | **met**: 49 tests, including the 12 required ones, through `live_runner.main` |
-| Ordinary CI remains green | ⟨CI result⟩ |
+| Ordinary CI remains green | **met**: CI [37912377403](https://github.com/maxhightower/Daedelus/actions/runs/37912377403) and Windows build [37912376680](https://github.com/maxhightower/Daedelus/actions/runs/37912376680) succeeded on the Phase A freeze `1c23098` |
 
 Defects found in the V2.1 live path (details in `evidence/v2_1_1/workflow_security/README.md`):
 * `|| true` masking;
@@ -105,7 +105,22 @@ What was built for Phase B (Implemented, Deterministically verified):
 
 ## 6. Regression results
 
-⟨regression table⟩
+Run on the final tree (`evidence/v2_1_1/regression/final/`):
+
+| Suite | V2.1 baseline | V2.1.1 |
+|---|---|---|
+| Backend pytest (includes the V2 distributed tests and V2.1 security tests) | 236 passed, 10 skipped | **289 passed, 10 skipped** (+49 Phase A tests, +4 benchmark tests) |
+| V0 demonstration | 40/40 | **40/40** |
+| V1 spatial walkthrough | 60/60 | **60/60** |
+| V1.1 semantic walkthrough / demos | 19/19; A–D passed, E blocked | **19/19; A–D passed, E blocked** |
+| V1.2 Office demonstration / walkthrough | 28/28 / 23/23 | **28/28 / 23/23** |
+| V2 execution walkthrough | 15/15 | **15/15** |
+| Board performance walkthrough | completed | **completed** |
+| V2.1 studio walkthrough | 31/31 | **31/31** |
+| Studio typecheck / unit tests | pass / 14 of 14 | **pass / 14 of 14** |
+| Deterministic creative benchmark | A 3/6, B and C pass, D 1/3, E blocked | **identical on the V2.1 checks**; v2.1.1 adds checks (`OLD_VS_NEW.md`) |
+| Hosted two-VM run | 39/39 | ⟨hosted⟩ |
+| Windows installer build | success | see §5 |
 
 ## 7. Actual provider calls made
 
