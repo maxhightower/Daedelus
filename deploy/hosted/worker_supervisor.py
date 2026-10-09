@@ -27,7 +27,9 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-CONTEXT = "daedelus-hosted-phase"
+# one phase channel per workflow run: two runs on the same commit (e.g. the same SHA pushed to
+# two branches) must never follow each other's phases
+CONTEXT = "daedelus-hosted-phase/" + __import__("os").environ.get("GITHUB_RUN_ID", "local")
 
 
 def sh(*a: str) -> str:
