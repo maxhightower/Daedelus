@@ -37,3 +37,19 @@ Unchanged safety properties (tested by the V2 distributed suite, which passes): 
 version-checked atomic publication, lease fencing bound to worker identity, scope preservation.
 `perf_v21-profile.json` (one extra pass after the job API exposed worker phase timings and bytes) holds
 the per-phase profile.
+
+## Per-phase profile (one V2.1 pass, `perf_v21-profile.json`)
+
+Sum of worker-reported phase seconds over all jobs of the workload:
+
+| Workload | wall s | fetch | runner start-up | adapter method | upload | bytes uploaded | bytes downloaded |
+|---|---|---|---|---|---|---|---|
+| W1 Blender | 11.3 | 0.03 | 1.33 | 8.00 | 0.09 | 1.16 MB | 0 (all inputs already in the worker's blob cache) |
+| W2 Office | 39.1 | 0.06 | 5.14 | 27.07 | 0.42 | 0.85 MB | 0 |
+| W3 code | 4.4 | 0.09 | 1.44 | 0.46 | 0.27 | 29 KB | 0 |
+| W4 mixed | 14.8 | 0.02 | 3.15 | 8.12 | 0.13 | 36 KB | 0 |
+
+After V2.1 the remaining time is the native work itself (Blender, LibreOffice) plus process
+start-up of each sandboxed job runner (~0.2 s per job). Transfer is below 1 %. Further gains
+would come from warm per-adapter runner processes (e.g. a resident LibreOffice), which trade
+isolation between jobs for speed; V2.1 deliberately keeps one fresh sandboxed process per job.

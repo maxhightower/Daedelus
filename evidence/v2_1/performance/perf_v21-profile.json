@@ -1,0 +1,149 @@
+{
+ "label": "v21-profile",
+ "pythonpath": "(installed)",
+ "isolation": "default",
+ "repeat": 1,
+ "workloads": {
+  "W1_blender": {
+   "runs": [
+    {
+     "wall_s": 11.25,
+     "cache": "cold",
+     "jobs": 7,
+     "by_method": {
+      "apply": 1,
+      "create": 1,
+      "diff": 1,
+      "preview": 2,
+      "side_effect_scope": 1,
+      "validate": 1
+     },
+     "queue_wait_s": 0.677,
+     "worker_time_s": 10.417,
+     "worker_phases_s": {
+      "fetch": 0.029,
+      "run": 10.236,
+      "runner.method": 8.001,
+      "runner.startup": 1.331,
+      "upload": 0.092
+     },
+     "bytes_in": 0,
+     "bytes_out": 1158493
+    }
+   ],
+   "wall_mean_s": 11.25,
+   "wall_stdev_s": 0.0,
+   "cold_s": 11.25,
+   "warm_mean_s": null,
+   "jobs": 7
+  },
+  "W2_office": {
+   "runs": [
+    {
+     "wall_s": 39.09,
+     "cache": "cold",
+     "jobs": 28,
+     "by_method": {
+      "apply": 5,
+      "create": 3,
+      "diff": 5,
+      "preview": 8,
+      "side_effect_scope": 2,
+      "validate": 5
+     },
+     "queue_wait_s": 0.714,
+     "worker_time_s": 37.462,
+     "worker_phases_s": {
+      "fetch": 0.06,
+      "run": 36.723,
+      "runner.method": 27.071,
+      "runner.startup": 5.138,
+      "upload": 0.421
+     },
+     "bytes_in": 0,
+     "bytes_out": 847693
+    }
+   ],
+   "wall_mean_s": 39.09,
+   "wall_stdev_s": 0.0,
+   "cold_s": 39.09,
+   "warm_mean_s": null,
+   "jobs": 28
+  },
+  "W3_code": {
+   "runs": [
+    {
+     "wall_s": 4.41,
+     "cache": "cold",
+     "jobs": 8,
+     "by_method": {
+      "apply": 1,
+      "create": 1,
+      "diff": 1,
+      "preview": 2,
+      "side_effect_scope": 1,
+      "validate": 2
+     },
+     "queue_wait_s": 0.739,
+     "worker_time_s": 3.282,
+     "worker_phases_s": {
+      "fetch": 0.086,
+      "run": 2.853,
+      "runner.method": 0.461,
+      "runner.startup": 1.44,
+      "upload": 0.269
+     },
+     "bytes_in": 0,
+     "bytes_out": 28746
+    }
+   ],
+   "wall_mean_s": 4.41,
+   "wall_stdev_s": 0.0,
+   "cold_s": 4.41,
+   "warm_mean_s": null,
+   "jobs": 8
+  },
+  "W4_mixed": {
+   "runs": [
+    {
+     "wall_s": 14.77,
+     "cache": "cold",
+     "jobs": 14,
+     "by_method": {
+      "apply": 2,
+      "create": 2,
+      "diff": 2,
+      "preview": 4,
+      "side_effect_scope": 2,
+      "validate": 2
+     },
+     "queue_wait_s": 0.817,
+     "worker_time_s": 13.752,
+     "worker_phases_s": {
+      "fetch": 0.022,
+      "run": 13.498,
+      "runner.method": 8.117,
+      "runner.startup": 3.146,
+      "upload": 0.13
+     },
+     "bytes_in": 0,
+     "bytes_out": 36477
+    }
+   ],
+   "wall_mean_s": 14.77,
+   "wall_stdev_s": 0.0,
+   "cold_s": 14.77,
+   "warm_mean_s": null,
+   "jobs": 14
+  },
+  "W5_cancel_retry": {
+   "time_to_cancel_seconds": 21.89,
+   "recovery_after_crash_seconds": 20.86,
+   "recovered": true
+  }
+ },
+ "host": {
+  "cpus": 4,
+  "kernel": "6.18.44-fc-v80"
+ }
+}

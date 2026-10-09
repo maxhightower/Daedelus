@@ -1,0 +1,5 @@
+v21-profile W1_blender run 1: 11.3s, 7 jobs, queue 0.677s
+v21-profile W2_office run 1: 39.1s, 28 jobs, queue 0.714s
+v21-profile W3_code run 1: 4.4s, 8 jobs, queue 0.739s
+v21-profile W4_mixed run 1: 14.8s, 14 jobs, queue 0.817s
+{"W1_blender": [11.25, 7], "W2_office": [39.09, 28], "W3_code": [4.41, 8], "W4_mixed": [14.77, 14], "W5_cancel_retry": {"time_to_cancel_seconds": 21.89, "recovery_after_crash_seconds": 20.86, "recovered": true}}
