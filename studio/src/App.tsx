@@ -1,7 +1,7 @@
 import { ExecutionBadge } from "./components/ExecutionSettings";
 import { ReactFlowProvider } from "@xyflow/react";
 import { useEffect, useRef, useState } from "react";
-import { api } from "./api";
+import { api, getAuthMode, logout } from "./api";
 import { SpatialCanvas } from "./canvas/SpatialCanvas";
 import { AgentDock } from "./panels/AgentDock";
 import { ExplorerPanel } from "./panels/ExplorerPanel";
@@ -148,6 +148,19 @@ export default function App() {
               </span>
             ))}
           </span>
+        )}
+        {getAuthMode() !== "none" && (
+          <button
+            className="mini-btn"
+            data-testid="sign-out"
+            title="End this browser session"
+            onClick={async () => {
+              await logout();
+              window.location.reload();
+            }}
+          >
+            Sign out
+          </button>
         )}
       </header>
       {!s.project ? (

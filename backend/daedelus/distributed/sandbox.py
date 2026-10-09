@@ -30,6 +30,7 @@ verified, because code jobs run repository tests (arbitrary code).
 
 from __future__ import annotations
 
+import dataclasses
 import json
 import os
 import shutil
@@ -167,12 +168,16 @@ class Sandbox:
         args += ["--bind", str(jobdir), str(jobdir), "--chdir", str(jobdir), "--"]
         return args + argv
 
-    def popen(self, argv: list[str], jobdir: Path, **kw) -> subprocess.Popen:
+    def popen(self, argv: list[str], jobdir: Path, memory_mb: int | None = None,
+              **kw) -> subprocess.Popen:
         from .worker import new_group_kwargs
         Path(jobdir).chmod(0o700)
         extra: dict[str, Any] = {}
         if os.name != "nt":
-            extra["preexec_fn"] = self.limits.preexec()
+            lim = self.limits
+            if memory_mb and memory_mb < lim.memory_mb:  # a job may only lower the limit
+                lim = dataclasses.replace(lim, memory_mb=int(memory_mb))
+            extra["preexec_fn"] = lim.preexec()
         return subprocess.Popen(self.wrap(argv, jobdir), env=job_env(Path(jobdir)),
                                 cwd=str(jobdir), **new_group_kwargs(), **extra, **kw)
 

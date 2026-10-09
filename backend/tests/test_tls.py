@@ -156,3 +156,29 @@ def test_no_code_path_disables_tls_verification():
             if needle in t:
                 bad.append(f"{p.name}: {needle}")
     assert bad == []
+
+
+def test_worker_survives_proxy_502_while_control_plane_restarts(tmp_path):
+    """Found by the hardened+TLS cluster run (S7): a TLS proxy answers 502 while the control
+    plane restarts. The worker must wait, not crash."""
+    from daedelus.distributed.sandbox import Sandbox
+    from daedelus.distributed.worker import Worker
+    calls = {"lease": 0}
+
+    def handler(req):
+        if req.url.path == "/api/cluster/workers":
+            return httpx.Response(200, json={"id": "wkr_x", "name": "w", "credential": None})
+        if req.url.path == "/api/cluster/lease":
+            calls["lease"] += 1
+            if calls["lease"] <= 2:
+                return httpx.Response(502, text="Bad Gateway")
+            w.stop()
+            return httpx.Response(204)
+        return httpx.Response(404)
+    (tmp_path / "w").mkdir()
+    sb = Sandbox(tmp_path / "w", "process")
+    w = Worker("http://127.0.0.1:1", WT, adapters=["spreadsheet"], work_dir=tmp_path / "w",
+               sandbox=sb, transport=httpx.MockTransport(handler))
+    w.register()
+    w.run()  # must return normally
+    assert calls["lease"] == 3

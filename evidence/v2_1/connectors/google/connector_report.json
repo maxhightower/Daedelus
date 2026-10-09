@@ -1,0 +1,9 @@
+{
+ "connector": "google",
+ "scopes_required": "https://www.googleapis.com/auth/drive.file (files the app created or the user opened with it) - add drive.readonly only to import pre-existing Google-native files",
+ "checks": [],
+ "created": [],
+ "cleanup": null,
+ "status": "blocked",
+ "blocked_by": "missing DAEDELUS_LIVE_CONNECTORS, DAEDELUS_GOOGLE_TOKEN, DAEDELUS_LIVE_GOOGLE_FOLDER"
+}

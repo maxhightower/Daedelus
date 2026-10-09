@@ -13,7 +13,7 @@ A workflow's ``parameters["budget"]`` (or the defaults below) bounds one executi
 ``max_retries``      SDK retries per model request (rate limits, 5xx, timeouts)
 ``job_timeout_s``    deadline of one remote job attempt
 ``job_memory_mb``    memory limit applied to remote jobs (min with the worker's own limit)
-``max_concurrent_jobs`` remote jobs of this project leased at the same time
+``max_concurrent_jobs`` remote jobs this execution has in flight at once
 ==================== ======================================================================
 
 Enforcement is *before* each call (a call that would start over a limit is refused) and the
@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import contextlib
 import contextvars
+import threading
 import time
 from dataclasses import asdict, dataclass, field
 from typing import Any
@@ -119,6 +120,24 @@ class ExecutionBudget:
     def iterations_cap(self, requested: int) -> int:
         cap = self.limits.get("max_iterations")
         return min(int(requested), int(cap)) if cap is not None else int(requested)
+
+    # ---------------------------------------------------------------- remote jobs
+    def job_settings(self) -> dict[str, Any]:
+        """Per-job limits for remote jobs submitted under this budget."""
+        out: dict[str, Any] = {"timeout_s": float(self.limits.get("job_timeout_s")
+                                                  or DEFAULTS["job_timeout_s"])}
+        if self.limits.get("job_memory_mb"):
+            out["memory_mb"] = int(self.limits["job_memory_mb"])
+        return out
+
+    def job_slot(self):
+        """Semaphore bounding this execution's remote jobs in flight at once
+        (``max_concurrent_jobs``). Not a dataclass field, so snapshots stay plain data."""
+        sem = self.__dict__.get("_job_sem")
+        if sem is None:
+            n = max(1, int(self.limits.get("max_concurrent_jobs") or 1))
+            sem = self.__dict__.setdefault("_job_sem", threading.BoundedSemaphore(n))
+        return sem
 
     def snapshot(self) -> dict[str, Any]:
         return {"limits": self.limits, "used": {

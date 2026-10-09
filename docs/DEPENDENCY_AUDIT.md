@@ -26,6 +26,7 @@ installed package metadata, not recalled.
 | lxml | 6.1.3 | BSD-3-Clause | XML | bundles libxml2/libxslt (MIT) |
 | XlsxWriter | 3.2.9 | BSD-2-Clause | pptx charts | |
 | et_xmlfile | 2.0.0 | MIT | openpyxl dependency | |
+| cryptography (optional `hosted` extra, V2.1) | 50.0.2 | Apache-2.0 OR BSD-3-Clause | X25519/HKDF/AES-GCM sealing of worker credentials in the two-machine hosted recipe (`deploy/hosted/handoff.py`) | not imported by the application; bundles OpenSSL (Apache-2.0) in its wheels |
 | pyinstaller (build only) | 6.22.3 | GPL-2.0+ with bootloader exception | desktop sidecar freezing | the exception permits distributing frozen apps under any licence |
 
 ## Studio (JavaScript)

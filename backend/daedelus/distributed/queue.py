@@ -66,6 +66,10 @@ class JobQueue:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.lease_s = lease_s
         self._lock = threading.RLock()
+        # V2.1: woken on every committed event, so lease long-polls and job waiters react
+        # immediately instead of sleep-polling (lower per-job latency)
+        self.changed = threading.Condition()
+        self._dirty = False
         self._db = sqlite3.connect(str(self.path), check_same_thread=False, timeout=30,
                                    isolation_level=None)
         self._db.execute("PRAGMA journal_mode=WAL")
@@ -87,14 +91,21 @@ class JobQueue:
                 return q._db
 
             def __exit__(self_inner, et, ev, tb):
+                notify = False
                 try:
                     q._db.execute("ROLLBACK" if et else "COMMIT")
+                    notify = q._dirty and not et
                 finally:
+                    q._dirty = False
                     q._lock.release()
+                if notify:
+                    with q.changed:
+                        q.changed.notify_all()
                 return False
         return _T()
 
     def _event(self, db, job_id: str, project_id: str, kind: str, **data: Any) -> None:
+        self._dirty = True
         db.execute("INSERT INTO events(ts, project_id, job_id, kind, data) VALUES (?,?,?,?,?)",
                    (time.time(), project_id, job_id, kind, json.dumps(data, default=str)))
 
@@ -401,6 +412,11 @@ class JobQueue:
             rows = self._db.execute(q, args).fetchall()
         return [{"seq": s, "ts": ts, "project_id": p, "job_id": j, "kind": k,
                  "data": json.loads(d)} for s, ts, p, j, k, d in rows]
+
+    def wait_change(self, timeout: float) -> None:
+        """Block until some job event is committed (or the timeout passes)."""
+        with self.changed:
+            self.changed.wait(timeout)
 
     def is_terminal(self, job_id: str) -> bool:
         return self.status(job_id).state in TERMINAL

@@ -254,6 +254,8 @@ def create_app(workspace_root: str | Path | None = None,
                        allow_headers=["*"])
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=sec.allowed_hosts())
     app.add_middleware(sec.SecurityHeadersMiddleware)
+    if profile.hosted():
+        app.add_middleware(sec.HttpsOnlyMiddleware)
     app.include_router(build_cluster_router())
 
     def _publish_execution(st: ProjectStore, e) -> None:
@@ -866,6 +868,12 @@ def create_app(workspace_root: str | Path | None = None,
     async def preview(pid: str, wid: str, body: PreviewBody):
         return await _in_thread(engine_for(pid).preview_node, wid, body.node_id,
                                 all_units=body.all_units)
+
+    @app.get("/api/projects/{pid}/workflows/{wid}/preflight")
+    def workflow_preflight(pid: str, wid: str):
+        from .preflight import preflight
+        st = store_for(pid)
+        return preflight(st, st.get_workflow(wid))
 
     @app.post("/api/projects/{pid}/workflows/{wid}/execute")
     def execute(pid: str, wid: str, body: ExecuteBody):

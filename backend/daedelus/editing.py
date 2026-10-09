@@ -91,7 +91,8 @@ def _apply(store: ProjectStore, artifact_id: str, ops: list[PlannedOperation], m
             c = art.component(op.component_id)
             if c and c.parent_id:  # removing a child restructures its container
                 side.append(c.parent_id)
-        side += [c for c in adapter.side_effect_scope(native, art.entry, op) if c not in side]
+    for ids in (adapter.side_effect_scopes(native, art.entry, ops) if ops else []):
+        side += [c for c in ids if c not in side]
     for c in side:
         scope.update([c] + art.descendants(c))
     for t in targets:

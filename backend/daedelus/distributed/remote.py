@@ -22,6 +22,8 @@ import hashlib
 import json
 import shutil
 import tempfile
+import threading
+from collections import OrderedDict
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -29,10 +31,46 @@ from typing import Any
 from ..adapters.base import Adapter, AdapterError, AdapterInfo, ApplyResult, InspectResult
 from ..models import PlannedOperation, ValidationReport
 from . import cas
+from ..budget import current as current_budget
 from .models import JobRequest, JobResult
 from .service import JobFailed, get_cluster
 
 TARGETS = ("automatic", "local", "cloud_cpu", "cloud_gpu")
+
+# V2.1 performance: inspection results are a pure function of (adapter, adapter version, entry,
+# exact file contents). They are cached under the tree's content digest, so a result is never
+# reused once a single byte of the artifact changes. Mutating jobs return the inspection of
+# their own output, which fills the cache for the engine's next ``inspect`` (one job fewer per
+# mutation).
+INSPECT_CACHE_MAX = 512
+_inspect_cache: "OrderedDict[tuple, dict]" = OrderedDict()
+_cache_lock = threading.Lock()
+cache_stats = {"hits": 0, "misses": 0, "stored": 0}
+
+
+def _cache_get(key: tuple) -> dict | None:
+    with _cache_lock:
+        v = _inspect_cache.get(key)
+        if v is not None:
+            _inspect_cache.move_to_end(key)
+            cache_stats["hits"] += 1
+        else:
+            cache_stats["misses"] += 1
+        return v
+
+
+def _cache_put(key: tuple, value: dict) -> None:
+    with _cache_lock:
+        _inspect_cache[key] = value
+        _inspect_cache.move_to_end(key)
+        cache_stats["stored"] += 1
+        while len(_inspect_cache) > INSPECT_CACHE_MAX:
+            _inspect_cache.popitem(last=False)
+
+
+def clear_inspect_cache() -> None:
+    with _cache_lock:
+        _inspect_cache.clear()
 
 
 class ExecutionUnavailable(AdapterError):
@@ -158,6 +196,7 @@ class RemoteAdapter(Adapter):
         before_m = cas.snapshot(before, cl.blobs) if before else None
         fblobs = {k: cl.blobs.put_file(Path(p)) for k, p in (files or {}).items()
                   if p and Path(p).is_file()}
+        bud = current_budget()
         key = None
         if self.tc.origin.get("execution_id"):
             # deterministic key: a resumed execution (control-plane restart) resubmits the same
@@ -171,7 +210,14 @@ class RemoteAdapter(Adapter):
                              "artifact_id"), adapter=self.name, method=method, entry=entry,
                          native=native, before=before_m, args=args, files=fblobs,
                          requires=self.capability, base_digest=native.digest(),
-                         origin=self.tc.origin, idempotency_key=key)
+                         origin=self.tc.origin, idempotency_key=key,
+                         **(bud.job_settings() if bud else {}))
+        slot = bud.job_slot() if bud else contextlib.nullcontext()
+        with slot:
+            return self._submit_and_wait(cl, req, method, entry, native_dir)
+
+    def _submit_and_wait(self, cl, req: JobRequest, method: str, entry: str,
+                         native_dir: Path | None) -> JobResult:
         st0 = cl.submit(req)
         if st0.id != req.id:  # idempotent hit: continue with the existing job
             req = cl.queue.request(st0.id)
@@ -188,11 +234,28 @@ class RemoteAdapter(Adapter):
             raise AdapterError(f"remote {method} {exc.status.state}: {exc.status.error}") \
                 from None
         st = cl.queue.status(req.id)
+        w = next((x for x in cl.queue.workers() if x.id == res.worker_id), None)
         rec.update(state="succeeded", worker_id=res.worker_id, attempts=st.attempt,
-                   seconds=res.seconds)
+                   seconds=res.seconds, bytes_in=res.bytes_in, bytes_out=res.bytes_out,
+                   isolation=res.isolation or None,
+                   deployment=(w.deployment or "process") if w else None,
+                   worker_name=w.name if w else None)
         if method in ("create", "apply", "after_restore") and native_dir is not None:
             self._publish(req, res, Path(native_dir))
+            post = res.value.get("_post_inspect") if isinstance(res.value, dict) else None
+            if post and res.output is not None:
+                ent = res.value.get("entry", entry) if method == "create" else entry
+                _cache_put(self._ckey(ent, res.output.digest()), post)
         return res
+
+    def _ckey(self, entry: str, digest: str) -> tuple:
+        return (self.name, self.version, entry, digest)
+
+    def _workers_support(self, feature: str) -> bool:
+        cl = get_cluster()
+        ws = [w for w in (cl.live_workers() if cl else []) if self.name in w.adapters and
+              self.capability in w.capabilities]
+        return bool(ws) and all(feature in (w.features or []) for w in ws)
 
     def _publish(self, req: JobRequest, res: JobResult, native_dir: Path) -> None:
         """Atomic, idempotent publication with optimistic version check.
@@ -245,11 +308,21 @@ class RemoteAdapter(Adapter):
         if template == "import" and params.get("path"):
             files["import"] = params["path"]
             params = {**params, "path": None}
-        res = self._run("create", native_dir, "", {"template": template, "params": params}, files)
+        res = self._run("create", native_dir, "", {"template": template, "params": params,
+                                                   "post_inspect": True}, files)
         return res.value["entry"]
 
     def inspect(self, native_dir: Path, entry: str) -> InspectResult:
-        return InspectResult(**self._run("inspect", native_dir, entry, {}).value)
+        key = self._ckey(entry, cas.snapshot(native_dir).digest() if Path(native_dir).exists()
+                         else cas.Manifest().digest())
+        hit = _cache_get(key)
+        if hit is not None:
+            self.tc.jobs.append({"method": "inspect", "adapter": self.name, "cached": True,
+                                 "state": "cache_hit", "digest": key[3][:12]})
+            return InspectResult(**hit)
+        val = self._run("inspect", native_dir, entry, {}).value
+        _cache_put(key, val)
+        return InspectResult(**val)
 
     def apply(self, native_dir: Path, entry: str, operations: list[PlannedOperation],
               context: dict[str, Any]) -> ApplyResult:
@@ -259,8 +332,10 @@ class RemoteAdapter(Adapter):
         for k, p in (context.get("files") or {}).items():
             files[f"file:{k}"] = p
         args = {"operations": [o.model_dump() for o in operations],
-                "message": context.get("message", "")}
-        return ApplyResult(**self._run("apply", native_dir, entry, args, files).value)
+                "message": context.get("message", ""), "post_inspect": True}
+        val = dict(self._run("apply", native_dir, entry, args, files).value)
+        val.pop("_post_inspect", None)
+        return ApplyResult(**val)
 
     def preview(self, native_dir: Path, entry: str, out_dir: Path) -> dict[str, Path]:
         res = self._run("preview", native_dir, entry, {})
@@ -276,7 +351,7 @@ class RemoteAdapter(Adapter):
         return self._run("diff", after_dir, entry, {}, before=before_dir).value.get("diff")
 
     def after_restore(self, native_dir: Path, entry: str, message: str) -> None:
-        self._run("after_restore", native_dir, entry, {"message": message})
+        self._run("after_restore", native_dir, entry, {"message": message, "post_inspect": True})
 
     def validate(self, native_dir: Path, entry: str, checks: list[str],
                  context: dict[str, Any]) -> ValidationReport:
@@ -285,5 +360,15 @@ class RemoteAdapter(Adapter):
         return ValidationReport(**self._run("validate", native_dir, entry, args).value)
 
     def side_effect_scope(self, native_dir: Path, entry: str, op: PlannedOperation) -> list[str]:
-        return list(self._run("side_effect_scope", native_dir, entry,
-                              {"op": op.model_dump()}).value.get("ids", []))
+        return self.side_effect_scopes(native_dir, entry, [op])[0]
+
+    def side_effect_scopes(self, native_dir: Path, entry: str,
+                           ops: list[PlannedOperation]) -> list[list[str]]:
+        """All operations' side-effect scopes in ONE job (V2.1 workers); per-operation jobs
+        for workers that do not advertise the feature."""
+        if len(ops) > 1 and self._workers_support("batch_scope"):
+            v = self._run("side_effect_scope", native_dir, entry,
+                          {"ops": [o.model_dump() for o in ops]}).value
+            return [list(x) for x in v.get("ids_per_op", [])]
+        return [list(self._run("side_effect_scope", native_dir, entry,
+                               {"op": o.model_dump()}).value.get("ids", [])) for o in ops]

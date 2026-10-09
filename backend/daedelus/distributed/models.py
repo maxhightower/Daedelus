@@ -57,6 +57,7 @@ class JobRequest(BaseModel):
     files: dict[str, str] = Field(default_factory=dict)  # context file key -> blob sha
     requires: Capability = "cpu"
     timeout_s: float = 900
+    memory_mb: int | None = None  # execution budget cap; the worker applies min(own, this)
     max_attempts: int = 3
     idempotency_key: str | None = None
     # optimistic concurrency: the native manifest digest the job was planned against
@@ -114,6 +115,7 @@ class WorkerInfo(BaseModel):
     isolation: dict[str, Any] = Field(default_factory=dict)  # job sandbox self-test
     deployment: str = ""  # process | container | hosted (declared by the operator)
     peer: str = ""  # network address the worker registered from
+    features: list[str] = Field(default_factory=list)  # V2.1 protocol features
 
 
 class Lease(BaseModel):

@@ -1,0 +1,91 @@
+# V2.1 opt-in live verification: real model APIs and real Microsoft/Google test accounts.
+#
+# Manual trigger only (never on push or pull_request), and every secret lives in the protected
+# GitHub environment "daedelus-live" (configure required reviewers there). Untrusted code from
+# forks never runs with these secrets. Each run is bounded by the benchmark budget
+# (24 model calls / $2 per task run; see backend/daedelus/bench_v21.py) and the connector
+# harness only touches files it creates inside the designated test folder.
+#
+# Secrets (set only those you have):
+#   ANTHROPIC_API_KEY, GEMINI_API_KEY,
+#   DAEDELUS_GOOGLE_TOKEN + DAEDELUS_LIVE_GOOGLE_FOLDER (+ optional DAEDELUS_LIVE_GOOGLE_NATIVE_ID),
+#   DAEDELUS_MSGRAPH_TOKEN + DAEDELUS_LIVE_MSGRAPH_FOLDER
+name: Live verification (opt-in)
+
+on:
+  workflow_dispatch:
+    inputs:
+      what:
+        description: "claude | gemini | connectors | all"
+        required: true
+        default: "all"
+      tasks:
+        description: "benchmark tasks (A-E)"
+        required: false
+        default: "ABCDE"
+      video:
+        description: "public video URL for task E (licensed for this use)"
+        required: false
+        default: ""
+
+permissions: {contents: read}
+
+env:
+  BLENDER_VERSION: "4.5.14"
+  BLENDER_SERIES: "4.5"
+
+jobs:
+  live:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    environment: daedelus-live
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: System packages
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg libxi6 libxkbcommon0 libxrender1 libxxf86vm1 libxfixes3 libsm6 libgl1 libegl1
+          sudo apt-get install -y -qq --no-install-recommends libreoffice-calc libreoffice-writer libreoffice-impress poppler-utils fonts-dejavu-core
+      - name: Blender
+        run: |
+          mkdir -p ~/blender
+          curl -sSL -o /tmp/blender.tar.xz https://download.blender.org/release/Blender${BLENDER_SERIES}/blender-${BLENDER_VERSION}-linux-x64.tar.xz
+          tar xf /tmp/blender.tar.xz -C ~/blender --strip-components=1
+      - run: pip install -e "backend[dev,anthropic,gemini]"
+      - name: Live Claude (benchmark + live tests)
+        if: inputs.what == 'claude' || inputs.what == 'all'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          DAEDELUS_BLENDER: /home/runner/blender/blender
+          DAEDELUS_RECORD_DIR: evidence-live/fixtures/claude
+        run: |
+          daedelus bench-v21 --provider anthropic --tasks "${{ inputs.tasks }}" --out evidence-live/claude ${{ inputs.video && format('--video {0}', inputs.video) || '' }}
+          cd backend && DAEDELUS_LIVE_CLAUDE=1 DAEDELUS_LIVE_SEMANTIC=1 pytest -q -rs tests/test_live_claude.py tests/test_live_semantic.py || true
+      - name: Live Gemini (benchmark incl. video)
+        if: inputs.what == 'gemini' || inputs.what == 'all'
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          DAEDELUS_BLENDER: /home/runner/blender/blender
+          DAEDELUS_RECORD_DIR: evidence-live/fixtures/gemini
+        run: daedelus bench-v21 --provider gemini --tasks "${{ inputs.tasks }}" --out evidence-live/gemini ${{ inputs.video && format('--video {0}', inputs.video) || '' }}
+      - name: Live connectors
+        if: inputs.what == 'connectors' || inputs.what == 'all'
+        env:
+          DAEDELUS_LIVE_CONNECTORS: "1"
+          DAEDELUS_GOOGLE_TOKEN: ${{ secrets.DAEDELUS_GOOGLE_TOKEN }}
+          DAEDELUS_LIVE_GOOGLE_FOLDER: ${{ secrets.DAEDELUS_LIVE_GOOGLE_FOLDER }}
+          DAEDELUS_LIVE_GOOGLE_NATIVE_ID: ${{ secrets.DAEDELUS_LIVE_GOOGLE_NATIVE_ID }}
+          DAEDELUS_MSGRAPH_TOKEN: ${{ secrets.DAEDELUS_MSGRAPH_TOKEN }}
+          DAEDELUS_LIVE_MSGRAPH_FOLDER: ${{ secrets.DAEDELUS_LIVE_MSGRAPH_FOLDER }}
+        run: |
+          daedelus connectors-live --connector google --out evidence-live/connectors/google || true
+          daedelus connectors-live --connector msgraph --out evidence-live/connectors/msgraph || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: live-evidence
+          path: |
+            evidence-live/
+            !evidence-live/**/workspace/

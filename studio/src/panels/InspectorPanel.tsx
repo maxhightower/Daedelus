@@ -13,6 +13,7 @@ import { RevisionView } from "../components/RevisionView";
 import { ContextPackageView, LoopView, SourceUnderstanding, usageText } from "../components/SemanticView";
 import { useStudio } from "../state";
 import type { Artifact, CanvasItem, ResolvedContext, Revision, TargetSelector, Workflow, WorkflowNode } from "../types";
+import { useRunWithPreflight } from "../components/Preflight";
 
 // ------------------------------------------------------------------ real component edits
 function ComponentEditForm({ artifact, componentId }: { artifact: Artifact; componentId: string }) {
@@ -326,10 +327,8 @@ function WorkflowActions({ wf }: { wf: Workflow }) {
   const [impact, setImpact] = useState<any>(null);
   if (!s.project) return null;
   const ex = s.executions[wf.id];
-  const execute = async (mode: string) => {
-    const e = await s.run(api.execute(s.project!.id, wf.id, mode), `Execution started (${mode})`);
-    if (e) s.watchExecution(wf.id);
-  };
+  const runner = useRunWithPreflight();
+  const execute = (mode: string) => runner.start(wf.id, mode);
   return (
     <div data-testid="workflow-actions">
       <div className="row">
@@ -342,6 +341,7 @@ function WorkflowActions({ wf }: { wf: Workflow }) {
         <button onClick={() => execute("full")}>Run all</button>
         {ex && <button onClick={() => s.select({ kind: "resource", ref: { kind: "execution", id: ex.id } })}>Execution details</button>}
       </div>
+      {runner.box}
       {issues && (
         <div className="small">
           {issues.length === 0 ? <div className="ok-box">Workflow is valid.</div> : issues.map((i, k) => <div key={k} className={i.level === "error" ? "error-box" : "warning"}>[{i.node_id || "graph"}] {i.message}</div>)}

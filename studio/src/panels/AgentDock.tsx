@@ -6,6 +6,7 @@ import { ContextPackageView } from "../components/SemanticView";
 import { TargetPicker } from "../components/TargetPicker";
 import { useStudio } from "../state";
 import type { ContextPackage, TargetSelector } from "../types";
+import { useRunWithPreflight } from "../components/Preflight";
 
 /**
  * Directions are recorded as instruction sources bound to an explicit target (default: the
@@ -14,6 +15,7 @@ import type { ContextPackage, TargetSelector } from "../types";
  */
 export function AgentDock() {
   const s = useStudio();
+  const runner = useRunWithPreflight();
   const [text, setText] = useState("");
   const [aspects, setAspects] = useState<string[]>([]);
   const [override, setOverride] = useState<TargetSelector | null>(null);
@@ -113,10 +115,7 @@ export function AgentDock() {
               </button>
               <button
                 disabled={!wid}
-                onClick={async () => {
-                  const e = await s.run(api.execute(s.project!.id, wid), "Execution started");
-                  if (e) s.watchExecution(wid);
-                }}
+                onClick={() => runner.start(wid)}
               >
                 ▶ Run workflow
               </button>
@@ -133,6 +132,7 @@ export function AgentDock() {
                 · local heuristic: measurement-based, not semantic
               </span>
             </div>
+            {runner.box}
             {ctxOpen && pkg && (
               <div className="agent-context">
                 <ContextPackageView

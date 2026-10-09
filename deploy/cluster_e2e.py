@@ -487,8 +487,9 @@ def s8_security(r: Run):
         "/api/cluster/workers", json={"name": "x"},
         headers={"Authorization": "Bearer not-a-worker-token-123"}).status_code in
         ((401, 403) if r.hardened else (401,)))
-    r.check("Host header outside the allowlist is rejected (DNS rebinding)", anon.get(
-        "/api/health", headers={"Host": "attacker.example"}).status_code == 400)
+    hr = anon.get("/api/health", headers={"Host": "attacker.example"})
+    r.check("Host header outside the allowlist is rejected (DNS rebinding)",
+            hr.status_code in ((400, 421) if r.tls else (400,)), (hr.status_code, hr.text[:100]))
     pid = r.project("ssrf", "local")
     for url in ("http://169.254.169.254/latest/meta-data/", "http://control:8765/api/health",
                 "http://127.0.0.1:8765/api/projects"):

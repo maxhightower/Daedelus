@@ -154,6 +154,9 @@ def main(argv: list[str] | None = None) -> int:
     b21.add_argument("--provider", default="heuristic")
     b21.add_argument("--tasks", default="ABCDE")
     b21.add_argument("--video", default=None, help="video file path or public URL for task E")
+    cl = sub.add_parser("connectors-live", help="opt-in live Microsoft/Google connector test")
+    cl.add_argument("--connector", required=True, choices=["google", "msgraph"])
+    cl.add_argument("--out", default="evidence/v2_1/connectors")
     d12 = sub.add_parser("demo-v12", help="V1.2 research analysis & presentation pipeline")
     d12.add_argument("--out", default="evidence/v1_2")
     r = sub.add_parser("run", help="execute a workflow")
@@ -239,6 +242,13 @@ def main(argv: list[str] | None = None) -> int:
                         video=args.video)
         print(f"benchmark status: {rep.get('status')}; report: {Path(args.out) / 'bench_report.md'}")
         return 0 if rep.get("status") in ("deterministic", "live", "blocked") else 1
+    if args.cmd == "connectors-live":
+        from .connectors_live import run as run_live
+
+        rep = run_live(args.connector, Path(args.out).resolve())
+        print(f"connector {args.connector}: {rep['status']}"
+              + (f" ({rep['blocked_by']})" if rep.get("blocked_by") else ""))
+        return 0 if rep["status"] in ("live", "blocked") else 1
     if args.cmd == "demo-v12":
         from .scenarios_v12 import run as run_v12
 

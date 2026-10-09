@@ -68,6 +68,10 @@ def kill_tree(proc: subprocess.Popen) -> None:
         proc.kill()
 
 
+# answers from a proxy or load balancer while the control plane is restarting
+TRANSIENT = {502, 503, 504}
+
+
 class LeaseRevoked(Exception):
     pass
 
@@ -158,7 +162,8 @@ class Worker:
         r = self.http.post("/api/cluster/workers", json={
             "name": self.name, "capabilities": self.capabilities, "adapters": self.adapters,
             "version": __version__, "host": socket.gethostname(),
-            "isolation": self.sandbox.report, "deployment": self.deployment})
+            "isolation": self.sandbox.report, "deployment": self.deployment,
+            "features": ["post_inspect", "batch_scope"]})
         if r.status_code == 401 and self.credential:
             raise CredentialRevoked(r.text)
         r.raise_for_status()
@@ -189,6 +194,9 @@ class Worker:
             except httpx.HTTPError:
                 time.sleep(1)
                 continue
+            if r.status_code in TRANSIENT:  # e.g. a TLS proxy answering while the control
+                time.sleep(2)               # plane restarts: wait, do not die
+                continue
             if r.status_code == 401:  # credential revoked (or rotated away): stop for good
                 raise CredentialRevoked(r.text)
             if r.status_code == 404:  # control plane forgot us (fresh database): re-register
@@ -210,18 +218,23 @@ class Worker:
                 return
 
     def _call(self, method: str, url: str, *, patience: float = 90.0, **kw) -> httpx.Response:
-        """Control-plane call that rides out transient network failures (partitions,
-        control-plane restarts). HTTP errors are returned to the caller, not retried."""
+        """Control-plane call that rides out transient failures (partitions, control-plane
+        restarts, 502/503/504 from a proxy in front of it). Other HTTP errors are returned to
+        the caller, not retried."""
         t0 = time.time()
         delay = 1.0
         while True:
             try:
-                return self.http.request(method, url, **kw)
+                r = self.http.request(method, url, **kw)
+                if r.status_code not in TRANSIENT or time.time() - t0 > patience:
+                    return r
             except httpx.TransportError:
                 if time.time() - t0 > patience or self._stop.is_set():
                     raise
-                time.sleep(delay)
-                delay = min(delay * 1.5, 5.0)
+            if self._stop.is_set():
+                raise httpx.TransportError("worker stopping")
+            time.sleep(delay)
+            delay = min(delay * 1.5, 5.0)
 
     def _h(self, lease: Lease) -> dict[str, str]:
         return {"X-Lease-Token": lease.lease_token}
@@ -320,7 +333,8 @@ class Worker:
             state.update(progress=0.2, message=f"running {job.adapter}.{job.method}")
             t_run = time.time()
             proc = self.sandbox.popen([sys.executable, "-m", "daedelus.distributed.runjob",
-                                       str(jd)], jd, stdout=subprocess.PIPE,
+                                       str(jd)], jd, memory_mb=job.memory_mb,
+                                      stdout=subprocess.PIPE,
                                       stderr=subprocess.STDOUT)
             slow = float(self.faults.get("slow") or 0)
             deadline = t0 + job.timeout_s

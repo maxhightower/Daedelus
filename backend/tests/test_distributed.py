@@ -223,7 +223,9 @@ def test_remote_edit_runs_on_worker_and_matches_local(cluster):
     assert r.status_code == 200, r.text
     rev = r.json()
     jobs = cluster.c.get(f"/api/projects/{pid}/jobs").json()
-    assert {j["method"] for j in jobs} >= {"create", "apply", "inspect", "preview"}
+    # V2.1: inspections of unchanged trees are reused (create/apply return their own), so
+    # "inspect" jobs may legitimately be absent
+    assert {j["method"] for j in jobs} >= {"create", "apply", "preview"}
     assert all(j["state"] == "succeeded" and j["worker_id"] for j in jobs)
     # same edit locally gives the same component states (deterministic adapter behaviour)
     lp = cluster.project("local")
@@ -272,7 +274,8 @@ def test_workflow_node_records_execution_decision(cluster):
     nr = next(r for r in ex["node_runs"] if r["node_id"] == "g")
     exe = nr["outputs"]["execution"]
     assert exe["decisions"]["spreadsheet"]["resolved"] == "cloud_cpu"
-    assert exe["jobs"] and all(j.get("worker_id") for j in exe["jobs"])
+    real = [j for j in exe["jobs"] if not j.get("cached")]  # V2.1: reused inspections
+    assert real and all(j.get("worker_id") for j in real)
 
 
 def test_worker_crash_mid_job_is_retried_by_another_worker(cluster):

@@ -16,6 +16,21 @@ from the environment and are never stored in the project. Arbitrary URLs are nev
 
 Verification status: the HTTP contracts are tested against recorded-shape fixtures with a mock
 transport. **No live tenant / Google account has been called** (no credentials here).
+
+V2.1 concurrency semantics (from the providers' documentation):
+
+* **Microsoft Graph** offers a real precondition: ``PUT /content`` with ``If-Match: <eTag>``
+  answers 412 when the item changed. Daedelus sends the *eTag* (item version: content *and*
+  metadata) rather than the cTag (content only), so a rename or move since import is also
+  treated as a conflict - the conservative choice. Simple uploads are limited to 250 MB.
+* **Google Drive v3 has no conditional update** (no ETag/If-Match on ``files.update``; the
+  ``version`` field cannot be used as a precondition). Atomic conflict protection is therefore
+  *not* claimed. Publication is conservative instead: (1) refuse if ``version`` changed since
+  import; (2) pin the current head revision (``keepForever``) as a backup; (3) upload with
+  ``keepRevisionForever``; (4) re-read the revision list and verify that the revision before
+  ours is the head we checked. If another write landed in the window, its revision(s) are
+  pinned too and ``ConnectorConflict(written=True)`` reports what happened - publication is
+  never reported as a clean success in that case.
 """
 
 from __future__ import annotations
@@ -34,6 +49,8 @@ from pydantic import BaseModel, Field
 from .adapters.office import common as oc
 
 ID_RE = re.compile(r"^[A-Za-z0-9!_\-.]{1,256}$")
+NAME_RE = re.compile(r"^[A-Za-z0-9 _\-.()]{1,200}$")
+GRAPH_SIMPLE_UPLOAD_MAX = 250 * 1024 * 1024
 OOXML = {
     "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -56,9 +73,15 @@ class ConnectorBlocked(ConnectorError):
 
 
 class ConnectorConflict(ConnectorError):
-    def __init__(self, msg: str, remote: "RemoteFile | None" = None):
+    """``written`` is True when our upload happened but a concurrent write was detected
+    afterwards (Google Drive's check-then-write window); ``details`` names the revisions."""
+
+    def __init__(self, msg: str, remote: "RemoteFile | None" = None, *, written: bool = False,
+                 details: dict | None = None):
         super().__init__(msg)
         self.remote = remote
+        self.written = written
+        self.details = details or {}
 
 
 class RemoteFile(BaseModel):
@@ -161,6 +184,31 @@ class OfficeConnector:
     def upload(self, remote_id: str, path: Path, expected_version: str | None) -> RemoteFile:
         raise NotImplementedError
 
+    # V2.1 (live test harness): discovery, creation, deletion, revision history
+    def list(self, folder_id: str) -> list[RemoteFile]:
+        raise NotImplementedError
+
+    def create(self, folder_id: str, name: str, path: Path) -> RemoteFile:
+        raise NotImplementedError
+
+    def delete(self, remote_id: str) -> None:
+        raise NotImplementedError
+
+    def revisions(self, remote_id: str) -> list[dict[str, Any]]:
+        raise NotImplementedError
+
+    @staticmethod
+    def _check_name(name: str) -> str:
+        if not NAME_RE.match(name or "") or name.strip(" .") != name:
+            raise ConnectorError(f"invalid file name: {name!r}")
+        return name
+
+    def _status(self, r: httpx.Response, what: str) -> httpx.Response:
+        if r.status_code == 429:
+            raise ConnectorError(f"{self.title}: rate limited while {what} (429)")
+        r.raise_for_status()
+        return r
+
 
 class GraphConnector(OfficeConnector):
     """Microsoft Graph drive items (OneDrive / SharePoint document libraries)."""
@@ -201,6 +249,9 @@ class GraphConnector(OfficeConnector):
 
     def upload(self, remote_id: str, path: Path, expected_version: str | None) -> RemoteFile:
         rid = self._check_id(remote_id)
+        if path.stat().st_size > GRAPH_SIMPLE_UPLOAD_MAX:
+            raise ConnectorError("file larger than 250 MB: Graph upload sessions are not "
+                                 "implemented")
         headers = {"Content-Type": OOXML.get(path.suffix.lstrip("."), "application/octet-stream")}
         if expected_version:
             headers["If-Match"] = expected_version  # atomic: Graph answers 412 on mismatch
@@ -214,6 +265,44 @@ class GraphConnector(OfficeConnector):
             return self._remote(r.json())
 
 
+    root = "https://graph.microsoft.com/v1.0/me/drive"
+
+    def list(self, folder_id: str) -> list[RemoteFile]:
+        fid = self._check_id(folder_id)
+        with self._client() as c:
+            r = self._status(self._request(c, "GET", f"{self.base}/{fid}/children", params={
+                "$select": "id,name,eTag,size,file,lastModifiedDateTime,webUrl"}), "listing")
+            return [self._remote(d) for d in r.json().get("value", []) if d.get("file")]
+
+    def create(self, folder_id: str, name: str, path: Path) -> RemoteFile:
+        from urllib.parse import quote
+        fid, nm = self._check_id(folder_id), self._check_name(name)
+        with self._client() as c:
+            r = self._request(c, "PUT", f"{self.base}/{fid}:/{quote(nm)}:/content",
+                              params={"@microsoft.graph.conflictBehavior": "fail"},
+                              content=path.read_bytes(), headers={
+                                  "Content-Type": OOXML.get(path.suffix.lstrip("."),
+                                                            "application/octet-stream")})
+            if r.status_code == 409:
+                raise ConnectorConflict(f"'{nm}' already exists in the folder")
+            return self._remote(self._status(r, "creating").json())
+
+    def delete(self, remote_id: str) -> None:
+        rid = self._check_id(remote_id)
+        with self._client() as c:
+            r = self._request(c, "DELETE", f"{self.base}/{rid}")
+            if r.status_code not in (204, 404):
+                self._status(r, "deleting")
+
+    def revisions(self, remote_id: str) -> list[dict[str, Any]]:
+        rid = self._check_id(remote_id)
+        with self._client() as c:
+            r = self._status(self._request(c, "GET", f"{self.base}/{rid}/versions"),
+                             "listing versions")
+            return [{"id": v.get("id"), "modified": v.get("lastModifiedDateTime"),
+                     "size": v.get("size")} for v in r.json().get("value", [])]
+
+
 class GoogleDriveConnector(OfficeConnector):
     """Google Drive files; Google-native Docs/Sheets/Slides are exported to OOXML."""
 
@@ -223,7 +312,7 @@ class GoogleDriveConnector(OfficeConnector):
     token_env = "DAEDELUS_GOOGLE_TOKEN"
     base = "https://www.googleapis.com/drive/v3/files"
     upload_base = "https://www.googleapis.com/upload/drive/v3/files"
-    fields = "id,name,mimeType,version,size,modifiedTime,webViewLink,md5Checksum"
+    fields = "id,name,mimeType,version,size,modifiedTime,webViewLink,md5Checksum,headRevisionId"
 
     def _remote(self, d: dict[str, Any]) -> RemoteFile:
         mime = d.get("mimeType", "")
@@ -233,7 +322,8 @@ class GoogleDriveConnector(OfficeConnector):
                           version=str(d["version"]) if d.get("version") is not None else None,
                           size=int(d["size"]) if d.get("size") else None,
                           modified=d.get("modifiedTime"), web_url=d.get("webViewLink"),
-                          exported=bool(native), metadata={"md5": d.get("md5Checksum")})
+                          exported=bool(native), metadata={"md5": d.get("md5Checksum"),
+                                                           "head_revision": d.get("headRevisionId")})
 
     def get(self, remote_id: str) -> RemoteFile:
         rid = self._check_id(remote_id)
@@ -261,6 +351,8 @@ class GoogleDriveConnector(OfficeConnector):
         return meta, out
 
     def upload(self, remote_id: str, path: Path, expected_version: str | None) -> RemoteFile:
+        """Conservative publication (no atomic precondition exists in Drive v3); see the
+        module docstring for the four steps."""
         current = self.get(remote_id)
         if current.exported:
             # overwriting a Google-native file with OOXML bytes would replace it with an
@@ -270,16 +362,86 @@ class GoogleDriveConnector(OfficeConnector):
         if expected_version and current.version != expected_version:
             raise ConnectorConflict(f"remote version {current.version} != imported version "
                                     f"{expected_version}; nothing was overwritten", current)
-        # Drive v3 offers no precondition header for media updates: this check-then-write
-        # leaves a short race window, documented in V1_2_ARCHITECTURE.md
+        head = current.metadata.get("head_revision")
         with self._client() as c:
+            if head:  # (2) keep the version we are about to replace, so it can be restored
+                self._pin(c, current.remote_id, head)
             r = self._request(c, "PATCH", f"{self.upload_base}/{current.remote_id}",
-                              params={"uploadType": "media", "fields": self.fields},
+                              params={"uploadType": "media", "fields": self.fields,
+                                      "keepRevisionForever": "true"},
                               content=path.read_bytes(),
                               headers={"Content-Type": OOXML.get(path.suffix.lstrip("."),
                                                                  "application/octet-stream")})
-            r.raise_for_status()
-            return self._remote(r.json())
+            new = self._remote(self._status(r, "uploading").json())
+            mine = new.metadata.get("head_revision")
+            if not (head and mine):
+                new.metadata["verification"] = "unverified (no revision ids for this file)"
+                return new
+            # (4) did anything land between our version check and our upload?
+            revs = self._revision_ids(c, current.remote_id)
+            if mine in revs and head in revs:
+                between = revs[revs.index(head) + 1:revs.index(mine)]
+            else:
+                between = []
+            if between:
+                for rid in between:
+                    self._pin(c, current.remote_id, rid)
+                raise ConnectorConflict(
+                    "a concurrent write reached Google Drive between the version check and the "
+                    f"upload (Drive offers no atomic precondition). Revision(s) {between} were "
+                    f"kept, as was the previous head {head}; our upload is revision {mine}. "
+                    "Resolve manually.", new, written=True,
+                    details={"previous_head": head, "concurrent": between, "ours": mine})
+            new.metadata.update(verification="verified: no concurrent revision",
+                                backup_revision=head)
+            return new
+
+    def _pin(self, c: httpx.Client, file_id: str, rev_id: str) -> None:
+        rid = self._check_id(rev_id)
+        r = self._request(c, "PATCH", f"{self.base}/{file_id}/revisions/{rid}",
+                          params={"fields": "id,keepForever"}, json={"keepForever": True})
+        self._status(r, "pinning a backup revision")
+
+    def _revision_ids(self, c: httpx.Client, file_id: str) -> list[str]:
+        r = self._request(c, "GET", f"{self.base}/{file_id}/revisions",
+                          params={"fields": "revisions(id,modifiedTime,keepForever)",
+                                  "pageSize": "1000"})
+        return [x["id"] for x in self._status(r, "listing revisions").json().get("revisions",
+                                                                                 [])]
+
+    def list(self, folder_id: str) -> list[RemoteFile]:
+        fid = self._check_id(folder_id)
+        with self._client() as c:
+            r = self._request(c, "GET", self.base, params={
+                "q": f"'{fid}' in parents and trashed = false",
+                "fields": f"files({self.fields})", "pageSize": "200"})
+            return [self._remote(d) for d in self._status(r, "listing").json().get("files", [])]
+
+    def create(self, folder_id: str, name: str, path: Path) -> RemoteFile:
+        fid, nm = self._check_id(folder_id), self._check_name(name)
+        mime = OOXML.get(path.suffix.lstrip("."), "application/octet-stream")
+        with self._client() as c:
+            r = self._request(c, "POST", self.base, params={"fields": self.fields},
+                              json={"name": nm, "parents": [fid], "mimeType": mime})
+            meta = self._status(r, "creating").json()
+            r = self._request(c, "PATCH", f"{self.upload_base}/{meta['id']}",
+                              params={"uploadType": "media", "fields": self.fields},
+                              content=path.read_bytes(), headers={"Content-Type": mime})
+            return self._remote(self._status(r, "uploading").json())
+
+    def delete(self, remote_id: str) -> None:
+        rid = self._check_id(remote_id)
+        with self._client() as c:
+            r = self._request(c, "DELETE", f"{self.base}/{rid}")
+            if r.status_code not in (204, 200):
+                self._status(r, "deleting")
+
+    def revisions(self, remote_id: str) -> list[dict[str, Any]]:
+        rid = self._check_id(remote_id)
+        with self._client() as c:
+            r = self._request(c, "GET", f"{self.base}/{rid}/revisions", params={
+                "fields": "revisions(id,modifiedTime,keepForever,size)"})
+            return self._status(r, "listing revisions").json().get("revisions", [])
 
 
 class LibreOfficeConnector(OfficeConnector):
@@ -362,9 +524,18 @@ def publish_remote(store, artifact_id: str, connector: OfficeConnector) -> Remot
     link = art.metadata.get("remote") or {}
     if link.get("connector") != connector.name:
         raise ConnectorError(f"'{art.name}' is not linked to {connector.title}")
-    new = connector.upload(link["remote_id"], native_path(store, art) / art.entry,
-                           link.get("version"))
+    try:
+        new = connector.upload(link["remote_id"], native_path(store, art) / art.entry,
+                               link.get("version"))
+    except ConnectorConflict as exc:
+        if exc.written and exc.remote is not None:  # uploaded, then a race was detected
+            art.metadata["remote"] = {**link, **exc.remote.model_dump(),
+                                      "published_revision_id": art.head_revision_id,
+                                      "conflict": {"detail": str(exc), **exc.details}}
+            store.save_artifact(art)
+        raise
     art.metadata["remote"] = {**link, **new.model_dump(), "published_revision_id":
                               art.head_revision_id}
+    art.metadata["remote"].pop("conflict", None)
     store.save_artifact(art)
     return new

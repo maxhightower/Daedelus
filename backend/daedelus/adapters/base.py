@@ -116,6 +116,11 @@ class Adapter(ABC):
         reported; everything else must stay unchanged."""
         return []
 
+    def side_effect_scopes(self, native_dir: Path, entry: str,
+                           ops: list[PlannedOperation]) -> list[list[str]]:
+        """Side-effect scopes of several operations (remote adapters do it in one job)."""
+        return [self.side_effect_scope(native_dir, entry, op) for op in ops]
+
     def created_kind(self, op: PlannedOperation) -> str:
         """Component kind created by a ``new`` operation ('*' = unknown/any)."""
         return "*"

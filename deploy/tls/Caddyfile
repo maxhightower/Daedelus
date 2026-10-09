@@ -15,3 +15,9 @@ https://localhost:8443, https://control.daedelus.internal:8443, https://127.0.0.
 	}
 	header Strict-Transport-Security "max-age=31536000"
 }
+
+# any other Host header (e.g. a DNS-rebinding page) never reaches the control plane
+https://:8443 {
+	tls /certs/server.crt /certs/server.key
+	respond "misdirected request" 421
+}

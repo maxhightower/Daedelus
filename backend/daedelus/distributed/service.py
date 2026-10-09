@@ -159,7 +159,7 @@ class ClusterService:
             if timeout is not None and time.time() - t0 > timeout:
                 self.queue.cancel(job_id)
                 raise JobFailed(self.queue.status(job_id))
-            time.sleep(poll)
+            self.queue.wait_change(max(poll, 0.5) if not cancelled else poll)
 
     def publish_event(self, project_id: str, kind: str, **data: Any) -> None:
         """Non-job events (executions, revisions) on the same durable stream used by SSE."""

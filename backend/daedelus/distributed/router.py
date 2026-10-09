@@ -31,6 +31,7 @@ class RegisterBody(BaseModel):
     host: str = ""
     isolation: dict = Field(default_factory=dict)  # self-test result of the job sandbox
     deployment: str = ""  # process | container | hosted (operator-declared)
+    features: list[str] = Field(default_factory=list)
 
 
 class CredentialBody(BaseModel):
@@ -142,7 +143,8 @@ def build_router() -> APIRouter:
         w = cl.queue.register_worker(WorkerInfo(
             id=ident.id, name=body.name, capabilities=caps, adapters=body.adapters,
             version=body.version, host=body.host, credential_kind=ident.kind,
-            isolation=body.isolation, deployment=body.deployment, peer=_peer(request)))
+            isolation=body.isolation, deployment=body.deployment, peer=_peer(request),
+            features=[f for f in body.features if f in ("post_inspect", "batch_scope")]))
         cl.audit.record("worker_registered", actor=w.id, target=w.name, capabilities=caps,
                         adapters=body.adapters, credential=ident.kind, peer=_peer(request),
                         isolation=(body.isolation or {}).get("profile"),
@@ -179,7 +181,7 @@ def build_router() -> APIRouter:
                 return got.model_dump()
             if time.time() >= t_end:
                 return Response(status_code=204)
-            time.sleep(0.25)
+            cl.queue.wait_change(min(1.0, max(0.0, t_end - time.time())))
 
     @r.get("/api/cluster/jobs/{job_id}/blobs/{sha}")
     def get_blob(job_id: str, sha: str, request: Request,

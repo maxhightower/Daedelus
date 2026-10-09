@@ -229,6 +229,7 @@ export const api = {
     req<ContextPackage>("POST", `${P(pid)}/agent/context`, body),
   preview: (pid: string, wid: string, node_id: string, all_units = false) =>
     req<any>("POST", `${P(pid)}/workflows/${wid}/preview`, { node_id, all_units }),
+  preflight: (pid: string, wid: string) => req<Preflight>("GET", `${P(pid)}/workflows/${wid}/preflight`),
   execute: (pid: string, wid: string, mode = "incremental", nodes?: string[]) =>
     req<Execution>("POST", `${P(pid)}/workflows/${wid}/execute`, { mode, nodes }),
 
@@ -330,6 +331,26 @@ export interface WorkerStatus {
   alive: boolean;
   last_seen: number;
   version: string;
+  host?: string;
+  credential_kind?: string; // provisioned | enrolled (V2.1)
+  deployment?: string; // process | container | hosted
+  isolation?: { profile?: string; verified?: boolean; controls?: Record<string, boolean>; error?: string };
+  peer?: string;
+}
+export interface Preflight {
+  workflow_id: string;
+  nodes: {
+    node_id: string;
+    type: string;
+    label: string;
+    execution?: { requested: string; adapters: Record<string, { resolved: string | null; reason?: string; error?: string; where?: string; worker?: string | null; isolation?: string; isolation_verified?: boolean | null }> };
+    model?: { provider: string; model: string | null; live: boolean; available: boolean; detail: string; price_known: boolean | null; evaluate_revise_loop: boolean; max_iterations: number };
+  }[];
+  budget: Record<string, any>;
+  live_models: boolean;
+  remote_execution: boolean;
+  spend_bound: string;
+  needs_confirmation: boolean;
 }
 export interface ExecutionSettings {
   target: ExecutionTarget;

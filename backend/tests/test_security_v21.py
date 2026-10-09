@@ -623,3 +623,16 @@ def test_credentials_absent_from_logs_audit_and_artifacts(cluster):
         d = json.dumps(cluster.c.get(f"/api/projects/{pid}/jobs/{j['id']}").json())
         leaks += [j["id"] for s in secrets_ if s in d]
     assert leaks == []
+
+
+def test_hosted_profile_refuses_requests_forwarded_over_plain_http(tmp_path, monkeypatch):
+    from daedelus.api import create_app
+    from daedelus.distributed import service
+    monkeypatch.setenv("DAEDELUS_PROFILE", "hosted")
+    monkeypatch.setenv("DAEDELUS_API_TOKENS", ADMIN)
+    c = TestClient(create_app(tmp_path / "ws", studio_dist=tmp_path / "nodist"))
+    A = {"Authorization": f"Bearer {ADMIN}"}
+    assert c.get("/api/projects", headers={**A, "X-Forwarded-Proto": "http"}).status_code == 400
+    assert c.get("/api/projects", headers={**A, "X-Forwarded-Proto": "https"}).status_code == 200
+    assert c.get("/api/health").status_code == 200  # direct loopback health check
+    service.reset()

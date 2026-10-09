@@ -25,14 +25,34 @@ from pathlib import Path
 T_START = time.perf_counter()
 
 
+ADAPTER_CLASSES = {
+    "blender": ("..adapters.blender", "BlenderAdapter"),
+    "layered2d": ("..adapters.layered2d", "LayeredImageAdapter"),
+    "code": ("..adapters.codefiles", "CodeAdapter"),
+    "spreadsheet": ("..adapters.office.spreadsheet", "SpreadsheetAdapter"),
+    "document": ("..adapters.office.document", "DocumentAdapter"),
+    "presentation": ("..adapters.office.presentation", "PresentationAdapter"),
+}
+
+
+def _adapter(name: str):
+    """Import only the adapter this job needs (V2.1: shorter job start-up)."""
+    import importlib
+    if name in ADAPTER_CLASSES:
+        mod, cls = ADAPTER_CLASSES[name]
+        return getattr(importlib.import_module(mod, __package__), cls)()
+    from ..adapters import registry
+    return registry()[name]
+
+
 def main(jobdir: str) -> int:
     jd = Path(jobdir)
-    from ..adapters import AdapterError, registry
+    from ..adapters import AdapterError
     from ..models import PlannedOperation
     from .models import JobRequest
 
     req = JobRequest.model_validate_json((jd / "job.json").read_text())
-    ad = registry()[req.adapter]  # the real local adapter (never the remote proxy)
+    ad = _adapter(req.adapter)  # the real local adapter (never the remote proxy)
     native, out = jd / "native", jd / "out"
     out.mkdir(exist_ok=True)
     files = {k: str(jd / "files" / str(i)) for i, k in enumerate(sorted(req.files))}
@@ -78,11 +98,19 @@ def main(jobdir: str) -> int:
                               {"allowed_commands": allowed, "test_command": a.get("test_command"),
                                "env": {}})
             res["value"] = rep.model_dump()
+        elif m == "side_effect_scope" and "ops" in a:  # V2.1 batch: all ops in one job
+            res["value"] = {"ids_per_op": [ad.side_effect_scope(native, req.entry,
+                                                                PlannedOperation(**o))
+                                           for o in a["ops"]]}
         elif m == "side_effect_scope":
             res["value"] = {"ids": ad.side_effect_scope(native, req.entry,
                                                         PlannedOperation(**a["op"]))}
         else:
             raise ValueError(f"unsupported method {m}")
+        if a.get("post_inspect") and m in ("create", "apply", "after_restore") and res["ok"] \
+                and (m != "apply" or res["value"].get("ok", True)):
+            ent = res["value"].get("entry", req.entry) if m == "create" else req.entry
+            res["value"]["_post_inspect"] = ad.inspect(native, ent).model_dump()
     except AdapterError as exc:
         res = {"ok": False, "error": str(exc), "adapter_error": True}
     except Exception as exc:

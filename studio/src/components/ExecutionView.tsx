@@ -5,6 +5,7 @@ import type { Execution, NodeRun } from "../types";
 import { Badge, Json, Section, Status, keyLabel, short } from "./common";
 import { ContextView } from "./ContextView";
 import { NodeExecutionInfo } from "./ExecutionSettings";
+import { BudgetSummary } from "./Preflight";
 
 export function ApprovalBox({ ex, r }: { ex: Execution; r: NodeRun }) {
   const { project, artifacts, run, watchExecution } = useStudio();
@@ -86,6 +87,16 @@ export function ExecutionView({ executionId }: { executionId: string }) {
         {wf?.name} v{ex.workflow_version} · {ex.mode} · {ex.created_at.slice(0, 19).replace("T", " ")}
       </div>
       {ex.error && <div className="error-box">{ex.error}</div>}
+      {ex.status === "running" && (
+        <div className="small" data-testid="current-step">
+          current step:{" "}
+          {ex.node_runs
+            .filter((r) => r.status === "running")
+            .map((r) => r.node_id)
+            .join(", ") || "starting"}
+        </div>
+      )}
+      <BudgetSummary b={ex.budget} />
       {ex.node_runs
         .filter((r) => r.status === "waiting_approval")
         .map((r) => (
@@ -107,6 +118,14 @@ export function ExecutionView({ executionId }: { executionId: string }) {
             <div key={u.unit} className="unit-detail small">
               <Status s={u.status} /> {keyLabel(u.unit, artifacts)} <span className="muted">— {u.reason}</span>
               {u.error && <div className="error-box">{u.error}</div>}
+              {u.plan && (
+                <div className="muted">
+                  planned by <code>{u.plan.provider}</code>
+                  {u.plan.model ? <> · <code>{u.plan.model}</code></> : null}
+                  {u.plan.recorded ? " · replayed fixture" : u.plan.deterministic ? " · deterministic" : ""}
+                  {u.plan.usage?.calls ? ` · ${u.plan.usage.input_tokens ?? "?"} in / ${u.plan.usage.output_tokens ?? "?"} out tokens · ${u.plan.usage.cost_usd == null ? "cost unknown" : "$" + Number(u.plan.usage.cost_usd).toFixed(4)}` : ""}
+                </div>
+              )}
               {u.plan && <Json value={u.plan.operations} max={140} />}
               {u.context_id && (
                 <Section title="Resolved inputs" collapsed>

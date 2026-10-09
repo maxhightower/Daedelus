@@ -1,0 +1,130 @@
+# V2.1 hosted multi-machine end-to-end (opt-in).
+#
+# Two GitHub-hosted runners are two independent cloud VMs:
+#   control  - API, queue, artifact store; plaintext only on 127.0.0.1; exposed to the
+#              internet ONLY through a Cloudflare quick tunnel (public HTTPS, real certificate)
+#   worker   - Blender + code worker in the hosted profile, connecting over the public internet
+# The per-worker credentials are sealed to a key generated on the worker VM and travel through
+# run artifacts; phases are published as a commit status. Nothing persists after the run: the
+# tunnel, the VMs and every credential end with the jobs.
+#
+# Trigger: workflow_dispatch, or a push whose commit message contains [hosted-e2e].
+name: Hosted multi-machine e2e
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["claude/**", "opus/**"]
+
+concurrency:
+  group: hosted-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  BLENDER_VERSION: "4.5.14"
+  BLENDER_SERIES: "4.5"
+
+jobs:
+  control:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[hosted-e2e]')
+    name: Host A - control plane (behind TLS tunnel)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    permissions: {contents: read, actions: read, statuses: write}
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - uses: actions/setup-node@v4
+        with: {node-version: "22", cache: npm, cache-dependency-path: studio/package-lock.json}
+      - name: Install control plane (no Blender, no LibreOffice)
+        run: |
+          pip install -e "backend[dev,hosted]"
+          cd studio && npm ci && npm run build
+      - name: Public HTTPS endpoint (Cloudflare quick tunnel to 127.0.0.1:8765)
+        run: |
+          curl -fsSL -o cloudflared https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
+          chmod +x cloudflared && ./cloudflared --version
+          nohup ./cloudflared tunnel --no-autoupdate --url http://127.0.0.1:8765 > tunnel.log 2>&1 &
+          for i in $(seq 1 60); do
+            URL=$(grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' tunnel.log | head -1 || true)
+            [ -n "$URL" ] && break; sleep 2
+          done
+          test -n "$URL" || { cat tunnel.log; exit 1; }
+          echo "TUNNEL_URL=$URL" >> "$GITHUB_ENV"
+          echo "public endpoint: $URL"
+      - name: Wait for the worker host's public key
+        run: |
+          for i in $(seq 1 180); do
+            gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts" --jq '.artifacts[].name' | grep -qx worker-pubkey && break
+            sleep 5
+          done
+          gh run download "$GITHUB_RUN_ID" -n worker-pubkey -D pub
+      - name: Start control plane, provision and seal worker credentials
+        run: python deploy/hosted/control_e2e.py prepare --url "$TUNNEL_URL" --pub pub/pub.txt --handoff handoff --workspace ws --out evidence-hosted/control
+      - uses: actions/upload-artifact@v4
+        with: {name: control-handoff, path: handoff/, retention-days: 1}
+      - name: Hosted scenarios H1-H10
+        run: python deploy/hosted/control_e2e.py run --url "$TUNNEL_URL" --workspace ws --out evidence-hosted/control
+      - name: Collect evidence
+        if: always()
+        run: |
+          cp tunnel.log evidence-hosted/control/ 2>/dev/null || true
+          git rev-parse HEAD > evidence-hosted/control/code_sha.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: hosted-control-evidence, path: evidence-hosted/, retention-days: 30}
+
+  worker:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[hosted-e2e]')
+    name: Host B - creative worker (Blender, code; hosted profile)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    permissions: {contents: read, actions: read, statuses: read}
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: System packages and unprivileged user namespaces for the job sandbox
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq bubblewrap libxi6 libxkbcommon0 libxrender1 libxxf86vm1 libxfixes3 libsm6 libgl1 libegl1
+          # Ubuntu 24.04 restricts unprivileged user namespaces through AppArmor; bubblewrap
+          # needs them for the per-job sandbox (a host configuration choice, documented)
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0 || true
+      - name: Cache Blender
+        id: blender-cache
+        uses: actions/cache@v4
+        with: {path: ~/blender, key: "blender-${{ env.BLENDER_VERSION }}-linux-x64"}
+      - name: Download Blender
+        if: steps.blender-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/blender
+          curl -sSL -o /tmp/blender.tar.xz https://download.blender.org/release/Blender${BLENDER_SERIES}/blender-${BLENDER_VERSION}-linux-x64.tar.xz
+          tar xf /tmp/blender.tar.xz -C ~/blender --strip-components=1
+      - name: Install worker
+        run: pip install -e "backend[dev,hosted]"
+      - name: Generate this host's handoff key
+        run: |
+          mkdir -p pub
+          python deploy/hosted/handoff.py keygen "$RUNNER_TEMP/worker-key.json" pub/pub.txt
+      - uses: actions/upload-artifact@v4
+        with: {name: worker-pubkey, path: pub/, retention-days: 1}
+      - name: Wait for the control host's handoff
+        run: |
+          for i in $(seq 1 180); do
+            gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts" --jq '.artifacts[].name' | grep -qx control-handoff && break
+            sleep 5
+          done
+          gh run download "$GITHUB_RUN_ID" -n control-handoff -D handoff
+      - name: Run workers as directed by the control host
+        env:
+          DAEDELUS_BLENDER: /home/runner/blender/blender
+        run: python deploy/hosted/worker_supervisor.py --key "$RUNNER_TEMP/worker-key.json" --handoff handoff --out evidence-hosted/worker
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: hosted-worker-evidence, path: evidence-hosted/, retention-days: 30}

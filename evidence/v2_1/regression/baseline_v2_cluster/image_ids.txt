@@ -1,0 +1,4 @@
+daedelus-worker-code:v2base c2b0242dc3e5
+daedelus-worker-blender:v2base 9cf9258cd06d
+daedelus-worker-office:v2base ff6c3e1aca33
+daedelus-control:v2base 570684068118

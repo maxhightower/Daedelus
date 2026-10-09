@@ -81,6 +81,12 @@ export function ExecutionSettingsPanel() {
       {cfg.cluster.workers.map((w) => (
         <div key={w.id} className="small worker-row" data-testid="worker-row">
           <Badge tone={w.alive ? "ok" : "default"}>{w.alive ? "connected" : "gone"}</Badge> <b>{w.name}</b> · {w.capabilities.join("+")} · {w.adapters.join(", ")}
+          <div className="muted">
+            {w.deployment || "process"}
+            {w.host ? ` on ${w.host}` : ""} · isolation {w.isolation?.profile ?? "unknown"}
+            {w.isolation?.verified ? " (self-test passed)" : " (unverified)"}
+            {w.credential_kind ? ` · ${w.credential_kind} credential` : ""}
+          </div>
         </div>
       ))}
       {cfg.cluster.workers_enabled && !cfg.cluster.workers.length && <div className="muted small">No worker has connected.</div>}
@@ -131,8 +137,26 @@ export function NodeExecutionInfo({ info }: { info: any }) {
       ))}
       {(info.jobs ?? []).length > 0 && (
         <div className="muted">
-          {info.jobs.length} job(s): {info.jobs.map((j: any) => `${j.method}${j.attempts > 1 ? `×${j.attempts}` : ""}`).join(", ")} · workers{" "}
+          {info.jobs.filter((j: any) => !j.cached).length} job(s): {info.jobs.filter((j: any) => !j.cached).map((j: any) => `${j.method}${j.attempts > 1 ? `×${j.attempts}` : ""}${j.seconds != null ? ` ${Number(j.seconds).toFixed(1)}s` : ""}`).join(", ")} · workers{" "}
           {Array.from(new Set(info.jobs.map((j: any) => j.worker_id).filter(Boolean))).map((w: any) => short(w)).join(", ")}
+          {info.jobs.some((j: any) => j.cached) && ` · ${info.jobs.filter((j: any) => j.cached).length} inspection(s) reused (unchanged files)`}
+          {(() => {
+            const real = info.jobs.filter((j: any) => !j.cached);
+            const where = Array.from(new Set(real.map((j: any) => j.deployment).filter(Boolean)));
+            const bytes = real.reduce((n: number, j: any) => n + (j.bytes_in ?? 0) + (j.bytes_out ?? 0), 0);
+            const iso = Array.from(new Set(real.map((j: any) => j.isolation).filter(Boolean)));
+            return (
+              <>
+                {where.length > 0 && ` · ran on ${where.join("/")} worker(s)`}
+                {iso.length > 0 && ` · isolation ${iso.join("/")}`}
+                {bytes > 0 && ` · ${(bytes / 1024).toFixed(0)} KiB transferred`}
+              </>
+            );
+          })()}
+          {info.jobs.some((j: any) => (j.attempts ?? 1) > 1) && " · retried"}
+          {info.jobs.some((j: any) => j.state && !["succeeded", "cache_hit"].includes(j.state)) && (
+            <div className="error-box">{info.jobs.filter((j: any) => j.state && !["succeeded", "cache_hit"].includes(j.state)).map((j: any) => `${j.method}: ${j.state} ${j.error ?? ""}`).join("; ")}</div>
+          )}
         </div>
       )}
     </div>

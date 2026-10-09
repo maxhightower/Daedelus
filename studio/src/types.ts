@@ -228,6 +228,14 @@ export interface Execution {
   finished_at?: string | null;
   node_runs: NodeRun[];
   error?: string | null;
+  budget?: ExecutionBudget; // V2.1: limits and what the run consumed
+}
+
+export interface ExecutionBudget {
+  limits?: Record<string, any>;
+  used?: { model_calls: number; input_tokens: number; output_tokens: number; cost_usd: number; cost: string; unpriced_calls: number; seconds: number };
+  by_provider?: Record<string, { calls: number; input_tokens: number; output_tokens: number; cost_usd: number; cost_known: boolean; models: string[] }>;
+  refusals?: string[];
 }
 
 export interface ExecutionSummary {

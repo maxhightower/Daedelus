@@ -212,3 +212,16 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
                 h.get("content-type", "").startswith("application/json"):
             h.setdefault("Cache-Control", "no-store")  # API data, not files/previews
         return resp
+
+
+class HttpsOnlyMiddleware(BaseHTTPMiddleware):
+    """Hosted profile behind a TLS proxy: a request the proxy received over plain HTTP
+    (``X-Forwarded-Proto: http``) is refused before any credential is looked at, so a proxy
+    or tunnel that also listens on port 80 cannot become a plaintext entry point. Direct
+    loopback requests (no forwarding headers: health checks on the host) are unaffected."""
+
+    async def dispatch(self, request: Request, call_next):
+        proto = request.headers.get("x-forwarded-proto")
+        if proto is not None and proto.split(",")[0].strip().lower() != "https":
+            return JSONResponse({"detail": "HTTPS required"}, status_code=400)
+        return await call_next(request)
