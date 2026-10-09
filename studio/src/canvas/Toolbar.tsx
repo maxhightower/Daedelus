@@ -53,7 +53,8 @@ export function CanvasToolbar({ onDuplicate }: { onDuplicate: () => void }) {
         size: { width: x1 - x0, height: y1 - y0 },
         z_index: -10,
         presentation_state: { title: "New frame", color: "#5a7a55" },
-        group_id: null,
+        // nest inside the frame the members already share, so moving that frame moves this one
+        group_id: members.every((m) => m.group_id === members[0].group_id) ? members[0].group_id : null,
         collapsed: false,
         metadata: {},
       };

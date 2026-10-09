@@ -33,6 +33,22 @@ function depth(items: Map<string, CanvasItem>, it: CanvasItem): number {
   return d;
 }
 
+/** The frame an item belongs in after a move: the smallest frame that contains the item's
+ * centre and is larger than the item, excluding the item itself and its own descendants
+ * (a big frame dropped over a small one must not become that frame's child). */
+export function frameHost(items: Map<string, CanvasItem>, it: CanvasItem): CanvasItem | undefined {
+  const cx = it.position.x + it.size.width / 2;
+  const cy = it.position.y + it.size.height / 2;
+  const area = (i: CanvasItem) => i.size.width * i.size.height;
+  const descendants = new Set<string>();
+  const collect = (fid: string) => items.forEach((c) => c.group_id === fid && !descendants.has(c.id) && (descendants.add(c.id), collect(c.id)));
+  collect(it.id);
+  return [...items.values()]
+    .filter((f) => isFrame(f) && f.id !== it.id && !descendants.has(f.id) && area(f) > area(it))
+    .filter((f) => cx >= f.position.x && cx <= f.position.x + f.size.width && cy >= f.position.y && cy <= f.position.y + f.size.height)
+    .sort((a, b) => area(a) - area(b))[0];
+}
+
 /** Board items -> React Flow nodes. Board positions are absolute; RF children are parent-relative. */
 export function toNodes(board: CanvasBoard, selected: Set<string>, missing: Set<string>): Node<ItemNodeData>[] {
   const byId = new Map(board.items.map((i) => [i.id, i]));
@@ -199,17 +215,10 @@ export function SpatialCanvas() {
             });
           move(it.id);
         }
-        // regroup: the smallest frame containing the item's centre becomes its parent
+        // regroup: the smallest enclosing frame larger than the item becomes its parent
         const cx = it.position.x + it.size.width / 2;
         const cy = it.position.y + it.size.height / 2;
-        const descendants = new Set<string>();
-        const collect = (fid: string) => items.forEach((c) => c.group_id === fid && (descendants.add(c.id), collect(c.id)));
-        collect(it.id);
-        const host = [...items.values()]
-          .filter((f) => isFrame(f) && f.id !== it.id && !descendants.has(f.id))
-          .filter((f) => cx >= f.position.x && cx <= f.position.x + f.size.width && cy >= f.position.y && cy <= f.position.y + f.size.height)
-          .sort((a, b) => a.size.width * a.size.height - b.size.width * b.size.height)[0];
-        it.group_id = host?.id ?? null;
+        it.group_id = frameHost(items, it)?.id ?? null;
         // dropping a reference onto an artifact view opens the relationship editor
         if (it.item_type === "source" && dragged.length === 1) {
           const tgt = [...items.values()].find(
@@ -418,6 +427,19 @@ export function SpatialCanvas() {
 
   // ----------------------------------------------------------- drop from the explorer
   const onDrop = async (e: React.DragEvent) => {
+    // Files dragged in from the operating system become sources placed at the drop point.
+    const files = Array.from(e.dataTransfer.files ?? []);
+    if (files.length && s.project && board) {
+      e.preventDefault();
+      const p = rf.screenToFlowPosition({ x: e.clientX, y: e.clientY });
+      const r = await s.run(api.upload(s.project.id, files), `${files.length} source(s) registered`);
+      if (r) {
+        await s.refresh();
+        for (const [i, src] of r.entries())
+          await s.placeResource({ kind: "source", id: src.id }, Math.round(p.x + 24 * i), Math.round(p.y + 24 * i));
+      }
+      return;
+    }
     const raw = e.dataTransfer.getData("application/daedelus-ref");
     if (!raw || !board) return;
     e.preventDefault();

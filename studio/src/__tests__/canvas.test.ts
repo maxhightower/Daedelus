@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { toNodes } from "../canvas/SpatialCanvas";
+import { frameHost, toNodes } from "../canvas/SpatialCanvas";
 import { freeSpot, freeSpotAt, itemBounds, lodFor } from "../canvas/hooks";
 import type { CanvasBoard, CanvasItem } from "../types";
 
@@ -83,5 +83,25 @@ describe("layout helpers", () => {
     expect(lodFor(0.2)).toBe("far");
     expect(lodFor(0.6)).toBe("medium");
     expect(lodFor(1.2)).toBe("close");
+  });
+});
+
+describe("frameHost (NATIVE-1 D-005)", () => {
+  const fr = (id: string, x: number, y: number, w: number, h: number, group: string | null = null) =>
+    item(id, x, y, { item_type: "frame", resource_ref: { kind: "frame" }, size: { width: w, height: h }, group_id: group });
+
+  it("never makes a frame the child of a smaller frame it is dropped over", () => {
+    const small = fr("small", 10, 60, 570, 300); // nested group created inside "big"
+    const big = fr("big", 0, 0, 1130, 560); // its centre (565, 280) lies inside "small"
+    expect(frameHost(new Map([small, big].map((i) => [i.id, i])), big)).toBeUndefined();
+  });
+
+  it("picks the smallest enclosing frame that is larger than the item", () => {
+    const outer = fr("outer", 0, 0, 2000, 2000);
+    const inner = fr("inner", 0, 0, 600, 600, "outer");
+    const note = item("n", 100, 100);
+    const items = new Map([outer, inner, note].map((i) => [i.id, i]));
+    expect(frameHost(items, note)?.id).toBe("inner");
+    expect(frameHost(items, inner)?.id).toBe("outer");
   });
 });

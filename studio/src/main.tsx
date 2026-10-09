@@ -7,6 +7,14 @@ import "./styles.css";
 
 const root = ReactDOM.createRoot(document.getElementById("root")!);
 
+// A file dropped anywhere outside the canvas must not navigate the window to that file
+// (the desktop shell hands OS drag-and-drop to the webview: dragDropEnabled is false).
+for (const type of ["dragover", "drop"]) {
+  window.addEventListener(type, (e) => {
+    if ((e as DragEvent).dataTransfer?.types.includes("Files")) e.preventDefault();
+  });
+}
+
 function Studio() {
   return (
     <React.StrictMode>
