@@ -263,8 +263,17 @@ No container image was pushed to any registry.
 
 ## 14. CI and Windows
 
-⟨fill⟩ Linux CI and the Windows desktop build (core tests, sidecar, Tauri installer) run on
-every push. The Windows installer is built but was **not interactively tested** (register N1).
+| Workflow | Run | Result |
+|---|---|---|
+| CI (Linux: backend with Blender and LibreOffice, studio, container builds) | [37884783283](https://github.com/maxhightower/Daedelus/actions/runs/37884783283) on `733c1b6` | **success** |
+| Windows desktop build (core tests, sidecar, Tauri NSIS/MSI installer) | [37885627853](https://github.com/maxhightower/Daedelus/actions/runs/37885627853) on `c44d56e` (application code identical to `733c1b6`) | **success** |
+| Hosted multi-machine e2e (opt-in, `[hosted-e2e]`) | [37884783288](https://github.com/maxhightower/Daedelus/actions/runs/37884783288) on `733c1b6` | **success, 39/39** |
+| Live providers and connectors (`live.yml`, protected environment, manual) | not run | **Blocked** (no secrets configured) |
+
+Earlier Windows failures during V2.1 were test portability issues, fixed without weakening the
+tests: POSIX modes and rlimits are guarded, and the leak scan tolerates SQLite's locked
+shared-memory index. The Windows installer is built but **not interactively tested**
+(register N1).
 
 ## 15. Remaining validation gaps
 
