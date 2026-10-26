@@ -171,6 +171,7 @@ img.checker { background: repeating-conic-gradient(#3a3a3a 0% 25%, #2a2a2a 0% 50
 .ex-thumb { width: 22px; height: 16px; object-fit: cover; border-radius: 2px; }
 .ex-row .kind { font-size: 9.5px; color: var(--muted); border: 1px solid var(--border); border-radius: 3px; padding: 0 3px; }
 .ex-add { display: flex; gap: 3px; flex-wrap: wrap; }
+.ex-add-form label { display: flex; flex-direction: column; gap: 4px; }
 .ex-add-form { width: 100%; display: flex; flex-direction: column; gap: 4px; padding: 4px 0; }
 
 /* inspector */

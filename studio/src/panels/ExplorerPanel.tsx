@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { api, boardApi, fileUrl } from "../api";
+import { CreateResource } from "../components/CreateResource";
 import { Badge, Status, short } from "../components/common";
 import { useStudio } from "../state";
 import type { Artifact, Component, ResourceRef } from "../types";
@@ -149,6 +150,8 @@ function ArtifactFiles({ a }: { a: Artifact }) {
 export function ExplorerPanel() {
   const s = useStudio();
   const [q, setQ] = useState("");
+  const [creating, setCreating] = useState<"artifact" | "workflow" | null>(null);
+  useEffect(() => setCreating(null), [s.project?.id]);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   if (!s.project) return null;
   const pid = s.project.id;
@@ -244,7 +247,8 @@ export function ExplorerPanel() {
             <Row key={v.id} depth={1} icon="◎" label={v.name} onClick={() => s.notify("Use Views ▾ in the canvas toolbar to jump to a saved view")} />
           ))}
         </Group>
-        <Group title="Artifacts" count={s.artifacts.length} testid="ex-artifacts">
+        <Group title="Artifacts" count={s.artifacts.length} testid="ex-artifacts" actions={<button className="mini-btn" onClick={() => setCreating("artifact")}>+ artifact</button>}>
+          {creating === "artifact" && <CreateResource key={pid} kind="artifact" onClose={() => setCreating(null)} />}
           {s.artifacts
             .filter((a) => match(a.name) || a.components.some((c) => match(c.name)))
             .map((a) => (
@@ -298,7 +302,8 @@ export function ExplorerPanel() {
               />
             ))}
         </Group>
-        <Group title="Workflows" count={s.workflows.length} testid="ex-workflows">
+        <Group title="Workflows" count={s.workflows.length} testid="ex-workflows" actions={<button className="mini-btn" onClick={() => setCreating("workflow")}>+ workflow</button>}>
+          {creating === "workflow" && <CreateResource key={pid} kind="workflow" onClose={() => setCreating(null)} />}
           {s.workflows
             .filter((w) => match(w.name) || w.nodes.some((n) => match(n.label)))
             .map((w) => (

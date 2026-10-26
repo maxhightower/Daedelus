@@ -86,6 +86,9 @@ Microsoft 365 apps 16.0.20430, no LibreOffice.
 * **G-001** No Studio UI path creates a new artifact (`api.createArtifact` is never called) or
   a second workflow; artifacts come only from the demo builder, the API, Office
   `from_source` (API only) and connectors. Shared frontend gap, not WebView2-specific.
+  **Continuation:** Explorer now offers + artifact and + workflow with persisted board
+  placement. Browser validation passes; packaged Windows verification remains pending.
+  See `docs/CREATION_FLOW_REPORT.md`.
 
 ## Harness notes (not product defects)
 
